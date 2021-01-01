@@ -142,6 +142,7 @@ int L7_Dev_Setup(
 	  num_indices_acctd_for,
 	  num_outstanding_requests = 0,
 	  num_sends,
+	  num_recvs,
 	  offset,
 	  penum,                       /* Alias for l7_id_db.penum.             */
 	  *pi4_in,                     /* (int *)l7.receive_buffer              */
@@ -241,7 +242,11 @@ int L7_Dev_Setup(
 					"Uninitialized l7_id input, but not found in this list",
 					ierr);
 		}
-		
+		l7p_nbr_state_free(&l7_id_db->nbr_state);
+                L7P_Update_Type_Free(l7_id_db, &l7_id_db->nbr_state.update_datatypes[1]);
+                L7P_Update_Type_Free(l7_id_db, &l7_id_db->nbr_state.update_datatypes[2]);
+                L7P_Update_Type_Free(l7_id_db, &l7_id_db->nbr_state.update_datatypes[4]);
+                L7P_Update_Type_Free(l7_id_db, &l7_id_db->nbr_state.update_datatypes[8]);
 	}
 	else{
 		
@@ -408,7 +413,7 @@ int L7_Dev_Setup(
 #endif
 					/* Skip through all the rest on pe j. */
 					
-					while ( ( this_index < num_indices_needed) && 
+					while ( ( this_index < num_indices_needed) &&
                                                 ( indices_needed[this_index] < l7_id_db->starting_indices[j+1] ) )
 						this_index++;
 					
@@ -509,7 +514,7 @@ int L7_Dev_Setup(
 		         
 		         this_index++;
 		         
-		         while ( ( num_indices_acctd_for < num_indices_needed ) && 
+		         while ( ( num_indices_acctd_for < num_indices_needed ) &&
                                  ( indices_needed[this_index] < l7_id_db->starting_indices[j+1] ) ) {
 		            /* Find the rest on pe j. */
 		            
@@ -905,6 +910,42 @@ int L7_Dev_Setup(
         }
 #endif
 	
+        /* Now that we have all of the information on our communiation partners
+         * and which indicies needto be communicated where, setup a neighbor collective
+         * to do all the acutal work. Start using the graph information to create a
+         * communicator with a distributed graph topology for neighbor communication */
+        num_sends = l7_id_db->num_sends;
+        num_recvs = l7_id_db->num_recvs;
+
+        ierr = MPI_Dist_graph_create_adjacent(MPI_COMM_WORLD,
+                        num_recvs, l7_id_db->recv_from, MPI_UNWEIGHTED,
+                        num_sends, l7_id_db->send_to, MPI_UNWEIGHTED,
+                        MPI_INFO_NULL, 0, &l7_id_db->nbr_state.comm);
+
+        if (ierr != MPI_SUCCESS) {
+          ierr = -1;
+          L7_ASSERT(ierr == MPI_SUCCESS, "Failed to create graph communicator.", ierr)
+        }
+
+        /* The sender/receiver order used by MPI neighbor collectives is the same as
+         * the order in the send_to/recv_from list used to create the graph; MPI guarantees
+         * that this is the case if the graph was created with graph_create_adjacent.
+         *
+         * We cannot know the offset in bytes here, which is what the neighbor
+         * collectives want, as it depends on the type we're sending/receiving
+         * and we don't know that at setup. As a result we use an offset of 0
+         * and count of 1 and let the derived datatypes take care of where in
+         * the array the data goes to and comes from. */
+
+        /* Create update_datatypes for all the L7 datatype sizes */
+        ierr = l7p_nbr_state_create(&l7_id_db->nbr_state, num_recvs, num_sends);
+        L7_ASSERT(ierr == L7_OK, "Could not create neighbor state", ierr);
+
+        L7P_Update_Type_Create(l7_id_db, L7_CHAR, &l7_id_db->nbr_state.update_datatypes[1]);
+        L7P_Update_Type_Create(l7_id_db, L7_SHORT, &l7_id_db->nbr_state.update_datatypes[2]);
+        L7P_Update_Type_Create(l7_id_db, L7_INT, &l7_id_db->nbr_state.update_datatypes[4]);
+        L7P_Update_Type_Create(l7_id_db, L7_DOUBLE, &l7_id_db->nbr_state.update_datatypes[8]);
+
 	/*
 	 * Message tag management
 	 */

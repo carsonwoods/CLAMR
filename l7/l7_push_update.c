@@ -141,43 +141,14 @@ int L7_Push_Update(
       return(ierr);
    }
    
-   /*
-    * Set some parameters base on input datatype.
-    */
-
-   for (int ip = 0; ip < l7_push_id_db->num_comm_partners; ip++){
-      int count = l7_push_id_db->send_buffer_count[ip]; // for vectorization
-      for (int ic = 0; ic < count; ic++){
-         l7_push_id_db->send_buffer[ip][ic] = array[l7_push_id_db->send_database[ip][ic]];
-      }    
-   }    
-
-
-// Send/Receives will be done in L7_Push_Update. Input will be send_buffer. Output will be in
-// preallocated receive_buffer
-   MPI_Request request[2*l7_push_id_db->num_comm_partners];
-   MPI_Status  status[2*l7_push_id_db->num_comm_partners];
-
-   int iloc = 0;
-   for (int ip = 0; ip < l7_push_id_db->num_comm_partners; ip++){
-      MPI_Irecv(&return_array[iloc], l7_push_id_db->recv_buffer_count[ip], MPI_INT,
-                l7_push_id_db->comm_partner[ip], l7_push_id_db->comm_partner[ip], MPI_COMM_WORLD, &request[ip]);
-      iloc += l7_push_id_db->recv_buffer_count[ip];
-   }
-
-   for (int ip = 0; ip < l7_push_id_db->num_comm_partners; ip++){
-      MPI_Isend(l7_push_id_db->send_buffer[ip], l7_push_id_db->send_buffer_count[ip], MPI_INT,
-                l7_push_id_db->comm_partner[ip], l7.penum, MPI_COMM_WORLD, &request[l7_push_id_db->num_comm_partners+ip]);
-   }    
-   MPI_Waitall(2*l7_push_id_db->num_comm_partners, request, status);
-
-/*
-   if (ncycle >= 1) { 
-      for (int ib = 0; ib<receive_count_total; ib++){
-         fprintf(fp,"DEBUG receive %d is %d\n",ib,border_data_receive[ib]);
-      }    
-   }    
-*/
+   int sizeof_type = l7p_sizeof(L7_INT);
+   struct l7_update_datatype *dt = &l7_push_id_db->nbr_state.update_datatypes[sizeof_type];
+   MPI_Neighbor_alltoallw(
+			  array, l7_push_id_db->nbr_state.mpi_send_counts, 
+			  (MPI_Aint *)l7_push_id_db->nbr_state.mpi_send_offsets, dt->out_types, 
+			  return_array, l7_push_id_db->nbr_state.mpi_recv_counts, 
+			  (MPI_Aint *)l7_push_id_db->nbr_state.mpi_recv_offsets, dt->in_types, 
+			  l7_push_id_db->nbr_state.comm);
    
 #endif /* HAVE_MPI */
    

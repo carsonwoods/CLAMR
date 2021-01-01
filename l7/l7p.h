@@ -112,6 +112,35 @@ enum
                                              allocated, times "num_recvs". */
 
 /*
+ * Database state and prototypes associated with neighbor collectives
+ */
+struct l7_update_datatype {
+   MPI_Datatype *in_types;
+   MPI_Datatype *out_types;
+};
+
+struct nbr_state {
+   /* The communicator, counts, offsets, and types needed to perform a neighbor 
+    * collective * for the communication pattern needed by this update. */
+   MPI_Comm
+     comm;		 	/* MPI subcommunicator to use for the update. */
+
+   int 
+      *mpi_send_counts, 	/* Number of datatypes to send on an edge (always 1) */
+      *mpi_recv_counts;  	/* Number of datatypes to recv on an edge (always 1) */
+
+   long
+      *mpi_send_offsets, 	/* Offset of datatype to send on an edge (always 0) */
+      *mpi_recv_offsets; 	/* Offset of datatype to recv on an edge (always 0) */
+
+   struct l7_update_datatype
+      update_datatypes[9];	/* Neighbor datatypes indexed by l7_sizeof result */
+};
+
+int l7p_nbr_state_create( struct nbr_state *nbr_state, int num_recvs, int num_sends );
+int l7p_nbr_state_free( struct nbr_state *nbr_state );
+
+/*
  * Struct for data associated with specified L7 handle.
  */
    
@@ -158,6 +187,8 @@ typedef struct l7_id_database
    MPI_Status
      *mpi_status;
    
+   struct nbr_state nbr_state; 
+
 #ifdef HAVE_OPENCL
    int
      num_indices_have,         /* Count of indices needed for send in update */
@@ -187,12 +218,10 @@ typedef struct l7_push_id_database
      receive_count_total,      /* Total receive size for each processor.
                                   This is a sum of the recv_buffer_count
                                   array                                     */
-     **send_buffer,            /* A preallocated int datatype buffer to be
-                                  used for packing data to send in
-                                  L7_Push_Update. It is allocated in setup
-                                  and deallocated in free.                  */
      l7_push_id;               /* As input to L7_PUSH_SETUP.                */
    
+   struct nbr_state nbr_state;
+
    struct l7_push_id_database
      *next_push_db;            /* Link to next database.                    */
    
@@ -336,6 +365,34 @@ int l7p_sizeof (
 
 l7_id_database *l7p_set_database(
       const int l7_id
+      );
+
+/* 
+ * L7 Update type private prototypes
+ */
+int L7P_Update_Type_Create(
+      l7_id_database            *l7_id_db,
+      const enum L7_Datatype    l7_datatype,
+      struct l7_update_datatype *l7_update_datatype
+      );
+
+int L7P_Update_Type_Free(
+      l7_id_database            *l7_id_db,
+      struct l7_update_datatype *l7_update_datatype
+      );
+
+/* 
+ * L7 Update type private prototypes
+ */
+int L7P_Push_Type_Create(
+      l7_push_id_database       *l7_push_id_db,
+      const enum L7_Datatype    l7_datatype,
+      struct l7_update_datatype *l7_update_datatype
+      );
+
+int L7P_Push_Type_Free(
+      l7_push_id_database       *l7_push_id_db,
+      struct l7_update_datatype *l7_update_datatype
       );
 
 /*

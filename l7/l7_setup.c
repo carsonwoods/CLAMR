@@ -40,9 +40,11 @@
  */  
 #include "l7.h"
 #include "l7p.h"
+
 #include <stdlib.h>
 
 #define L7_LOCATION "L7_SETUP"
+//#define _L7_DEBUG
 
 int L7_Setup(
 		const int      num_base,
@@ -139,12 +141,12 @@ int L7_Setup(
 	  numpes,                      /* Alias for l7_id_db.numpes.           */
 	  num_indices_acctd_for,
 	  num_outstanding_requests = 0,
+          num_recvs,
 	  num_sends,
 	  offset,
 	  penum,                       /* Alias for l7_id_db.penum.             */
 	  *pi4_in,                     /* (int *)l7.receive_buffer              */
 	  *pi4_out,                    /* (int *)l7.send_buffer                 */
-	  send_buffer_bytes_needed,    /* Buffer space requirement.             */
 	  start_indices_needed,
 	  this_index;                  /* Offset into indexing set.             */
 	
@@ -240,6 +242,11 @@ int L7_Setup(
 					ierr);
 		}
 		
+                l7p_nbr_state_free(&l7_id_db->nbr_state);
+                L7P_Update_Type_Free(l7_id_db, &l7_id_db->nbr_state.update_datatypes[1]);
+                L7P_Update_Type_Free(l7_id_db, &l7_id_db->nbr_state.update_datatypes[2]);
+                L7P_Update_Type_Free(l7_id_db, &l7_id_db->nbr_state.update_datatypes[4]);
+                L7P_Update_Type_Free(l7_id_db, &l7_id_db->nbr_state.update_datatypes[8]);
 	}
 	else{
 		
@@ -380,7 +387,7 @@ int L7_Setup(
 				"No memory for l7_id_db->starting_indices", ierr);
 	}
 	
-   ierr = MPI_Allgather( &(l7_id_db->num_indices_owned), 1, MPI_INT,
+        ierr = MPI_Allgather( &(l7_id_db->num_indices_owned), 1, MPI_INT,
 			&(l7_id_db->starting_indices[1]), 1, MPI_INT,
 			MPI_COMM_WORLD);
 	L7_ASSERT( ierr == MPI_SUCCESS, "MPI_Allgather (num_indices_owned)",
@@ -413,7 +420,7 @@ int L7_Setup(
                     /* SKG - Update order to silence valgrind. Don't know if
                      * this is okay... */
 					while ( ( this_index < num_indices_needed)  &&
-                                                ( indices_needed[this_index] < l7_id_db->starting_indices[j+1] ) )
+                            ( indices_needed[this_index] < l7_id_db->starting_indices[j+1] ) )
 						this_index++;
 					
 					/* Remember where we found the first one. */
@@ -521,8 +528,8 @@ int L7_Setup(
 		         
                 /* SKG - Update order to silence valgrind. Don't know if
                  * this is okay... */
-                         while ( ( num_indices_acctd_for < num_indices_needed ) &&
-                                 ( indices_needed[this_index] < l7_id_db->starting_indices[j+1] )) {
+		         while ( ( num_indices_acctd_for < num_indices_needed ) &&
+                        ( indices_needed[this_index] < l7_id_db->starting_indices[j+1] )) {
 		            /* Find the rest on pe j. */
 		            
 		            l7_id_db->recv_counts[i]++;
@@ -546,24 +553,23 @@ int L7_Setup(
 		
 	}
 	
-	/*
-	 * Determine number of processes for which this pe owns indices
-	 * those pes need. This is done use a reduction (MPI_Allreduce).
-	 */
-	
-	if (l7.sizeof_send_buffer < 2 * numpes * (int)sizeof(int)){
-	   if (l7.send_buffer)
-	      free(l7.send_buffer);
-	   
-	   l7.send_buffer = calloc ((unsigned long long)(2*numpes), sizeof(int));
-	   if (l7.send_buffer == NULL){
-	      ierr = -1;
-	      L7_ASSERT(l7.send_buffer != NULL, "No memory for send buffer", ierr);
-	   }
-	   
-	   l7.sizeof_send_buffer = 2 * numpes * (int)sizeof(int);
-	}
-	
+        /*
+         * Determine number of processes for which this pe owns indices
+         * those pes need. This is done use a reduction (MPI_Allreduce).
+         */
+        if (l7.sizeof_send_buffer < 2 * numpes * (int)sizeof(int)){
+           if (l7.send_buffer)
+              free(l7.send_buffer);
+
+           l7.send_buffer = calloc ((unsigned long long)(2*numpes), sizeof(int));
+           if (l7.send_buffer == NULL){
+              ierr = -1;
+              L7_ASSERT(l7.send_buffer != NULL, "No memory for send buffer", ierr);
+           }
+
+           l7.sizeof_send_buffer = 2 * numpes * (int)sizeof(int);
+        }
+
 	pi4_in   = (int*)l7.send_buffer;
 	pi4_out  = &pi4_in[numpes];
 	
@@ -794,12 +800,12 @@ int L7_Setup(
 	         printf("[pe %d] Recvd %d indices from pe %d. \n", penum,
 	               l7_id_db->send_counts[i], l7_id_db->send_to[i] );
 	         for (k=offset; k<offset+l7_id_db->send_counts[i]; k++){
-	            printf("      index[%d] = %d \n",k l7_id_db->indices_global_to_send[k] );
+	            printf("      index[%d] = %d \n", k, l7_id_db->indices_global_to_send[k] );
 	         }
 	         offset += l7_id_db->send_counts[i];
 	      }
 	   }
-	   sleep(1);
+	   //sleep(1);
 	}
 #endif
 	
@@ -833,18 +839,18 @@ int L7_Setup(
 	   if (penum == i){
 	      for (j=0; j<l7_id_db->num_sends; j++){
 	         printf("[pe %d] send %d indices to pe %d \n", penum,
-	               l7_id_db->send_counts[j], l7_id_db->send_to[] );
+	               l7_id_db->send_counts[j], l7_id_db->send_to[j] );
 	         ierr = MPI_Barrier(MPI_COMM_WORLD);
 	      }
 	   }
 	}
-	flush(stdout);
+	fflush(stdout);
 	ierr = MPI_Barrier(MPI_COMM_WORLD);
 	L7_ASSERT(ierr == MPI_SUCCESS, "MPI_Barrier failure", ierr);
 	
 	for (i=0; i<numpes; i++){
 	   if (penum == i){
-	      printf("----------------------------------------------------\n")
+	      printf("----------------------------------------------------\n");
 	      for (j=0; j<l7_id_db->num_sends; j++){
 	         printf("[pe %d] Send (index %d) to pe %d. \n",penum,
 	               l7_id_db->indices_global_to_send[j], l7_id_db->send_to[j] );
@@ -853,51 +859,56 @@ int L7_Setup(
             printf("[pe %d] Recving (index %d) from pe %d. \n",penum,
                   l7_id_db->indices_needed[j], l7_id_db->recv_from[j] );
          }
-         printf("----------------------------------------------------\n")
+         printf("----------------------------------------------------\n");
          fflush(stdout);
 	   }
-	   sleep(2);
+	   // sleep(2);
 	}
 #endif /* _L7_DEBUG */
 	
-	/*
-	 * Ensure buffer available for data to be sent.
-	 */
-	
-	send_buffer_bytes_needed = 0;
-	
-	num_sends = l7_id_db->num_sends;
-	
-	max_sizeof_type = sizeof(double);
-	
-	for (i=0; i<num_sends; i++)
-	   send_buffer_bytes_needed += l7_id_db->send_counts[i] * max_sizeof_type;
-	
-	if (send_buffer_bytes_needed > l7.sizeof_send_buffer ){
-	   if (l7.send_buffer)
-	      free(l7.send_buffer);
-	   
-	   l7.send_buffer = (char *)calloc((unsigned long long)send_buffer_bytes_needed, sizeof (char) );
-	   if (l7.send_buffer == NULL){
-	      ierr = -1;
-	      L7_ASSERT(l7.send_buffer != NULL, "No memory for send buffer", ierr);
-	   }
-	   l7.sizeof_send_buffer = send_buffer_bytes_needed;
-	}
-	
-	/*
-	 * Message tag management
-	 */
-	
-	l7_id_db->this_tag_update = L7_UPDATE_TAGS_MIN;
-	
+        /* Now that we have all of the information on our communiation partners
+         * and which indicies needto be communicated where, setup a neighbor collective
+         * to do all the acutal work. Start using the graph information to create a 
+         * communicator with a distributed graph topology for neighbor communication */
+        num_sends = l7_id_db->num_sends;
+        num_recvs = l7_id_db->num_recvs;
+
+        ierr = MPI_Dist_graph_create_adjacent(MPI_COMM_WORLD, 
+			num_recvs, l7_id_db->recv_from, MPI_UNWEIGHTED,
+			num_sends, l7_id_db->send_to, MPI_UNWEIGHTED,
+			MPI_INFO_NULL, 0, &l7_id_db->nbr_state.comm);
+
+        if (ierr != MPI_SUCCESS) {
+	  ierr = -1;
+          L7_ASSERT(ierr == MPI_SUCCESS, "Failed to create graph communicator.", ierr)
+        }
+
+        /* The sender/receiver order used by MPI neighbor collectives is the same as 
+         * the order in the send_to/recv_from list used to create the graph; MPI guarantees
+         * that this is the case if the graph was created with graph_create_adjacent.
+         *
+         * We cannot know the offset in bytes here, which is what the neighbor 
+         * collectives want, as it depends on the type we're sending/receiving
+         * and we don't know that at setup. As a result we use an offset of 0 
+         * and count of 1 and let the derived datatypes take care of where in 
+         * the array the data goes to and comes from. */
+
+        /* Create update_datatypes for all the L7 datatype sizes */
+        ierr = l7p_nbr_state_create(&l7_id_db->nbr_state, num_recvs, num_sends);
+        L7_ASSERT(ierr == L7_OK, "Could not create neighbor state", ierr);
+
+        L7P_Update_Type_Create(l7_id_db, L7_CHAR, &l7_id_db->nbr_state.update_datatypes[1]);
+        L7P_Update_Type_Create(l7_id_db, L7_SHORT, &l7_id_db->nbr_state.update_datatypes[2]);
+        L7P_Update_Type_Create(l7_id_db, L7_INT, &l7_id_db->nbr_state.update_datatypes[4]);
+        L7P_Update_Type_Create(l7_id_db, L7_DOUBLE, &l7_id_db->nbr_state.update_datatypes[8]);
+
 	/*
 	 * Database is setup for this l7_id -- return.
 	 */
 
 #endif /* HAVE_MPI */
 	
-	ierr = L7_OK;
+   ierr = L7_OK;
 	
    return(ierr);
    

@@ -167,8 +167,9 @@ int L7_Init (
       
    l7.sizeof_workspace = 0;
     
-   l7.sizeof_send_buffer = 0;
-    
+   l7.sizeof_send_buffer = 2 * *numpes * sizeof(int);
+   l7.send_buffer = (void *)calloc(2 * *numpes, sizeof(int));
+
    l7.initialized = 1;
 
 #ifdef HAVE_QUO

@@ -154,14 +154,11 @@ int L7_Push_Free(
       l7_push_db->send_database = NULL;
    }
 
-   if (l7_push_db->send_buffer){
-      for (int ip = 0; ip < l7_push_db->num_comm_partners; ip++){
-         free(l7_push_db->send_buffer[ip]);
-      }
-      free(l7_push_db->send_buffer);
-      l7_push_db->send_buffer = NULL;
-   }
-
+   l7p_nbr_state_free(&l7_push_db->nbr_state);
+   L7P_Push_Type_Free(l7_push_db, &l7_push_db->nbr_state.update_datatypes[1]);
+   L7P_Push_Type_Free(l7_push_db, &l7_push_db->nbr_state.update_datatypes[2]);
+   L7P_Push_Type_Free(l7_push_db, &l7_push_db->nbr_state.update_datatypes[4]);
+   L7P_Push_Type_Free(l7_push_db, &l7_push_db->nbr_state.update_datatypes[8]);
    /*
     * Assign pointers to next, first, and last if needed
     */

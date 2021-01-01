@@ -43,6 +43,7 @@
 #include "l7p.h"
 
 #define L7_LOCATION "L7_DEV_UPDATE"
+#define _L7_DEBUG
 
 #ifdef HAVE_OPENCL
 int L7_Dev_Update(
@@ -218,6 +219,9 @@ int L7_Dev_Update(
 
          break;
       case L7_INT:
+#ifdef _L7_DEBUG
+	printf("[pe %d] Packing OpenCL INT onto device buffer.\n", l7.penum);
+#endif
          dev_packed_data = ezcl_malloc(NULL, "dev_packed_data", &num_indices_have, sizeof(cl_int), CL_MEM_READ_WRITE, 0);
 
          ezcl_set_kernel_arg(l7.kernel_pack_int_have_data, 0, sizeof(cl_int), (void *)&num_indices_have);
@@ -227,9 +231,15 @@ int L7_Dev_Update(
 
          ezcl_enqueue_ndrange_kernel(command_queue, l7.kernel_pack_int_have_data,   1, NULL, &pack_global_work_size, &pack_local_work_size, NULL);
 
+#ifdef _L7_DEBUG
+	printf("[pe %d] Copying packed device buffer onto host.\n", l7.penum);
+#endif
          packed_int_data = (int *)malloc(num_indices_have*sizeof(int));
          ezcl_enqueue_read_buffer(command_queue, dev_packed_data, CL_TRUE, 0, num_indices_have*sizeof(cl_int), &packed_int_data[0], NULL);
-   
+
+#ifdef _L7_DEBUG
+	 printf("[pe %d] Copying device indices on host buffer.\n", l7.penum);
+#endif
          int_data_buffer = (int *)malloc((num_indices_owned+num_indices_needed)*sizeof(int));
          for (unsigned int ii = 0; ii < num_indices_have; ii++){
             int_data_buffer[l7_id_db->indices_have[ii]] = packed_int_data[ii];
@@ -243,8 +253,14 @@ int L7_Dev_Update(
           * Do the regular L7_Update across processor.
           */
    
+#ifdef _L7_DEBUG
+	 printf("[pe %d] Calling underlying L7_Update.\n", l7.penum);
+#endif
          L7_Update (int_data_buffer, l7_datatype, l7_id);
 
+#ifdef _L7_DEBUG
+	 printf("[pe %d] Moving received data to device.\n", l7.penum);
+#endif
          dev_data_buffer_add    = ezcl_malloc(NULL, "dev_data_buffer_add",    &num_indices_needed,     sizeof(cl_int), CL_MEM_READ_WRITE, 0);
          ezcl_enqueue_write_buffer(command_queue, dev_data_buffer_add, CL_TRUE,  0, num_indices_needed*sizeof(cl_int), &int_data_buffer[num_indices_owned],     NULL);
 
@@ -260,6 +276,9 @@ int L7_Dev_Update(
 
          ezcl_device_memory_delete(dev_data_buffer_add);
 
+#ifdef _L7_DEBUG
+	 printf("[pe %d] Finished L7_INT dev_update.\n", l7.penum);
+#endif
          break;
       case L7_FLOAT:
          dev_packed_data = ezcl_malloc(NULL, "dev_packed_data", &num_indices_have, sizeof(cl_float), CL_MEM_READ_WRITE, 0);

@@ -187,6 +187,7 @@ int L7_Push_Setup(
 		l7_push_id_db = l7.first_push_db;
 
 
+
 		while (l7_push_id_db){
 			if (l7_push_id_db->l7_push_id == *l7_push_id)
 				break;
@@ -199,6 +200,12 @@ int L7_Push_Setup(
 					ierr);
 		}
 		
+		/* REmove old push neighbor communicators and associated arrays and types. */
+		l7p_nbr_state_free(&l7_push_id_db->nbr_state);
+		L7P_Push_Type_Free(l7_push_id_db, &l7_push_id_db->nbr_state.update_datatypes[1]);	
+		L7P_Push_Type_Free(l7_push_id_db, &l7_push_id_db->nbr_state.update_datatypes[2]);	
+		L7P_Push_Type_Free(l7_push_id_db, &l7_push_id_db->nbr_state.update_datatypes[4]);	
+		L7P_Push_Type_Free(l7_push_id_db, &l7_push_id_db->nbr_state.update_datatypes[8]);	
 	}
 	else{
 		
@@ -345,35 +352,6 @@ int L7_Push_Setup(
 			                     ierr);
 		          }
                 }
-
-                //  send_buffer
-
-                if (l7_push_id_db->send_buffer){
-                         for (int ip = 0; ip < num_comm_partners; ip++){
-                                 if (l7_push_id_db->send_buffer[ip]) free(l7_push_id_db->send_buffer[ip]);
-                         }
-                         if (l7_push_id_db->send_buffer) free(l7_push_id_db->send_buffer);
-                }
-
-                l7_push_id_db->send_buffer = (int **) calloc(num_comm_partners,sizeof(int *));
-		if (l7_push_id_db->send_buffer == NULL){
-			 ierr = -1;
-			 L7_ASSERT( (int*)(l7_push_id_db->send_buffer) != NULL,
-			            "Memory failure for send_buffer",
-			            ierr);
-                }
-
-                for (int ip = 0; ip < num_comm_partners; ip++){
-                         l7_push_id_db->send_buffer[ip] = (int *) calloc(send_buffer_count[ip],sizeof(int));
-
-		         if (l7_push_id_db->send_buffer[ip] == NULL){
-			          ierr = -1;
-			          L7_ASSERT( (int*)(l7_push_id_db->send_buffer) != NULL,
-			                     "Memory failure for send_buffer",
-			                     ierr);
-		          }
-                }
-
         }
 
         /*
@@ -422,6 +400,34 @@ int L7_Push_Setup(
                 *receive_count_total += l7_push_id_db->recv_buffer_count[ip];
         }
         l7_push_id_db->receive_count_total = *receive_count_total;
+
+        /* Create the graph communicator to use for the push */
+        MPI_Dist_graph_create_adjacent(MPI_COMM_WORLD,
+                                       num_comm_partners, l7_push_id_db->comm_partner, MPI_UNWEIGHTED,
+                                       num_comm_partners, l7_push_id_db->comm_partner, MPI_UNWEIGHTED,
+	                               MPI_INFO_NULL, 0, &l7_push_id_db->nbr_state.comm);
+
+        
+	/* Create neighbor communication state */
+	l7p_nbr_state_create(&l7_push_id_db->nbr_state, num_comm_partners, num_comm_partners);
+
+        /* Push assumes bidirectional communication even if there isn't any
+         * so we have to be careful of counts here. */
+        for (int ip = 0; ip < num_comm_partners; ip++) {
+		if (l7_push_id_db->recv_buffer_count[ip] == 0) {
+ 			l7_push_id_db->nbr_state.mpi_recv_counts[ip] = 0;
+		} 
+		if (l7_push_id_db->send_buffer_count[ip] == 0) {
+			l7_push_id_db->nbr_state.mpi_send_counts[ip] = 0;
+		}
+	}
+
+        /* Create the types to use for the push - only L7_INT is needed for now but this makes
+	 * generalizing L7_Push to use other datatypes easier. */
+        L7P_Push_Type_Create(l7_push_id_db, L7_CHAR, &l7_push_id_db->nbr_state.update_datatypes[1]);
+        L7P_Push_Type_Create(l7_push_id_db, L7_SHORT, &l7_push_id_db->nbr_state.update_datatypes[2]);
+        L7P_Push_Type_Create(l7_push_id_db, L7_INT, &l7_push_id_db->nbr_state.update_datatypes[4]);
+        L7P_Push_Type_Create(l7_push_id_db, L7_DOUBLE, &l7_push_id_db->nbr_state.update_datatypes[8]);
 
 #endif /* HAVE_MPI */
 	

@@ -41,19 +41,28 @@
 #include "l7.h"
 #include "l7p.h"
 
+#include <stdlib.h>
+
 #define L7_LOCATION "L7_UPDATE"
+#define _L7_DEBUG
 
 int L7_Update(
-      void                    *data_buffer,
-      const enum L7_Datatype  l7_datatype,
-      const int               l7_id
+      void                   *data_buffer,
+      const enum L7_Datatype l7_datatype, 
+      const int              l7_id
       )
 {
    /*
     * Purpose
     * =======
     * L7_Update collects into array data_buffer data located off-process,
-    * appending it to owned (on-process) data data_buffer.
+    * appending it to owned (on-process) data data_buffer. This version uses
+    * MPI neighbor collectives and datatypes so the transfer is completely 
+    * in-place, allowing accelerator-aware MPI versions to work properly and
+    * in theory optimize data transfer and messaging orders to improve performance. 
+    * Its performance, however, depends heavily on the performance of the underlying 
+    * MPI doesn't carefully optimize MPI datatype handling and neighbor collectives
+    * which some MPIs don't optimize well.
     * 
     * Arguments
     * =========
@@ -65,12 +74,15 @@ int L7_Update(
     *                    data_buffer[num_indices_owned, num_indices_needed-1]
     *                    contains the data collected from off-process.
     * 
-    * l7_datatype        (input) const int*
-    *                    The type of data contained in array data_buffer.
+    * l7_gather_datatype (input) L7_Gather_Datatype (a struct *)
+    *                    The type of data contained in array data_buffer and the
+    *                    the layout of the data to be scatter/gathered to other
+    *                    processes.
     * 
     * l7_id              (input) const int
-    *                    Handle to database containing conmmunication
-    *                    requirements.
+    *                    Handle to database containing communication requirements. Note
+    *                    that this reuses the setup/update database as most of the data
+    *                    is redundant instead of creating a full new type.
     * 
     * Notes:
     * =====
@@ -82,49 +94,15 @@ int L7_Update(
    /*
     * Local variables
     */
-   
-   char
-     *pc;                  /* (char *)data_buffer                */
-   
    int
-     i, j,                 /* Counters                           */
-     ierr,                 /* Error code for return              */
-     msg_bytes,            /* Message length in bytes.           */
-     num_recvs,
-     num_outstanding_reqs, /* Outstanding MPI_Requests           */
-     num_sends,
-     offset,               /* Offset into buffer space           */
-     send_count,
-     sizeof_type,          /* Number of bytes for input datatype */
-     start_index;
-   
-   char
-     *pchardata_buffer,    /* (int *)data_buffer                 */
-     *pcharsend_buffer;    /* (int *)send_buffer                 */
-   
-   short
-     *pshortdata_buffer,   /* (int *)data_buffer                 */
-     *pshortsend_buffer;   /* (int *)send_buffer                 */
-   
-   int
-     *pintdata_buffer,     /* (int *)data_buffer                 */
-     *pintsend_buffer;     /* (int *)send_buffer                 */
-   
-   long long 
-     *plongdata_buffer,    /* (long long *)data_buffer           */
-     *plongsend_buffer;    /* (long long *)send_buffer           */
-   
-   float
-     *pfloatdata_buffer,   /* (float *)data_buffer               */
-     *pfloatsend_buffer;   /* (float *)send_buffer               */
-   
-   double
-     *pdoubledata_buffer,  /* (double *)data_buffer              */
-     *pdoublesend_buffer;  /* (double *)send_buffer              */
-     
+     ierr;                 /* Error code for return              */
    l7_id_database
      *l7_id_db;            /* database associated with l7_id.    */
-   
+   int 
+     sizeof_type;	   /* sizeof the L7 datatype */
+   struct l7_update_datatype
+     *update_datatype;     /* Info on the datatypes to scatter/gather */
+     
    /*
     * Executable Statements
     */
@@ -147,6 +125,9 @@ int L7_Update(
       L7_ASSERT( data_buffer != NULL, "data_buffer != NULL", ierr);
    }
    
+   sizeof_type = l7p_sizeof(l7_datatype);
+   L7_ASSERT((sizeof_type > 0) && (sizeof_type <= 8), "Invalid L7 type in Update.", -1);
+  
    if (l7_id <= 0){
       ierr = -1;
       L7_ASSERT( l7_id > 0, "l7_id <= 0", ierr);
@@ -174,307 +155,37 @@ int L7_Update(
       return(ierr);
    }
    
-   /*
-    * Set some parameters base on input datatype.
-    */
-   
-   sizeof_type = l7p_sizeof(l7_datatype);
-   
-   /*
-    * Receive data into user provided array.
-    */
-   
-   num_outstanding_reqs = 0;
-   pc = (char *)data_buffer;
-   
-   offset = l7_id_db->num_indices_owned * sizeof_type;
-   
-   num_recvs = l7_id_db->num_recvs;
-   
-   for (i=0; i<num_recvs; i++){
-      msg_bytes = l7_id_db->recv_counts[i] * sizeof_type;
-      
+   update_datatype = &l7_id_db->nbr_state.update_datatypes[sizeof_type];
+   L7_ASSERT(update_datatype->in_types != NULL, "Invalid gather datatype.", -1);
+   L7_ASSERT(update_datatype->out_types != NULL, "Invalid scatter datatype.", -1);
+
 #if defined _L7_DEBUG
-      printf("[pe %d] Recv posted: pc[%d]; len=%d bytes, from %d \n",
-            l7.penum, offset, msg_bytes, l7_id_db->recv_from[i] );
-#endif
-      
-      ierr = MPI_Irecv (&pc[offset], msg_bytes, MPI_BYTE,
-            l7_id_db->recv_from[i], l7_id_db->this_tag_update,
-            MPI_COMM_WORLD, &l7_id_db->mpi_request[num_outstanding_reqs++] );
-      L7_ASSERT(ierr == MPI_SUCCESS, "MPI_Irecv failure", ierr);
-      
-      offset += l7_id_db->recv_counts[i]*sizeof_type;
+   printf("[pe %d] Update AllToAllW \n", l7.penum);
+   for (int i = 0; i < l7_id_db->num_sends; i++) {
+       printf("[pe %d]    send %d count %d offset %ld ",
+	     l7.penum, i, l7_id_db->nbr_state.mpi_send_counts[i], l7_id_db->nbr_state.mpi_send_offsets[i]);
+       printf("\n");
    }
-   
-   /*
-    * Send data to processes.
-    * (Buffer space allocated in L7_Setup.
-    */
-   
-   switch (l7_datatype){
-      case L7_CHAR:
-         pchardata_buffer = (char *)data_buffer;
-         pcharsend_buffer = (char *)l7.send_buffer;
-         
-         offset = 0;
-         start_index = 0;
-         
-         num_sends = l7_id_db->num_sends;
-         
-         for (i=0; i<num_sends; i++){
-            /* Load data to be sent. */
-            
-            send_count = l7_id_db->send_counts[i];
-            for (j=0; j<send_count; j++){
-               pcharsend_buffer[offset] =
-                  pchardata_buffer[l7_id_db->indices_local_to_send[offset]];
-               offset++;
-            }
-            msg_bytes = l7_id_db->send_counts[i] * sizeof_type;
-            
-#if defined _L7_DEBUG
-            printf("[pe %d] Send pisend_buffer[%d], len=%d ints to %d \n",
-                  l7.penum, offset, l7_id_db->send_counts[i], l7_id_db->send_to[i] );
-#endif
-            
-            ierr = MPI_Isend(&pcharsend_buffer[start_index], msg_bytes, MPI_BYTE,
-                  l7_id_db->send_to[i], l7_id_db->this_tag_update,
-                  MPI_COMM_WORLD, &l7_id_db->mpi_request[num_outstanding_reqs++] );
-            L7_ASSERT(ierr == MPI_SUCCESS, "MPI_Isend failure", ierr);
-            
-            start_index += send_count;
-         }
-         break;
-      case L7_SHORT:
-         pshortdata_buffer = (short *)data_buffer;
-         pshortsend_buffer = (short *)l7.send_buffer;
-         
-         offset = 0;
-         start_index = 0;
-         
-         num_sends = l7_id_db->num_sends;
-         
-         for (i=0; i<num_sends; i++){
-            /* Load data to be sent. */
-            
-            send_count = l7_id_db->send_counts[i];
-            for (j=0; j<send_count; j++){
-               pshortsend_buffer[offset] =
-                  pshortdata_buffer[l7_id_db->indices_local_to_send[offset]];
-               offset++;
-            }
-            msg_bytes = l7_id_db->send_counts[i] * sizeof_type;
-            
-#if defined _L7_DEBUG
-            printf("[pe %d] Send pisend_buffer[%d], len=%d ints to %d \n",
-                  l7.penum, offset, l7_id_db->send_counts[i], l7_id_db->send_to[i] );
-#endif
-            
-            ierr = MPI_Isend(&pshortsend_buffer[start_index], msg_bytes, MPI_BYTE,
-                  l7_id_db->send_to[i], l7_id_db->this_tag_update,
-                  MPI_COMM_WORLD, &l7_id_db->mpi_request[num_outstanding_reqs++] );
-            L7_ASSERT(ierr == MPI_SUCCESS, "MPI_Isend failure", ierr);
-            
-            start_index += send_count;
-         }
-         break;
-      case L7_INTEGER4:
-      case L7_INT:
-      case L7_LOGICAL:
-         pintdata_buffer = (int *)data_buffer;
-         pintsend_buffer = (int *)l7.send_buffer;
-         
-         offset = 0;
-         start_index = 0;
-         
-         num_sends = l7_id_db->num_sends;
-         
-         for (i=0; i<num_sends; i++){
-            /* Load data to be sent. */
-            
-            send_count = l7_id_db->send_counts[i];
-            for (j=0; j<send_count; j++){
-               pintsend_buffer[offset] =
-                  pintdata_buffer[l7_id_db->indices_local_to_send[offset]];
-               offset++;
-            }
-            msg_bytes = l7_id_db->send_counts[i] * sizeof_type;
-            
-#if defined _L7_DEBUG
-            printf("[pe %d] Send pisend_buffer[%d], len=%d ints to %d \n",
-                  l7.penum, offset, l7_id_db->send_counts[i], l7_id_db->send_to[i] );
-#endif
-            
-            ierr = MPI_Isend(&pintsend_buffer[start_index], msg_bytes, MPI_BYTE,
-                  l7_id_db->send_to[i], l7_id_db->this_tag_update,
-                  MPI_COMM_WORLD, &l7_id_db->mpi_request[num_outstanding_reqs++] );
-            L7_ASSERT(ierr == MPI_SUCCESS, "MPI_Isend failure", ierr);
-            
-            start_index += send_count;
-         }
-         break;
-      case L7_INTEGER8:
-      case L7_LONG_LONG_INT:
-         plongdata_buffer = (long long *)data_buffer;
-         plongsend_buffer = (long long *)l7.send_buffer;
-         
-         offset = 0;
-         start_index = 0;
-         
-         num_sends = l7_id_db->num_sends;
-         
-         for (i=0; i<num_sends; i++){
-            /* Load data to be sent. */
-            
-            send_count = l7_id_db->send_counts[i];
-            for (j=0; j<send_count; j++){
-               plongsend_buffer[offset] =
-                  plongdata_buffer[l7_id_db->indices_local_to_send[offset]];
-               offset++;
-            }
-            msg_bytes = l7_id_db->send_counts[i] * sizeof_type;
-            
-#if defined _L7_DEBUG
-            printf("[pe %d] Send pisend_buffer[%d], len=%d longs to %d \n",
-                  l7.penum, offset, l7_id_db->send_counts[i], l7_id_db->send_to[i] );
-#endif
-            
-            ierr = MPI_Isend(&plongsend_buffer[start_index], msg_bytes, MPI_BYTE,
-                  l7_id_db->send_to[i], l7_id_db->this_tag_update,
-                  MPI_COMM_WORLD, &l7_id_db->mpi_request[num_outstanding_reqs++] );
-            L7_ASSERT(ierr == MPI_SUCCESS, "MPI_Isend failure", ierr);
-            
-            start_index += send_count;
-         }
-         break;
-      case L7_REAL4:
-      case L7_FLOAT:
-         pfloatdata_buffer = (float *)data_buffer;
-         pfloatsend_buffer = (float *)l7.send_buffer;
-         
-         offset = 0;
-         start_index = 0;
-         
-         num_sends = l7_id_db->num_sends;
-         
-         for (i=0; i<num_sends; i++){
-            /* Load data to be sent. */
-            
-            send_count = l7_id_db->send_counts[i];
-            for (j=0; j<send_count; j++){
-               pfloatsend_buffer[offset] =
-                  pfloatdata_buffer[l7_id_db->indices_local_to_send[offset]];
-               offset++;
-            }
-            msg_bytes = l7_id_db->send_counts[i] * sizeof_type;
-            
-#if defined _L7_DEBUG
-            printf("[pe %d] Send pisend_buffer[%d], len=%d floats to %d \n",
-                  l7.penum, offset, l7_id_db->send_counts[i], l7_id_db->send_to[i] );
-#endif
-            
-            ierr = MPI_Isend(&pfloatsend_buffer[start_index], msg_bytes, MPI_BYTE,
-                  l7_id_db->send_to[i], l7_id_db->this_tag_update,
-                  MPI_COMM_WORLD, &l7_id_db->mpi_request[num_outstanding_reqs++] );
-            L7_ASSERT(ierr == MPI_SUCCESS, "MPI_Isend failure", ierr);
-            
-            start_index += send_count;
-         }
-         break;
-      case L7_REAL8:
-      case L7_DOUBLE:
-         pdoubledata_buffer = (double *)data_buffer;
-         pdoublesend_buffer = (double *)l7.send_buffer;
-         
-         offset = 0;
-         start_index = 0;
-         
-         num_sends = l7_id_db->num_sends;
-         
-         for (i=0; i<num_sends; i++){
-            /* Load data to be sent. */
-            
-            send_count = l7_id_db->send_counts[i];
-            for (j=0; j<send_count; j++){
-               pdoublesend_buffer[offset] =
-                  pdoubledata_buffer[l7_id_db->indices_local_to_send[offset]];
-               offset++;
-            }
-            msg_bytes = l7_id_db->send_counts[i] * sizeof_type;
-            
-#if defined _L7_DEBUG
-            printf("[pe %d] Send pisend_buffer[%d], len=%d doubles to %d \n",
-                  l7.penum, offset, l7_id_db->send_counts[i], l7_id_db->send_to[i] );
-#endif
-            
-            ierr = MPI_Isend(&pdoublesend_buffer[start_index], msg_bytes, MPI_BYTE,
-                  l7_id_db->send_to[i], l7_id_db->this_tag_update,
-                  MPI_COMM_WORLD, &l7_id_db->mpi_request[num_outstanding_reqs++] );
-            L7_ASSERT(ierr == MPI_SUCCESS, "MPI_Isend failure", ierr);
-            
-            start_index += send_count;
-         }
-         break;
-      default:
-         ierr = -1;
-         L7_ASSERT(ierr == 0, "Unknown datatype", ierr);
-         break;
-   } /* End switch ( l7_datatype ) for sending data */
-   
-   /*
-    * Complete all message passing
-    */
-   
-#if defined _L7_DEBUG
-   fflush(stdout);
-   
-   ierr = MPI_Barrier(MPI_COMM_WORLD);
-   L7_ASSERT(ierr == MPI_SUCCESS, "MPI_Barrier failure", ierr);
-   
-   for (i=0; i<l7_id_db->numpes; i++){
-      if (l7.penum == i){
-         printf("-----------------------------------------------------\n");
-         printf("Comm for pe %d: num_outstanding_reqs = %d \n",
-               l7.penum, num_outstanding_reqs);
-         for (j=0; j<l7_id_db->num_sends; j++){
-            printf("[pe %d] Send to pe %d. \n", l7.penum, l7_id_db->send_to[j] );
-         }
-         offset = l7_id_db->num_indices_owned;
-         num_recvs = l7_id_db->num_recvs;
-      
-         for (j=0; j<num_recvs; j++){
-            printf("[pe %d] Recving rom pe %d. \n",l7.penum, l7_id_db->recv_from[j] );
-            if (l7_datatype == L7_INT){
-               printf("[pe %d] Recv complete: pintdata_buffer[%d]=%d; len=%d bytes, from %d \n",
-                     l7.penum, offset, (int)pintdata_buffer[offset], msg_bytes,
-                     l7_id_db->recv_from[j] );
-               offset += l7_id_db->recv_counts[j];
-            }
-         }
-         printf("-----------------------------------------------------\n");
-         fflush(stdout);
-      }
-      sleep(1);
+
+   for (int i = 0; i < l7_id_db->num_recvs; i++) {
+       printf("[pe %d]    recv %d count %d offset %ld ",
+	     l7.penum, i, l7_id_db->nbr_state.mpi_recv_counts[i], l7_id_db->nbr_state.mpi_recv_offsets[i]);
+       printf("\n");
    }
+
 #endif /* _L7_DEBUG */
    
-   if (num_outstanding_reqs > 0){
-      ierr = MPI_Waitall(num_outstanding_reqs,
-            l7_id_db->mpi_request, l7_id_db->mpi_status );
-      L7_ASSERT(ierr == MPI_SUCCESS, "MPI_Waitall failure", ierr);
-   }
-   
-   num_outstanding_reqs = 0;
-   
-   /*
-    * Message tag management
-    */
-   
-   l7_id_db->this_tag_update++;
-   
-   if (l7_id_db->this_tag_update > L7_UPDATE_TAGS_MAX)
-      l7_id_db->this_tag_update = L7_UPDATE_TAGS_MIN;
+   /* Now that everything is all set up, neighbor_alltoallw does all of
+    * the work (and data movement optimization) */
+   ierr = MPI_Neighbor_alltoallw((void *)data_buffer, 
+			  l7_id_db->nbr_state.mpi_send_counts,
+			  (MPI_Aint *)l7_id_db->nbr_state.mpi_send_offsets, 
+			  update_datatype->out_types, 
+			  (void *)data_buffer, 
+			  l7_id_db->nbr_state.mpi_recv_counts, 
+			  (MPI_Aint *)l7_id_db->nbr_state.mpi_recv_offsets, 
+			  update_datatype->in_types, 
+			  l7_id_db->nbr_state.comm);
    
 #endif /* HAVE_MPI */
    

@@ -102,7 +102,7 @@ set(C_SRCS
       l7_free.c         l7p_set_database.c  l7_setup.c       l7_push_setup.c
       l7_push_update.c  l7_push_free.c      l7_dev_update.c  l7_dev_setup.c
       l7_dev_free.c     l7_utils.c          l7_reduction.c   l7_broadcast.c
-      l7p_mpi_type.c
+      l7p_mpi_type.c	l7p_update_type.c   l7p_push_type.c  l7p_nbr_state.c
 )
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})

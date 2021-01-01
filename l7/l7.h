@@ -44,7 +44,7 @@
 #include "ezcl/ezcl.h"
 #endif
 
-//#define _L7_DEBUG
+// #define _L7_DEBUG
 
 #ifdef __cplusplus
 extern "C"
@@ -308,6 +308,7 @@ int L7_Gather(
 		const enum L7_Datatype  l7_datatype,
 		const int               root_pe
 		);
+
 
 int L7_Allgather(
 		void                    *local_buffer,

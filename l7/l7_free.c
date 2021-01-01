@@ -38,15 +38,17 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  */  
-#include <stdlib.h>
 #include "l7.h"
 #include "l7p.h"
 
+#include <stdlib.h>
+
 #define L7_LOCATION "L7_FREE"
+//#define _L7_DEBUG
 
 int L7_Free(
-      const int *l7_id
-      )
+            const int *l7_id
+      		)
 {
    /*
     * Purpose
@@ -130,7 +132,12 @@ int L7_Free(
    /*
     * Free all data associated with this id.
     */
-   
+   l7p_nbr_state_free(&l7_db->nbr_state);
+   L7P_Update_Type_Free(l7_db, &l7_db->nbr_state.update_datatypes[1]);
+   L7P_Update_Type_Free(l7_db, &l7_db->nbr_state.update_datatypes[2]);
+   L7P_Update_Type_Free(l7_db, &l7_db->nbr_state.update_datatypes[4]);
+   L7P_Update_Type_Free(l7_db, &l7_db->nbr_state.update_datatypes[8]);  
+
    if (l7_db->indices_needed)
       free(l7_db->indices_needed);
    
@@ -233,5 +240,3 @@ void L7_FREE(
    L7_Free(l7_id);
    *ierr = 0;
 }
-
-
