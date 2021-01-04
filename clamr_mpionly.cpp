@@ -522,13 +522,13 @@ extern "C" void do_calc(void)
          {
 #endif
       //cpu_timer_start(&tstart_check);
-            mesh->proc.resize(ncells);
-            if (icount)
-            {  vector<int> index(ncells);
-               mesh->partition_cells(numpe, index, cycle_reorder);
-               state->state_reorder(index);
-               state->memory_reset_ptrs();
-            }
+      //      mesh->proc.resize(ncells);
+      //      if (icount)
+      //      {  vector<int> index(ncells);
+      //         mesh->partition_cells(numpe, index, cycle_reorder);
+      //         state->state_reorder(index);
+      //         state->memory_reset_ptrs();
+      //      }
       //cpu_time_check += cpu_timer_stop(tstart_check);
 #ifdef _OPENMP
          }

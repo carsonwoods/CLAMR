@@ -1335,6 +1335,19 @@ void State::calc_finite_difference(double deltaT)
 
    //printf("\nDEBUG finite diff\n"); 
 
+   struct timespec tstart_cpu;
+   struct timespec tstart_cpu_part;
+
+#ifdef _OPENMP
+#pragma omp master
+   {
+#endif
+      cpu_timer_start(&tstart_cpu);
+      cpu_timer_start(&tstart_cpu_part);
+#ifdef _OPENMP
+   }
+#endif
+
    // We need to populate the ghost regions since the calc neighbors has just been
    // established for the mesh shortly before
    apply_boundary_conditions();
@@ -1368,13 +1381,14 @@ void State::calc_finite_difference(double deltaT)
 #ifdef PRECISION_CHECK_GRAPHICS
       PCHECK_new = (state_t *)state_memory.memory_malloc(mesh->ncells_ghost, sizeof(state_t), "PCHECK_new", flags);
 #endif
+
+      cpu_timers[STATE_TIMER_FINITE_DIFFERENCE_PART1] += cpu_timer_stop(tstart_cpu_part);
+      cpu_timer_start(&tstart_cpu_part);
+
    }
 #ifdef _OPENMP
 #pragma omp barrier
 #endif
-
-   struct timespec tstart_cpu;
-   cpu_timer_start(&tstart_cpu);
 
    int lowerBound, upperBound;
    mesh->get_bounds(lowerBound, upperBound);
@@ -1846,6 +1860,16 @@ void State::calc_finite_difference(double deltaT)
 
    } // cell loop
 
+#ifdef _OPENMP
+   {
+#pragma omp barrier
+#endif
+      cpu_timers[STATE_TIMER_FINITE_DIFFERENCE_PART2] += cpu_timer_stop(tstart_cpu_part);
+      cpu_timer_start(&tstart_cpu_part);
+#ifdef _OPENMP
+   }
+#endif
+
 #ifdef PRECISION_CHECK_STATS
    fail_F_plus_sum    /= (double)fail_prec_count;
    fail_F_minus_sum   /= (double)fail_prec_count;
@@ -1901,6 +1925,8 @@ void State::calc_finite_difference(double deltaT)
 
       //state_memory.memory_report();
       //printf("DEBUG end finite diff\n\n"); 
+
+      cpu_timers[STATE_TIMER_FINITE_DIFFERENCE_PART3] += cpu_timer_stop(tstart_cpu_part);
 
       cpu_timers[STATE_TIMER_FINITE_DIFFERENCE] += cpu_timer_stop(tstart_cpu);
 #ifdef _OPENMP
