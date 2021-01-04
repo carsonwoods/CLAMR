@@ -43,7 +43,7 @@
 #include "l7p.h"
 
 #define L7_LOCATION "L7_DEV_UPDATE"
-#define _L7_DEBUG
+// #define _L7_DEBUG
 
 #ifdef HAVE_OPENCL
 int L7_Dev_Update(

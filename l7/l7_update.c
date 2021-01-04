@@ -44,7 +44,7 @@
 #include <stdlib.h>
 
 #define L7_LOCATION "L7_UPDATE"
-#define _L7_DEBUG
+// #define _L7_DEBUG
 
 int L7_Update(
       void                   *data_buffer,
