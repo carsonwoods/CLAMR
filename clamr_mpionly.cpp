@@ -521,6 +521,14 @@ extern "C" void do_calc(void)
 #pragma omp master
          {
 #endif
+      // Commented out because it's broken for non-trivial numbers of 
+      // MPI ranks, but this basically removes load balancing of the mesh.
+      // For large numbers of processes, this leads to large load imbalances 
+      // that show up as large amounts of time spent in the mesh code neighbor
+      // finding (basically processes waiting in the first allgather in 
+      // L7_Setup). This needs to be fixed to get realistic performance 
+      // evaluations.
+      // 
       //cpu_timer_start(&tstart_check);
       //      mesh->proc.resize(ncells);
       //      if (icount)
