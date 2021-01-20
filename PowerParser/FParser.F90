@@ -1363,7 +1363,7 @@
  
  
       ! 5d arrays.
-      call get_size4(cmd_array, size1, size2, size3, size4, size5, len(cmdname))
+      call get_size5(cmd_array, size1, size2, size3, size4, size5, len(cmdname))
  
     end subroutine FParser_size_5
  
