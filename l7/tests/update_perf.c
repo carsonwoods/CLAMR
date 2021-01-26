@@ -89,7 +89,8 @@ int main(int argc, char *argv[])
    int num_indices_per_pe = 1<<20;
    int num_iterations = 100;
    int num_updates_per_cycle = 2;
-   
+   int stride = 0;
+
    ierr = L7_Init(&penum, &numpes, &argc, argv, 0, 0);
 
    if (penum == 0)
@@ -102,7 +103,7 @@ int main(int argc, char *argv[])
    num_indices_owned = num_indices_per_pe;
    my_start_index = penum * num_indices_owned;
    
-   if (numpes > 16) {
+   if (numpes > 4) {
       max_num_partners = (int)sqrt( (double)numpes);
    }
    else {
@@ -169,7 +170,7 @@ int main(int argc, char *argv[])
       for (j=0; j<num_indices_per_partner; j++){
          needed_indices[num_indices_offpe] = inum;
          num_indices_offpe++;
-         inum+=2;
+         inum+=(1+stride);
       }
    }
    

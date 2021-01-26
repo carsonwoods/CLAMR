@@ -116,11 +116,11 @@ int main(int argc, char *argv[])
    int num_indices_per_pe = 1<<20;
    int num_iterations = 100;
    int num_updates_per_cycle = 2;
-   
+   int stride = 0;
+
    ierr = L7_Init(&penum, &numpes, &argc, argv, 0, 0);
 
-   if (penum == 0)
-      printf("\n\t\tRunning the CUDA Update test\n\n");
+   if (penum == 0) printf("Running the CUDA Update test\n");
    
    num_updates = num_iterations * num_updates_per_cycle;
  
@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
    num_indices_owned = num_indices_per_pe;
    my_start_index = penum * num_indices_owned;
    
-   if (numpes > 16) {
+   if (numpes > 4) {
       max_num_partners = (int)sqrt( (double)numpes);
    }
    else {
@@ -196,14 +196,15 @@ int main(int argc, char *argv[])
       for (j=0; j<num_indices_per_partner; j++){
          needed_indices[num_indices_offpe] = inum;
          num_indices_offpe++;
-         inum+=2;
+         inum+=(1+stride);
       }
    }
    
    /*
     * Allocate data arrays on device and wait for initialization to complete
     */
-   unsigned long data_size = num_indices_owned + num_indices_offpe;
+   unsigned long data_size;
+   data_size = num_indices_owned + num_indices_offpe;
    cudaMalloc(&idata, sizeof(int) * data_size);
    cudaMalloc(&rdata, sizeof(double) * data_size);
 
@@ -232,6 +233,8 @@ int main(int argc, char *argv[])
 
    time_start=L7_Wtime();
    
+   if (penum == 0) printf("Calling L7_Setup\n");
+
    /*
     * Register decomposition with L7
     */
@@ -246,6 +249,8 @@ int main(int argc, char *argv[])
     */
    gtime = 1;
    for (i=1; i<=num_iterations; i++){
+
+      if (penum == 0) printf("Running iteration %d\n", i);
 
       time_start = L7_Wtime();
       
@@ -267,6 +272,10 @@ int main(int argc, char *argv[])
    /*
     * Report results
     */
+   if (penum == 0) printf("Reporting Results\n");
+
+   //goto end;
+
    count_updated_pe = num_indices_offpe;
    num_timings_cycle = num_updates_per_cycle;
    num_timings = num_updates +1;
@@ -275,6 +284,7 @@ int main(int argc, char *argv[])
    report_results_update(penum, time_total_pe, count_updated_pe, 
       		         num_timings, num_timings_cycle);
 
+   if (penum == 0) printf("Shutting Down\n");
    free(time_total_pe);
    free(partner_pe);
    free(needed_indices);

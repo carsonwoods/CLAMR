@@ -1,0 +1,22 @@
+#!/bin/bash
+#BSUB -W 00:30
+#BSUB -q pdebug
+#BSUB -J l7-update-gpu
+#BSUB -nnodes 4
+
+SCRIPT=nbr
+LSB_NNODES=4
+LSB_NTASKS=$(echo "${LSB_NNODES} * 4" | bc)
+DIR=/p/gpfs1/bridges7/${LSB_JOBNAME}/${LSB_NNODES}
+
+echo "Setting up ${LSB_JOBNAME} on ${LSB_NNODES} nodes (${LSB_NTASKS} ranks)"
+
+mkdir -p ${DIR}
+rm -f ${DIR}/clamr_mpionly
+cp ${HOME}/CLAMR/build-lassen-${SCRIPT}/cuda_update_perf ${DIR}/cuda_update_perf
+
+echo "Running ${LSB_JOBNAME}"
+cd ${DIR}
+
+lrun -M "-gpu" -N ${LSB_NNODES} -T 4 ./cuda_update_perf > ${LSB_JOBNAME}-${LSB_NNODES}.out
+echo "Finished MPI Run"
