@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.1.3)
 
-project (CLAMR CXX C)
+project (CLAMR CXX C CUDA)
 # The version number.
 set (CLAMR_VERSION_MAJOR 2)
 set (CLAMR_VERSION_MINOR 0.7)
@@ -569,6 +569,48 @@ if(KOKKOS_ENABLE)
       #endif (EXISTS "${CMAKE_SOURCE_DIR}/kokkos" AND IS_DIRECTORY "${CMAKE_SOURCE_DIR}/kokkos")
 endif(KOKKOS_ENABLE)
 
+########### l7_update_perf target ###############
+add_executable(l7_update_perf l7_update_perf.c l7_update_host.c)
+
+#include(CheckLanguage)
+#heck_language(CUDA)
+
+# Add source files we need for different accelerators
+if(CMAKE_CUDA_COMPILER)
+   message("Compiling l7_update_perf with CUDA accelerator support")
+   target_sources(l7_update_perf PRIVATE l7_update_cuda.cu)
+   set_property(TARGET l7_update_perf PROPERTY CUDA_ARCHITECTURES 70)
+   set_target_properties(l7_update_perf PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+   set_target_properties(l7_update_perf PROPERTIES COMPILE_DEFINITIONS HAVE_CUDA)
+ endif(CMAKE_CUDA_COMPILER)
+
+if(OpenCL_FOUND)
+   message("Compiling l7_update_perf with OpenCL accelerator support")
+   set_target_properties(l7_update_perf PROPERTIES COMPILE_DEFINITIONS HAVE_OPENCL)
+   target_sources(l7_update_perf PRIVATE l7_update_opencl.cu)
+   target_link_libraries(l7_update_perf ${OpenCL_LIBRARIES})
+endif(OpenCL_FOUND)
+
+if(OpenMP_FOUND)
+   # We have to set this since its not cached otherwise.
+   set(OpenMP_C_VERSION ${OpenMP_C_VERSION} CACHE STRING "OpenMP C version")
+
+   if(OpenMP_C_VERSION VERSION_GREATER_EQUAL "4.5") 
+      message("Compiling l7_update_perf with OpenMP accelerator support")
+      target_sources(l7_update_perf PRIVATE l7_update_openmp.c)
+      target_link_libraries(l7_update_perf PRIVATE OpenMP::OpenMP_C)
+   else (OpenMP_C_VERSION VERSION_GREATER_EQUAL "4.5")
+      message("l7_update_perf not using OpenMP accelerator support (VERSION=${OpenMP_C_VERSION})")
+   endif(OpenMP_C_VERSION VERSION_GREATER_EQUAL "4.5")
+endif(OpenMP_FOUND)
+
+if(OpenCL_FOUND)
+   target_link_libraries(l7_update_perf PRIVATE dl7)
+elseif (OpenMP_FOUND)
+   target_link_libraries(l7_update_perf PRIVATE mpl7)
+else(OpenCL_FOUND)
+   target_link_libraries(l7_update_perf PRIVATE l7)
+endif(OpenCL_FOUND)
 ########### drawit target ###############
 
 add_executable(drawit drawit.cpp)

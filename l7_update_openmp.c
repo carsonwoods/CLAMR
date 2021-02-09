@@ -4,24 +4,23 @@
 
 #include <omp.h>
 
-static void *data;
-
-void initialize_data_host(void **odata, int nowned, int nremote, int typesize, int my_start_index)
+void initialize_data_openmp(void **odata, int nowned, int nremote, int typesize, int my_start_index)
 {
-   datalen = nowned + nremote;
    int i;
+   int datalen = nowned + nremote;
+   int h = omp_get_initial_device(); // host
+   int t = omp_get_default_device(); // target device
 
-   /* Allocate the data and use an OMP pragma to get it onto the device */
-   *data = calloc( typesize, nowned + nremote);
-   #pragma omp target enter data map(alloc:data[0:datalen])
+   void *data = omp_target_alloc(datalen * typesize, t);
 
    if (!data) {
-      fprintf(stderr, "Could not allocate %d elements of size %d in host memory space.\n", 
+      fprintf(stderr, "Could not allocate %d elements of size %d in openmp memory space.\n", 
               nowned + nremote, typesize);
       exit(-1);
    }
 
-   #pragma omp target for
+   #pragma omp target is_device_ptr(data) device(t)
+   #pragma omp teams distribute parallel for
    for (i = 0; i < nowned; i++) {
       switch(typesize) {
       case 1:
@@ -36,9 +35,6 @@ void initialize_data_host(void **odata, int nowned, int nremote, int typesize, i
       case 8:
          ((unsigned long *)data)[i] = my_start_index + 1;
          break;
-      default:
-         fprintf(stderr, "Unknown type of size %d.\n", typesize);
-         exit(-1);
       } 
    }
 

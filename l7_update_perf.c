@@ -1,5 +1,4 @@
-/* 
- * L7_Update_Perf - A performance test of the L7_Update Operation
+/* L7_Update_Perf - A performance test of the L7_Update Operation
  * from the L7 irregular communication library
  * 
  * Background: L7 provides the abstraction of a global linear index space,
@@ -33,12 +32,13 @@
  *
  * Default argument values:
  * 1. `typesize = 8` - We're moving around doubles
- * 2. `nowned = 2^30/typesize` - Each process has 1GB of data. 
+ * 2. `nowned = 2^28/typesize` - Each process has 256MB of data. Note that if this 
+ *    gets too large, we run the risk of running out of indexes. 
  * 3. `nneighbors = sqrt(numpes)` - Each process has a modest number of neighbors 
  *    that slowly increases as problem increases
- * 4. `nremote = nowned/128` - Each process needs to receive about 1% of the amount 
+ * 4. `nremote = nowned/64` - Each process needs to receive about 1% of the amount 
  *    of data it owns
- * 4. `blocksz = nowned/65536` - Data communicated is *mostly* contiguous, but 
+ * 4. `blocksz = nowned/16384` - Data communicated is *mostly* contiguous, but 
  *    there are gaps
  * 5. `stride = 16` - Gaps are small
  * 6. `memspace = MEMSPACE_HOST` - data being communicated is on the host
@@ -183,10 +183,14 @@ parse_arguments(int argc, char **argv)
    /* Now compute any unset values from the defaults */
    if (niterations < 0)
       niterations = 100;
+   if (nneighbors < 0)
+      nneighbors = sqrt(numpes);
    if (nowned < 0) 
-      nowned = (1<<30) / typesize;
+      nowned = (1<<28) / typesize;
    if (nremote < 0)
-      nremote = nowned / (1 << 17);
+      nremote = nowned/(1 << 6);
+   if (blocksz < 0)
+      blocksz = nowned/(1 << 15);
    if (stride < 0)
       stride = 16;
 
@@ -195,18 +199,16 @@ parse_arguments(int argc, char **argv)
 
 int double_compare(const void *va, const void *vb) 
 {
-    const double *a = va, *b = vb;
-    if (*a < *b) return -1;
-    if (*a > *b) return 1;
+    const double a = *(const double *)va, b = *(const double *)vb;
+    if (a < b) return -1;
+    if (a > b) return 1;
     return 0;
 }
 
 int int_compare(const void *va, const void *vb) 
 {
-    const int *a = va, *b = vb;
-    if (*a < *b) return -1;
-    if (*a > *b) return 1;
-    return 0;
+    const int a = *(const int *)va, b = *(const int *)vb;
+    return a - b;
 }
 
 enum  L7_Datatype typesize_to_l7type(int type_size)
@@ -273,11 +275,11 @@ report_results_update(int penum, double *time_total_pe, int count_updated_pe, in
                         + bandwidth_global[num_timings/2 - 1]) / 2;
       } 
       /* Print results */
-      printf("nPEs \tType \tnOwned \tnRemote \tBlockSz \tStride \tnIter");
-      printf("\tL(avg)\t(min)\t(med)\t(max)\tB(avg)\t(min)\t(med)\t(max)\n");
+      printf("nPEs\tMem\tType\tnOwned\t\tnRemote\tBlockSz\tStride\tnIter");
+      printf("\tLat(avg/min/med/max)\t\t\tBW(avg/min/med/max)\n");
       printf("%d,\t%d,\t%d,\t%d,\t%d,\t%d,\t%d,\t%d,",
 	     numpes, memspace, typesize, nowned, nremote, blocksz, stride, num_timings);
-      printf("\t%f,\t%f,\t%f,\t%f,\t%f,\t%f,\t%f,\t%f\n",
+      printf("\t%f/%f/%f/%f,\t%f/%f/%f/%f\n",
              latency_mean, time_total_global[0], latency_med, time_total_global[num_timings-1],
              bandwidth_mean, bandwidth_global[0], bandwidth_med, bandwidth_global[num_timings-1]);
       free(bandwidth_global);
@@ -345,6 +347,7 @@ int main(int argc, char *argv[])
       partner_pe[offset] = partner;
       offset++;
    }
+
    /* Note that neighbors need to be an ascending order. We do this by sorting 
     * our list of neigbors after computing it */
    qsort(partner_pe, nneighbors, sizeof(int), int_compare);
@@ -369,7 +372,7 @@ int main(int argc, char *argv[])
       for (j=0, k = 0; j<num_indices_per_partner; j++, k++) {
          /* Detect end of block */
          if (k >= blocksz) {
-            inum += stride;
+            inum += (1 + stride);
             k = 0;
          } else {
             inum++;
