@@ -804,54 +804,9 @@ void State::apply_boundary_conditions(void)
    int *nbot = mesh->nbot;
    int *ntop = mesh->ntop;
 
-#ifdef _OPENMP
-#pragma omp master
-   {
-#endif
-   if (mesh->ncells_ghost < mesh->ncells) mesh->ncells_ghost = mesh->ncells;
-#ifdef _OPENMP
-      }    
-#pragma omp barrier
-#endif
 
    // This is for a mesh with boundary cells
-   int lowerBound, upperBound;
-   mesh->get_bounds(lowerBound, upperBound);
-
-   for (int ic=lowerBound; ic<upperBound; ic++) {
-      if (mesh->is_left_boundary(ic)) {
-         int nr = nrht[ic];
-         if (nr < (int)mesh->ncells) {
-            H[ic] =  H[nr];
-            U[ic] = -U[nr];
-            V[ic] =  V[nr];
-         }
-      }
-      if (mesh->is_right_boundary(ic))  {
-         int nl = nlft[ic];
-         if (nl < (int)mesh->ncells) {
-            H[ic] =  H[nl];
-            U[ic] = -U[nl];
-            V[ic] =  V[nl];
-         }
-      }
-      if (mesh->is_bottom_boundary(ic)) {
-         int nt = ntop[ic];
-         if (nt < (int)mesh->ncells) {
-            H[ic] =  H[nt];
-            U[ic] =  U[nt];
-            V[ic] = -V[nt];
-         }
-      }
-      if (mesh->is_top_boundary(ic)) {
-         int nb = nbot[ic];
-         if (nb < (int)mesh->ncells) {
-            H[ic] =  H[nb];
-            U[ic] =  U[nb];
-            V[ic] = -V[nb];
-         }
-      }
-   }
+   int lowerBound, upperBound, ncells_max;
 
    if (mesh->numpe > 1) {
 
@@ -876,42 +831,52 @@ void State::apply_boundary_conditions(void)
 
 #endif
 
-      // This is for a mesh with boundary cells
-      for (int ic=lowerBound; ic<upperBound; ic++) {
-         if (mesh->is_left_boundary(ic)) {
-            int nr = nrht[ic];
-            if (nr >= (int)mesh->ncells) {
-               H[ic] =  H[nr];
-               U[ic] = -U[nr];
-               V[ic] =  V[nr];
-            }
+      lowerBound=0;
+      upperBound=mesh->ncells_ghost;
+#ifdef _OPENMP
+      if (omp_get_thread_num() != 0) upperBound=0;
+#endif
+      ncells_max = mesh->ncells_ghost;
+   } else {
+      mesh->get_bounds(lowerBound, upperBound);
+      ncells_max = mesh->ncells;
+   }
+
+   for (int ic=lowerBound; ic<upperBound; ic++) {
+      if (mesh->is_left_boundary(ic)) {
+         int nr = nrht[ic];
+         if (nr >= 0 && nr < ncells_max) {
+            H[ic] =  H[nr];
+            U[ic] = -U[nr];
+            V[ic] =  V[nr];
          }
-         if (mesh->is_right_boundary(ic))  {
-            int nl = nlft[ic];
-            if (nl >= (int)mesh->ncells) {
-               H[ic] =  H[nl];
-               U[ic] = -U[nl];
-               V[ic] =  V[nl];
-            }
+      }
+      if (mesh->is_right_boundary(ic))  {
+         int nl = nlft[ic];
+         if (nl >= 0 && nl < ncells_max) {
+            H[ic] =  H[nl];
+            U[ic] = -U[nl];
+            V[ic] =  V[nl];
          }
-         if (mesh->is_bottom_boundary(ic)) {
-            int nt = ntop[ic];
-            if (nt >= (int)mesh->ncells) {
-               H[ic] =  H[nt];
-               U[ic] =  U[nt];
-               V[ic] = -V[nt];
-            }
+      }
+      if (mesh->is_bottom_boundary(ic)) {
+         int nt = ntop[ic];
+         if (nt >= 0 && nt < ncells_max) {
+            H[ic] =  H[nt];
+            U[ic] =  U[nt];
+            V[ic] = -V[nt];
          }
-         if (mesh->is_top_boundary(ic)) {
-            int nb = nbot[ic];
-            if (nb >= (int)mesh->ncells) {
-               H[ic] =  H[nb];
-               U[ic] =  U[nb];
-               V[ic] = -V[nb];
-            }
+      }
+      if (mesh->is_top_boundary(ic)) {
+         int nb = nbot[ic];
+         if (nb >= 0 && nb < ncells_max) {
+            H[ic] =  H[nb];
+            U[ic] =  U[nb];
+            V[ic] = -V[nb];
          }
       }
    }
+
 }
 
 void State::remove_boundary_cells(void)
@@ -1442,9 +1407,13 @@ void State::calc_finite_difference(double deltaT)
       real_t Vb      = V[nb];
 
       int nlt     = ntop[nl];
+      if (mesh->celltype[gix] == BOTTOM_BOUNDARY && lvl < level[nl]) nlt = nl;
       int nrt     = ntop[nr];
+      if (mesh->celltype[gix] == BOTTOM_BOUNDARY && lvl < level[nr]) nrt = nr;
       int ntr     = nrht[nt];
+      if (mesh->celltype[gix] == LEFT_BOUNDARY   && lvl < level[nt]) ntr = nt;
       int nbr     = nrht[nb];
+      if (mesh->celltype[gix] == LEFT_BOUNDARY   && lvl < level[nb]) nbr = nb;
 
       real_t Hll     = H[nll];
       real_t Ull     = U[nll];
@@ -1478,53 +1447,53 @@ void State::calc_finite_difference(double deltaT)
 
       real_t dric    = dxic;
 
-      int nltl = 0;
+      int nltl = -1;
       real_t Hlt = 0.0, Ult = 0.0, Vlt = 0.0;
       real_t Hll2 = 0.0;
       real_t Ull2 = 0.0;
       if(lvl < level[nl]) {
-         Hlt  = H[ ntop[nl] ];
-         Ult  = U[ ntop[nl] ];
-         Vlt  = V[ ntop[nl] ];
+         Hlt  = H[nlt];
+         Ult  = U[nlt];
+         Vlt  = V[nlt];
          nltl = nlft[nlt];
          Hll2 = H[nltl];
          Ull2 = U[nltl];
       }
 
-      int nrtr = 0;
+      int nrtr = -1;
       real_t Hrt = 0.0, Urt = 0.0, Vrt = 0.0;
       real_t Hrr2 = 0.0;
       real_t Urr2 = 0.0;
       if(lvl < level[nr]) {
-         Hrt  = H[ ntop[nr] ];
-         Urt  = U[ ntop[nr] ];
-         Vrt  = V[ ntop[nr] ];
+         Hrt  = H[nrt];
+         Urt  = U[nrt];
+         Vrt  = V[nrt];
          nrtr = nrht[nrt];
          Hrr2 = H[nrtr];
          Urr2 = U[nrtr];
       }
 
-      int nbrb = 0;
+      int nbrb = -1;
       real_t Hbr = 0.0, Ubr = 0.0, Vbr = 0.0;
       real_t Hbb2 = 0.0;
       real_t Vbb2 = 0.0;
       if(lvl < level[nb]) {
-         Hbr  = H[ nrht[nb] ];
-         Ubr  = U[ nrht[nb] ];
-         Vbr  = V[ nrht[nb] ];
+         Hbr  = H[nbr];
+         Ubr  = U[nbr];
+         Vbr  = V[nbr];
          nbrb = nbot[nbr];
          Hbb2 = H[nbrb];
          Vbb2 = V[nbrb];
       }
 
-      int ntrt = 0;
+      int ntrt = -1;
       real_t Htr = 0.0, Utr = 0.0, Vtr = 0.0;
       real_t Htt2 = 0.0;
       real_t Vtt2 = 0.0;
       if(lvl < level[nt]) {
-         Htr  = H[ nrht[nt] ];
-         Utr  = U[ nrht[nt] ];
-         Vtr  = V[ nrht[nt] ];
+         Htr  = H[ntr];
+         Utr  = U[ntr];
+         Vtr  = V[ntr];
          ntrt = ntop[ntr];
          Htt2 = H[ntrt];
          Vtt2 = V[ntrt];
