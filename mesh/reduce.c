@@ -64,6 +64,22 @@
 #include "reduce_kernel.inc"
 #endif
 
+#ifdef HAVE_OPENCL
+/* Define the kernels declared in the header file */
+cl_kernel   kernel_reduce_sum,
+            kernel_reduce_sum_stage1of2,
+            kernel_reduce_sum_stage2of2,
+            kernel_reduce_sum_int_stage1of2,
+            kernel_reduce_sum_int_stage2of2,
+            kernel_reduce_product,
+            kernel_reduce_max,
+            kernel_reduce_max_stage1of2,
+            kernel_reduce_max_stage2of2,
+            kernel_reduce_min,
+            kernel_reduce_min_stage1of2,
+            kernel_reduce_min_stage2of2;
+#endif
+
 void init_kernels_reduce(void)
 {
 #ifdef HAVE_OPENCL

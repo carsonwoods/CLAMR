@@ -72,7 +72,7 @@ extern "C"
 #endif
 
 #ifdef HAVE_OPENCL
-cl_kernel   kernel_reduce_sum,
+extern cl_kernel   kernel_reduce_sum,
             kernel_reduce_sum_stage1of2,
             kernel_reduce_sum_stage2of2,
             kernel_reduce_sum_int_stage1of2,
