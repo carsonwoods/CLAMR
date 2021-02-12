@@ -55,7 +55,10 @@
 #include <mpi.h>
 
 #include "l7/l7.h"
+
+#ifdef HAVE_OPENCL
 #include "ezcl/ezcl.h"
+#endif
 
 extern void initialize_data_host(void **odata, int nowned, int nremote, int type_size, int start);
 #ifdef HAVE_CUDA
@@ -414,7 +417,7 @@ int main(int argc, char *argv[])
    case MEMSPACE_HOST:
       initialize_data_host(&data, nowned, nremote, typesize, my_start_index);
       break;
-#ifdef HAVE_CUDA
+#if defined(HAVE_CUDA) && defined(L7_CUDA_PERF)
    case MEMSPACE_CUDA:
       initialize_data_cuda(&data, nowned, nremote, typesize, my_start_index);
       break;
@@ -424,7 +427,7 @@ int main(int argc, char *argv[])
       initialize_data_opencl(&data, nowned, nremote, typesize, my_start_index);
       break;
 #endif
-#if defined(_OPENMP) && _OPENMP >= 201511
+#if defined(_OPENMP) && defined(L7_OPENMP_PERF) && _OPENMP >= 201511
    case MEMSPACE_OPENMP:
       initialize_data_openmp(&data, nowned, nremote, typesize, my_start_index);
       break;
