@@ -55,6 +55,7 @@
 #include <mpi.h>
 
 #include "l7/l7.h"
+#include "ezcl/ezcl.h"
 
 extern void initialize_data_host(void **odata, int nowned, int nremote, int type_size, int start);
 #ifdef HAVE_CUDA
@@ -315,6 +316,19 @@ int main(int argc, char *argv[])
    ierr = L7_Init(&penum, &numpes, &argc, argv, 0, 0);
    parse_arguments(argc, argv);
 
+#ifdef HAVE_OPENCL
+   ierr = ezcl_devtype_init(CL_DEVICE_TYPE_GPU);
+   if (ierr == EZCL_NODEVICE) {
+      ierr = ezcl_devtype_init(CL_DEVICE_TYPE_CPU);
+   }
+   if (ierr != EZCL_SUCCESS) {
+      printf("No opencl device available -- aborting\n");
+      exit(-1);
+   }
+
+   L7_Dev_Init();
+#endif
+
    time_total_pe = (double *)malloc(niterations * sizeof(double));
    my_start_index = penum * nowned;
    
@@ -432,7 +446,15 @@ int main(int argc, char *argv[])
    /*
     * Register decomposition with L7
     */
-   L7_Setup(0, my_start_index, nowned, needed_indices, nremote, &l7_id);
+#ifdef HAVE_OPENCL
+   /* L7 uses a different operation for the opencl setup. */
+   if (memspace == MEMSPACE_OPENCL) {
+      L7_Dev_Setup(0, my_start_index, nowned, needed_indices, nremote, &l7_id);
+   } else
+#endif
+   {
+      L7_Setup(0, my_start_index, nowned, needed_indices, nremote, &l7_id);
+   }
 
    /*
     * Begin updating data

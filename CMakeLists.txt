@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.1.3)
 
-project (CLAMR CXX C CUDA)
+project (CLAMR CXX C)
 # The version number.
 set (CLAMR_VERSION_MAJOR 2)
 set (CLAMR_VERSION_MINOR 0.7)
@@ -572,11 +572,9 @@ endif(KOKKOS_ENABLE)
 ########### l7_update_perf target ###############
 add_executable(l7_update_perf l7_update_perf.c l7_update_host.c)
 
-#include(CheckLanguage)
-#heck_language(CUDA)
-
 # Add source files we need for different acceleratorss
 if(L7_CUDA_PERF)
+   enable_language(CUDA)
    if(CMAKE_CUDA_COMPILER)
       message("Compiling l7_update_perf with CUDA accelerator support")
       target_sources(l7_update_perf PRIVATE l7_update_cuda.cu)
@@ -588,8 +586,16 @@ endif(L7_CUDA_PERF)
 
 if(OpenCL_FOUND)
    message("Compiling l7_update_perf with OpenCL accelerator support")
+   add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/l7_update_kern.inc
+                  COMMAND ${CMAKE_SOURCE_DIR}/embed_source.pl ${CMAKE_SOURCE_DIR}/l7_update_kern.cl > l7_update_kern.inc
+                  DEPENDS state_kern.cl ${CMAKE_SOURCE_DIR}/embed_source.pl)
+   add_custom_target(l7_update_kern_source ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/l7_update_kern.inc)
+
    set_target_properties(l7_update_perf PROPERTIES COMPILE_DEFINITIONS HAVE_OPENCL)
+
    target_sources(l7_update_perf PRIVATE l7_update_opencl.c)
+   add_custom_target(l7_update_opencl.c DEPENDS l7_update_kern_source)
+
    target_link_libraries(l7_update_perf PRIVATE ${OpenCL_LIBRARIES})
 endif(OpenCL_FOUND)
 
@@ -603,12 +609,16 @@ if(L7_OPENMP_PERF)
          target_sources(l7_update_perf PRIVATE l7_update_openmp.c)
          set_property(TARGET l7_update_perf PROPERTY CUDA_ARCHITECTURES 35 70)
          target_link_libraries(l7_update_perf PRIVATE OpenMP::OpenMP_C)
+         if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+            set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp -foffload=nvptx-none=-misa=sm_35")
+         endif ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
       else (OpenMP_C_VERSION VERSION_GREATER_EQUAL "4.5")
          message("l7_update_perf not using OpenMP accelerator support (VERSION=${OpenMP_C_VERSION})")
       endif(OpenMP_C_VERSION VERSION_GREATER_EQUAL "4.5")
    endif(OpenMP_FOUND)
 endif(L7_OPENMP_PERF)
 
+target_link_libraries(l7_update_perf PRIVATE m)
 if(OpenCL_FOUND)
    target_link_libraries(l7_update_perf PRIVATE dl7 ezcl)
 elseif (OpenMP_FOUND)
