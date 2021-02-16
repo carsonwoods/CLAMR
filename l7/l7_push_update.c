@@ -141,23 +141,15 @@ int L7_Push_Update(
       return(ierr);
    }
    
-   /*
-    * Set some parameters base on input datatype.
-    */
-
-   for (int ip = 0; ip < l7_push_id_db->num_comm_partners; ip++){
-      int count = l7_push_id_db->send_buffer_count[ip]; // for vectorization
-      for (int ic = 0; ic < count; ic++){
-         l7_push_id_db->send_buffer[ip][ic] = array[l7_push_id_db->send_database[ip][ic]];
-      }    
-   }    
-
-
 // Send/Receives will be done in L7_Push_Update. Input will be send_buffer. Output will be in
 // preallocated receive_buffer
    MPI_Request request[2*l7_push_id_db->num_comm_partners];
    MPI_Status  status[2*l7_push_id_db->num_comm_partners];
 
+   /*
+    * Set some parameters base on input datatype.
+    */
+	
    int iloc = 0;
    for (int ip = 0; ip < l7_push_id_db->num_comm_partners; ip++){
       MPI_Irecv(&return_array[iloc], l7_push_id_db->recv_buffer_count[ip], MPI_INT,
@@ -165,10 +157,19 @@ int L7_Push_Update(
       iloc += l7_push_id_db->recv_buffer_count[ip];
    }
 
+
    for (int ip = 0; ip < l7_push_id_db->num_comm_partners; ip++){
+      int count = l7_push_id_db->send_buffer_count[ip]; // for vectorization
+      for (int ic = 0; ic < count; ic++){
+         l7_push_id_db->send_buffer[ip][ic] = array[l7_push_id_db->send_database[ip][ic]];
+      }    
+
       MPI_Isend(l7_push_id_db->send_buffer[ip], l7_push_id_db->send_buffer_count[ip], MPI_INT,
                 l7_push_id_db->comm_partner[ip], l7.penum, MPI_COMM_WORLD, &request[l7_push_id_db->num_comm_partners+ip]);
    }    
+
+
+
    MPI_Waitall(2*l7_push_id_db->num_comm_partners, request, status);
 
 /*
