@@ -417,7 +417,7 @@ int main(int argc, char *argv[])
    case MEMSPACE_HOST:
       initialize_data_host(&data, nowned, nremote, typesize, my_start_index);
       break;
-#if defined(HAVE_CUDA) && defined(L7_CUDA_PERF)
+#if defined(HAVE_CUDA) && defined(L7_CUDA_OFFLOAD)
    case MEMSPACE_CUDA:
       initialize_data_cuda(&data, nowned, nremote, typesize, my_start_index);
       break;
@@ -427,7 +427,7 @@ int main(int argc, char *argv[])
       initialize_data_opencl(&data, nowned, nremote, typesize, my_start_index);
       break;
 #endif
-#if defined(_OPENMP) && defined(L7_OPENMP_PERF) && _OPENMP >= 201511
+#if defined(_OPENMP) && defined(L7_OPENMP_OFFLOAD) && _OPENMP >= 201511
    case MEMSPACE_OPENMP:
       initialize_data_openmp(&data, nowned, nremote, typesize, my_start_index);
       break;
