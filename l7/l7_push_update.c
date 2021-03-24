@@ -43,6 +43,11 @@
 #include "l7.h"
 #include "l7p.h"
 
+typedef struct val_rank {
+  double value;
+  int rank;
+};
+
 #define L7_LOCATION "L7_PUSH_UPDATE"
 
 int L7_Push_Update(
@@ -157,19 +162,61 @@ int L7_Push_Update(
 // preallocated receive_buffer
    MPI_Request request[2*l7_push_id_db->num_comm_partners];
    MPI_Status  status[2*l7_push_id_db->num_comm_partners];
-
+  
    int iloc = 0;
+   
+   // Barrier then begin
+   double begin_Irecv = MPI_Wtime();
+
    for (int ip = 0; ip < l7_push_id_db->num_comm_partners; ip++){
       MPI_Irecv(&return_array[iloc], l7_push_id_db->recv_buffer_count[ip], MPI_INT,
                 l7_push_id_db->comm_partner[ip], l7_push_id_db->comm_partner[ip], MPI_COMM_WORLD, &request[ip]);
       iloc += l7_push_id_db->recv_buffer_count[ip];
    }
+   
+   double begin_Isend = MPI_Wtime();
 
    for (int ip = 0; ip < l7_push_id_db->num_comm_partners; ip++){
       MPI_Isend(l7_push_id_db->send_buffer[ip], l7_push_id_db->send_buffer_count[ip], MPI_INT,
                 l7_push_id_db->comm_partner[ip], l7.penum, MPI_COMM_WORLD, &request[l7_push_id_db->num_comm_partners+ip]);
-   }    
+   }
+
+   double end_Isend = MPI_Wtime();
+
    MPI_Waitall(2*l7_push_id_db->num_comm_partners, request, status);
+
+   // TODO: Get min max and avg times for isend and irecv
+   double Irecv_time = begin_Isend - begin_Irecv;
+   double Isend_time = end_Isend - begin_Isend;
+
+   struct val_rank min_loc, max_loc;
+
+   double Irecv_sum,Irecv_average;
+   double Isend_sum,Isend_average;
+   // TODO: Define and implement struct and MPI_MINLOC, MAXLOC 
+   // Min for Irecv_time;
+   MPI_Reduce(Irecv_time, Irecv_min, 1, MPI_DOUBLE, MPI_MINLOC, 0, MPI_COMM_WORLD);
+   // Max for Irecv_time;
+   MPI_Reduce(Irecv_time, Irecv_max, 1, MPI_DOUBLE, MPI_MAXLOC, 0, MPI_COMM_WORLD);
+   // SUM for Irecv_time;
+   MPI_Reduce(Irecv_time, Irecv_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+
+   // Min for Isend_time;
+   MPI_Reduce(Isend_time, Isend_min, 1, MPI_DOUBLE, MPI_MINLOC, 0, MPI_COMM_WORLD);
+   // Max for Isend_time;
+   MPI_Reduce(Isend_time, Isend_max, 1, MPI_DOUBLE, MPI_MAXLOC, 0, MPI_COMM_WORLD);
+   // SUM for Isend_time;
+   MPI_Reduce(Isend_time, Isend_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+  
+
+   // Grabbing comm size to calculate average
+   int comm_size;
+   MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
+
+   Irecv_average = Irecv_sum / comm_size;
+   Isend_average = Isend_sum / comm_size;
+
+   // TODO: Print to std error
 
 /*
    if (ncycle >= 1) { 
