@@ -48,6 +48,11 @@ typedef struct val_rank {
   int rank;
 };
 
+typedef struct int_rank {
+  int value;
+  int rank;
+};
+
 #define L7_LOCATION "L7_PUSH_UPDATE"
 
 int L7_Push_Update(
@@ -189,34 +194,81 @@ int L7_Push_Update(
    double Irecv_time = begin_Isend - begin_Irecv;
    double Isend_time = end_Isend - begin_Isend;
 
-   struct val_rank min_loc, max_loc;
+   int rank;
+   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+
+   struct val_rank Irecv_min_loc, Irecv_max_loc, Irecv_min_loc_out, Irecv_max_loc_out;
+   struct val_rank Isend_min_loc, Isend_max_loc, Isend_min_loc_out, Isend_max_loc_out;
+   Irecv_min_loc.value = Irecv_time;
+   Irecv_min_loc.rank = rank;
+   Irecv_max_loc.value = Irecv_time;
+   Irecv_max_loc.rank = rank;
+   Isend_min_loc.value = Isend_time;
+   Isend_min_loc.rank = rank;
+   Isend_max_loc.value = Isend_time;
+   Isend_max_loc.rank = rank;
 
    double Irecv_sum,Irecv_average;
    double Isend_sum,Isend_average;
+
+   // Structs to get number of partners  
+   struct int_rank num_partners_min_loc, num_partners_max_loc, num_partners_min_loc_out, num_partners_max_loc_out;
+   int num_partners_sum;
+   double num_partners_average;
+
+   num_partners_min_loc.value = l7_push_id_db->num_comm_partners;
+   num_partners_min_loc.rank = rank;
+   num_partners_max_loc.value = l7_push_id_db->num_comm_partners;
+   num_partners_max_loc.rank = rank;
+
+
+
    // TODO: Define and implement struct and MPI_MINLOC, MAXLOC 
    // Min for Irecv_time;
-   MPI_Reduce(Irecv_time, Irecv_min, 1, MPI_DOUBLE, MPI_MINLOC, 0, MPI_COMM_WORLD);
+   MPI_Reduce(&Irecv_min_loc, &Irecv_min_loc_out, 1, MPI_DOUBLE_INT, MPI_MINLOC, 0, MPI_COMM_WORLD);
    // Max for Irecv_time;
-   MPI_Reduce(Irecv_time, Irecv_max, 1, MPI_DOUBLE, MPI_MAXLOC, 0, MPI_COMM_WORLD);
+   MPI_Reduce(&Irecv_max_loc, &Irecv_max_loc_out, 1, MPI_DOUBLE_INT, MPI_MAXLOC, 0, MPI_COMM_WORLD);
    // SUM for Irecv_time;
-   MPI_Reduce(Irecv_time, Irecv_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+   MPI_Reduce(&Irecv_time, &Irecv_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
    // Min for Isend_time;
-   MPI_Reduce(Isend_time, Isend_min, 1, MPI_DOUBLE, MPI_MINLOC, 0, MPI_COMM_WORLD);
+   MPI_Reduce(&Isend_min_loc, &Isend_min_loc_out, 1, MPI_DOUBLE_INT, MPI_MINLOC, 0, MPI_COMM_WORLD);
    // Max for Isend_time;
-   MPI_Reduce(Isend_time, Isend_max, 1, MPI_DOUBLE, MPI_MAXLOC, 0, MPI_COMM_WORLD);
+   MPI_Reduce(&Isend_max_loc, &Isend_max_loc_out, 1, MPI_DOUBLE_INT, MPI_MAXLOC, 0, MPI_COMM_WORLD);
    // SUM for Isend_time;
-   MPI_Reduce(Isend_time, Isend_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+   MPI_Reduce(&Isend_time, &Isend_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
   
+   // Min for num partners
+   MPI_Reduce(&num_partners_min_loc, &num_partners_min_loc_out, 1, MPI_2INT, MPI_MINLOC, 0, MPI_COMM_WORLD);
+   // Max for num partners
+   MPI_Reduce(&num_partners_max_loc, &num_partners_max_loc_out, 1, MPI_2INT, MPI_MAXLOC, 0, MPI_COMM_WORLD);
+   // SUm of num partners
+   MPI_Reduce(&l7_push_id_db->num_comm_partners, &num_partners_sum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
+  
    // Grabbing comm size to calculate average
    int comm_size;
    MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
 
    Irecv_average = Irecv_sum / comm_size;
    Isend_average = Isend_sum / comm_size;
+   num_partners_average = num_partners_sum / (comm_size * 1.0f);
 
    // TODO: Print to std error
+   if (rank == 0) {
+      fprintf(stderr, "\n=====================\n");
+      fprintf(stderr, "\nIrecv min: %f (rank: %d)\n", Irecv_min_loc_out.value, Irecv_min_loc_out.rank);
+      fprintf(stderr, "\nIrecv max: %f (rank: %d)\n", Irecv_max_loc_out.value, Irecv_max_loc_out.rank);
+      fprintf(stderr, "\nIrecv avg: %f\n", Irecv_average);
+      fprintf(stderr, "\nIsend min: %f (rank: %d)\n", Isend_min_loc_out.value, Isend_min_loc_out.rank);
+      fprintf(stderr, "\nIsend max: %f (rank: %d)\n", Isend_max_loc_out.value, Isend_max_loc_out.rank);
+      fprintf(stderr, "\nIsend avg: %f\n", Isend_average);
+      fprintf(stderr, "\nNum partners min: %d (rank: %d)\n", num_partners_min_loc_out.value, num_partners_min_loc_out.rank);
+      fprintf(stderr, "\nNum partners max: %d (rank: %d)\n", num_partners_max_loc_out.value, num_partners_max_loc_out.rank);
+      fprintf(stderr, "\nNum partners avg: %f\n", num_partners_average);
+  }
+  
 
 /*
    if (ncycle >= 1) { 
