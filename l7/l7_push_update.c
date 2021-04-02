@@ -190,9 +190,12 @@ int L7_Push_Update(
 
    MPI_Waitall(2*l7_push_id_db->num_comm_partners, request, status);
 
+   double end_waitall = MPI_Wtime();
+
    // TODO: Get min max and avg times for isend and irecv
    double Irecv_time = begin_Isend - begin_Irecv;
    double Isend_time = end_Isend - begin_Isend;
+   double waitall_time = end_waitall - end_Isend;
 
    int rank;
    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -200,6 +203,8 @@ int L7_Push_Update(
 
    struct val_rank Irecv_min_loc, Irecv_max_loc, Irecv_min_loc_out, Irecv_max_loc_out;
    struct val_rank Isend_min_loc, Isend_max_loc, Isend_min_loc_out, Isend_max_loc_out;
+   struct val_rank waitall_min_loc, waitall_max_loc, waitall_min_loc_out, waitall_max_loc_out;
+
    Irecv_min_loc.value = Irecv_time;
    Irecv_min_loc.rank = rank;
    Irecv_max_loc.value = Irecv_time;
@@ -208,9 +213,16 @@ int L7_Push_Update(
    Isend_min_loc.rank = rank;
    Isend_max_loc.value = Isend_time;
    Isend_max_loc.rank = rank;
+   waitall_min_loc.value = waitall_time;
+   waitall_min_loc.rank = rank;
+   waitall_max_loc.value = waitall_time;
+   waitall_max_loc.rank = rank;
+
+
 
    double Irecv_sum,Irecv_average;
    double Isend_sum,Isend_average;
+   double waitall_sum, waitall_average;
 
    // Structs to get number of partners  
    struct int_rank num_partners_min_loc, num_partners_max_loc, num_partners_min_loc_out, num_partners_max_loc_out;
@@ -238,12 +250,19 @@ int L7_Push_Update(
    MPI_Reduce(&Isend_max_loc, &Isend_max_loc_out, 1, MPI_DOUBLE_INT, MPI_MAXLOC, 0, MPI_COMM_WORLD);
    // SUM for Isend_time;
    MPI_Reduce(&Isend_time, &Isend_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-  
+
+   // Min for waitall_time;
+   MPI_Reduce(&waitall_min_loc, &waitall_min_loc_out, 1, MPI_DOUBLE_INT, MPI_MINLOC, 0, MPI_COMM_WORLD);
+   // Max for waitall_time;
+   MPI_Reduce(&waitall_max_loc, &waitall_max_loc_out, 1, MPI_DOUBLE_INT, MPI_MAXLOC, 0, MPI_COMM_WORLD);
+   // SUM for waitall_time;
+   MPI_Reduce(&waitall_time, &waitall_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+
    // Min for num partners
    MPI_Reduce(&num_partners_min_loc, &num_partners_min_loc_out, 1, MPI_2INT, MPI_MINLOC, 0, MPI_COMM_WORLD);
    // Max for num partners
    MPI_Reduce(&num_partners_max_loc, &num_partners_max_loc_out, 1, MPI_2INT, MPI_MAXLOC, 0, MPI_COMM_WORLD);
-   // SUm of num partners
+   // SUM of num partners
    MPI_Reduce(&l7_push_id_db->num_comm_partners, &num_partners_sum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
   
@@ -253,6 +272,7 @@ int L7_Push_Update(
 
    Irecv_average = Irecv_sum / comm_size;
    Isend_average = Isend_sum / comm_size;
+   waitall_average = waitall_sum / comm_size;
    num_partners_average = num_partners_sum / (comm_size * 1.0f);
 
    // TODO: Print to std error
@@ -264,6 +284,9 @@ int L7_Push_Update(
       fprintf(stderr, "\nIsend min: %f (rank: %d)\n", Isend_min_loc_out.value, Isend_min_loc_out.rank);
       fprintf(stderr, "\nIsend max: %f (rank: %d)\n", Isend_max_loc_out.value, Isend_max_loc_out.rank);
       fprintf(stderr, "\nIsend avg: %f\n", Isend_average);
+      fprintf(stderr, "\nwaitall min: %f (rank: %d)\n", waitall_min_loc_out.value, waitall_min_loc_out.rank);
+      fprintf(stderr, "\nwaitall max: %f (rank: %d)\n", waitall_max_loc_out.value, waitall_max_loc_out.rank);
+      fprintf(stderr, "\nwaitall avg: %f\n", waitall_average);
       fprintf(stderr, "\nNum partners min: %d (rank: %d)\n", num_partners_min_loc_out.value, num_partners_min_loc_out.rank);
       fprintf(stderr, "\nNum partners max: %d (rank: %d)\n", num_partners_max_loc_out.value, num_partners_max_loc_out.rank);
       fprintf(stderr, "\nNum partners avg: %f\n", num_partners_average);
