@@ -154,7 +154,7 @@ int L7_Push_Update(
    /*
     * Set some parameters base on input datatype.
     */
-
+   double begin_setup = MPI_Wtime();
    for (int ip = 0; ip < l7_push_id_db->num_comm_partners; ip++){
       int count = l7_push_id_db->send_buffer_count[ip]; // for vectorization
       for (int ic = 0; ic < count; ic++){
@@ -169,7 +169,6 @@ int L7_Push_Update(
    MPI_Status  status[2*l7_push_id_db->num_comm_partners];
   
    int iloc = 0;
-   
    // Barrier then begin
    double begin_Irecv = MPI_Wtime();
 
@@ -192,7 +191,7 @@ int L7_Push_Update(
 
    double end_waitall = MPI_Wtime();
 
-   // TODO: Get min max and avg times for isend and irecv
+   double setup_time = begin_Irecv - begin_setup;
    double Irecv_time = begin_Isend - begin_Irecv;
    double Isend_time = end_Isend - begin_Isend;
    double waitall_time = end_waitall - end_Isend;
@@ -204,6 +203,7 @@ int L7_Push_Update(
    struct val_rank Irecv_min_loc, Irecv_max_loc, Irecv_min_loc_out, Irecv_max_loc_out;
    struct val_rank Isend_min_loc, Isend_max_loc, Isend_min_loc_out, Isend_max_loc_out;
    struct val_rank waitall_min_loc, waitall_max_loc, waitall_min_loc_out, waitall_max_loc_out;
+   struct val_rank setup_min_loc, setup_max_loc, setup_min_loc_out, setup_max_loc_out;
 
    Irecv_min_loc.value = Irecv_time;
    Irecv_min_loc.rank = rank;
@@ -217,12 +217,18 @@ int L7_Push_Update(
    waitall_min_loc.rank = rank;
    waitall_max_loc.value = waitall_time;
    waitall_max_loc.rank = rank;
+   setup_min_loc.value = setup_time;
+   setup_min_loc.rank = rank;
+   setup_max_loc.value = setup_time;
+   setup_max_loc.rank = rank;
+
 
 
 
    double Irecv_sum,Irecv_average;
    double Isend_sum,Isend_average;
    double waitall_sum, waitall_average;
+   double setup_sum, setup_average;
 
    // Structs to get number of partners  
    struct int_rank num_partners_min_loc, num_partners_max_loc, num_partners_min_loc_out, num_partners_max_loc_out;
@@ -258,6 +264,13 @@ int L7_Push_Update(
    // SUM for waitall_time;
    MPI_Reduce(&waitall_time, &waitall_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
+   // Min for setup_time;
+   MPI_Reduce(&setup_min_loc, &setup_min_loc_out, 1, MPI_DOUBLE_INT, MPI_MINLOC, 0, MPI_COMM_WORLD);
+   // Max for setup_time;
+   MPI_Reduce(&setup_max_loc, &setup_max_loc_out, 1, MPI_DOUBLE_INT, MPI_MAXLOC, 0, MPI_COMM_WORLD);
+   // SUM for setup_time;
+   MPI_Reduce(&setup_time, &setup_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+
    // Min for num partners
    MPI_Reduce(&num_partners_min_loc, &num_partners_min_loc_out, 1, MPI_2INT, MPI_MINLOC, 0, MPI_COMM_WORLD);
    // Max for num partners
@@ -273,11 +286,15 @@ int L7_Push_Update(
    Irecv_average = Irecv_sum / comm_size;
    Isend_average = Isend_sum / comm_size;
    waitall_average = waitall_sum / comm_size;
+   setup_average = setup_sum / comm_size;
    num_partners_average = num_partners_sum / (comm_size * 1.0f);
 
    // TODO: Print to std error
    if (rank == 0) {
       fprintf(stderr, "\n=====================\n");
+      fprintf(stderr, "\nsetup min: %f (rank: %d)\n", setup_min_loc_out.value, setup_min_loc_out.rank);
+      fprintf(stderr, "\nsetup max: %f (rank: %d)\n", setup_max_loc_out.value, setup_max_loc_out.rank);
+      fprintf(stderr, "\nsetup avg: %f\n", setup_average);
       fprintf(stderr, "\nIrecv min: %f (rank: %d)\n", Irecv_min_loc_out.value, Irecv_min_loc_out.rank);
       fprintf(stderr, "\nIrecv max: %f (rank: %d)\n", Irecv_max_loc_out.value, Irecv_max_loc_out.rank);
       fprintf(stderr, "\nIrecv avg: %f\n", Irecv_average);
