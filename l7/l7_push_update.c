@@ -159,7 +159,6 @@ int L7_Push_Update(
    MPI_Status  status[2*l7_push_id_db->num_comm_partners];
 
    int iloc = 0;
-   MPI_Barrier(MPI_COMM_WORLD);
    for (int ip = 0; ip < l7_push_id_db->num_comm_partners; ip++){
       MPI_Irecv(&return_array[iloc], l7_push_id_db->recv_buffer_count[ip], MPI_INT,
                 l7_push_id_db->comm_partner[ip], l7_push_id_db->comm_partner[ip], MPI_COMM_WORLD, &request[ip]);
@@ -171,6 +170,7 @@ int L7_Push_Update(
                 l7_push_id_db->comm_partner[ip], l7.penum, MPI_COMM_WORLD, &request[l7_push_id_db->num_comm_partners+ip]);
    }    
    MPI_Waitall(2*l7_push_id_db->num_comm_partners, request, status);
+   MPI_Barrier(MPI_COMM_WORLD);
 
 /*
    if (ncycle >= 1) { 
