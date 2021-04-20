@@ -358,7 +358,8 @@ public:
 #ifdef HAVE_OPENCL
    string defines;
 #endif
-
+   std::vector<double> push_boundary_vec;
+   std::vector<double> setup_comm_vec;
    double    cpu_timers[MESH_TIMER_SIZE];
    long long gpu_timers[MESH_TIMER_SIZE];
 

@@ -58,7 +58,7 @@
 #ifdef HAVE_MPI
 #include "mpi.h"
 #endif
-
+#include <fstream>
 #include <algorithm>
 #include <unistd.h>
 #include <limits.h>
@@ -5416,11 +5416,14 @@ void Mesh::calc_neighbors_local(void)
          }
 
          if (TIMING_LEVEL >= 2) {
+         double temp; 
 #ifdef _OPENMP
 #pragma omp master
 #endif
-            cpu_timers[MESH_TIMER_PUSH_BOUNDARY] += cpu_timer_stop(tstart_lev2);
-            cpu_timer_start(&tstart_lev2);
+           temp = cpu_timer_stop(tstart_lev2);
+           cpu_timers[MESH_TIMER_PUSH_BOUNDARY] += temp;
+           push_boundary_vec.push_back(temp);
+           cpu_timer_start(&tstart_lev2);
          }
 
          if (TIMING_LEVEL >= 2) {
@@ -6386,8 +6389,12 @@ void Mesh::calc_neighbors_local(void)
                }
             }
             L7_Setup(0, noffset, ncells, &indices_needed[0], nghost, &cell_handle);
-
-            if (TIMING_LEVEL >= 2) cpu_timers[MESH_TIMER_SETUP_COMM] += cpu_timer_stop(tstart_lev2);
+            
+            if (TIMING_LEVEL >= 2) {
+              double temp = cpu_timer_stop(tstart_lev2);
+              cpu_timers[MESH_TIMER_SETUP_COMM] += temp; 
+              setup_comm_vec.push_back(temp);
+            }
 
 #ifdef _OPENMP
          } // end master region
@@ -14823,6 +14830,45 @@ void Mesh::parallel_output(const char *string, double local_value, int output_le
             units);
       }
    }
+#ifdef HAVE_MPI
+   std::ofstream push_boundary_output_file;
+   std::ofstream setup_comm_output_file;
+   if (mype == 0) {
+     push_boundary_output_file.open("push_boundary_times.csv");
+     setup_comm_output_file.open("setup_comm_times.csv");
+    // push_boundary_output_file << push_boundary_vec.size() << std::endl;
+    // setup_comm_output_file << setup_comm_vec.size() << std::endl;
+   }
+   for (double& val : push_boundary_vec) {
+     MPI_Gather(&val, 1, MPI_DOUBLE, &global_values[0], 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+       if (mype == 0) {
+       for (int i = 0; i < global_values.size(); ++i) {
+        if (i == global_values.size() - 1)
+          push_boundary_output_file << global_values[i] << std::endl;
+        else  
+          push_boundary_output_file << global_values[i] << ',';
+       }
+     }
+   }
+   if (mype == 0) 
+     push_boundary_output_file.close();
+   
+  
+   for (double& val : setup_comm_vec) {
+     MPI_Gather(&val, 1, MPI_DOUBLE, &global_values[0], 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+     if (mype == 0) {
+       for (int i = 0; i < global_values.size(); ++i) {
+        if (i == global_values.size() - 1)
+          setup_comm_output_file << global_values[i] << std::endl;
+        else  
+          setup_comm_output_file << global_values[i] << ',';
+       }
+     }
+   }
+   if (mype == 0) 
+    setup_comm_output_file.close();
+   
+#endif
 }
 
 void Mesh::parallel_output(const char *string, long long local_value, int output_level, const char *units)
