@@ -14830,7 +14830,9 @@ void Mesh::parallel_output(const char *string, double local_value, int output_le
             units);
       }
    }
+   
 #ifdef HAVE_MPI
+   global_values.resize(numpe*push_boundary_vec.size());
    std::ofstream push_boundary_output_file;
    std::ofstream setup_comm_output_file;
    if (mype == 0) {
@@ -14839,27 +14841,48 @@ void Mesh::parallel_output(const char *string, double local_value, int output_le
     // push_boundary_output_file << push_boundary_vec.size() << std::endl;
     // setup_comm_output_file << setup_comm_vec.size() << std::endl;
    }
-   for (double& val : push_boundary_vec) {
-     MPI_Gather(&val, 1, MPI_DOUBLE, &global_values[0], 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-       if (mype == 0) {
-       for (int i = 0; i < global_values.size(); ++i) {
-        if (i == global_values.size() - 1)
-          push_boundary_output_file << global_values[i] << std::endl;
+
+   MPI_Gather(&push_boundary_vec[0], push_boundary_vec.size(), MPI_DOUBLE, &global_values[0], push_boundary_vec.size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+   if (mype == 0) {
+     for (int i = 0; i < push_boundary_vec.size(); ++i) {
+       for (int j = 0; j < numpe; ++j) {
+        if (j == numpe - 1)
+          push_boundary_output_file << global_values[i*numpe+j] << '\n';
         else  
-          push_boundary_output_file << global_values[i] << ',';
+          push_boundary_output_file << global_values[i*numpe+j] << ',';
        }
      }
    }
    if (mype == 0) 
      push_boundary_output_file.close();
-   
-  
+
+
+   MPI_Gather(&setup_comm_vec[0], setup_comm_vec.size(), MPI_DOUBLE, &global_values[0], setup_comm_vec.size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+   if (mype == 0) {
+       for (int i = 0; i < setup_comm_vec.size(); ++i) {
+         for (int j = 0; j < numpe; ++j) {
+          if (j == numpe - 1)
+            setup_comm_output_file << global_values[i*numpe+j] << '\n';
+          else  
+            setup_comm_output_file << global_values[i*numpe+j] << ',';
+         }
+       }
+     }
+     if (mype == 0) 
+       setup_comm_output_file.close();
+     
+
+
+
+
+/*
    for (double& val : setup_comm_vec) {
      MPI_Gather(&val, 1, MPI_DOUBLE, &global_values[0], 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
      if (mype == 0) {
        for (int i = 0; i < global_values.size(); ++i) {
         if (i == global_values.size() - 1)
-          setup_comm_output_file << global_values[i] << std::endl;
+          setup_comm_output_file << global_values[i] << '\n';
         else  
           setup_comm_output_file << global_values[i] << ',';
        }
@@ -14867,9 +14890,11 @@ void Mesh::parallel_output(const char *string, double local_value, int output_le
    }
    if (mype == 0) 
     setup_comm_output_file.close();
-   
+ */  
 #endif
+
 }
+
 
 void Mesh::parallel_output(const char *string, long long local_value, int output_level, const char *units)
 {
