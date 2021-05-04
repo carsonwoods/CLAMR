@@ -170,7 +170,6 @@ int L7_Push_Update(
                 l7_push_id_db->comm_partner[ip], l7.penum, MPI_COMM_WORLD, &request[l7_push_id_db->num_comm_partners+ip]);
    }    
    MPI_Waitall(2*l7_push_id_db->num_comm_partners, request, status);
-   MPI_Barrier(MPI_COMM_WORLD);
 
 /*
    if (ncycle >= 1) { 
