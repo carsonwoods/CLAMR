@@ -234,12 +234,36 @@ int L7_Push_Update(
    struct int_rank num_partners_min_loc, num_partners_max_loc, num_partners_min_loc_out, num_partners_max_loc_out;
    int num_partners_sum;
    double num_partners_average;
-
    num_partners_min_loc.value = l7_push_id_db->num_comm_partners;
    num_partners_min_loc.rank = rank;
    num_partners_max_loc.value = l7_push_id_db->num_comm_partners;
    num_partners_max_loc.rank = rank;
 
+
+   // Structs to get message size
+   struct int_rank message_size_min_loc, message_size_max_loc, message_size_min_loc_out, message_size_max_loc_out;
+   int message_size_sum, message_size_max, message_size_min;
+   double message_size_average;
+   message_size_min = l7_push_id_db->send_buffer[0];
+   for (int ip = 0; ip < l7_push_id_db->num_comm_partners; ip++){
+    if (message_size_min > l7_push_id_db->send_buffer[ip]);
+      message_size_min = l7_push_id_db->send_buffer[ip];
+   }
+   message_size_max=0;
+   for (int ip = 0; ip < l7_push_id_db->num_comm_partners; ip++){
+    if (l7_push_id_db->send_buffer[ip] > message_size_max)
+      message_size_max = l7_push_id_db->send_buffer[ip];
+   }
+   message_size_sum = 0;
+   for (int ip = 0; ip < l7_push_id_db->num_comm_partners; ip++){
+     message_size_sum += l7_push_id_db->send_buffer[ip];
+   }
+   message_size_average = message_size_sum / (l7_push_id_db->num_comm_partners * 1.0f);
+
+   message_size_min_loc.value = message_size_min;
+   message_size_min_loc.rank = rank;
+   message_size_max_loc.value = message_size_max;
+   message_size_max_loc.rank = rank;
 
 
    // TODO: Define and implement struct and MPI_MINLOC, MAXLOC 
@@ -277,6 +301,14 @@ int L7_Push_Update(
    MPI_Reduce(&num_partners_max_loc, &num_partners_max_loc_out, 1, MPI_2INT, MPI_MAXLOC, 0, MPI_COMM_WORLD);
    // SUM of num partners
    MPI_Reduce(&l7_push_id_db->num_comm_partners, &num_partners_sum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+  
+   // Min for num partners
+   MPI_Reduce(&message_size_min_loc, &message_size_min_loc_out, 1, MPI_2INT, MPI_MINLOC, 0, MPI_COMM_WORLD);
+   // Max for num partners
+   MPI_Reduce(&message_size_max_loc, &message_size_max_loc_out, 1, MPI_2INT, MPI_MAXLOC, 0, MPI_COMM_WORLD);
+   // SUM of num partners
+   MPI_Reduce(&message_size_average, &message_size_sum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+
 
   
    // Grabbing comm size to calculate average
@@ -288,6 +320,7 @@ int L7_Push_Update(
    waitall_average = waitall_sum / comm_size;
    setup_average = setup_sum / comm_size;
    num_partners_average = num_partners_sum / (comm_size * 1.0f);
+   message_size_average = message_size_sum / (comm_size * 1.0f);
 
    // TODO: Print to std error
    if (rank == 0) {
@@ -307,6 +340,10 @@ int L7_Push_Update(
       fprintf(stderr, "\nNum partners min: %d (rank: %d)\n", num_partners_min_loc_out.value, num_partners_min_loc_out.rank);
       fprintf(stderr, "\nNum partners max: %d (rank: %d)\n", num_partners_max_loc_out.value, num_partners_max_loc_out.rank);
       fprintf(stderr, "\nNum partners avg: %f\n", num_partners_average);
+      fprintf(stderr, "\nMessage size min: %d (rank: %d)\n", message_size_min_loc_out.value, message_size_min_loc_out.rank);
+      fprintf(stderr, "\nMessage size max: %d (rank: %d)\n", message_size_max_loc_out.value, message_size_max_loc_out.rank);
+      fprintf(stderr, "\nMessage size avg: %f\n", message_size_average);
+
   }
   
 
