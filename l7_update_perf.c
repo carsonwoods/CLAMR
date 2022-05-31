@@ -93,9 +93,22 @@ enum memspace {
 };
 typedef enum memspace memspace_t;
 
-/* We declare these settings as global because they're used by basically every
- * function and passing them would be a chore. I guess in theory we could make
- * a struct to contain them, but this is good enough for this simple benchmark */
+/*
+ * We declare these settings as global
+ * because they're used by basically every
+ * function and passing them would be a
+ * chore. I guess in theory we could make
+ * a struct to contain them, but this is
+ * good enough for this simple benchmark
+*/
+
+ /*
+   CW: This is *probably* where the size of the data and the values can be modified.
+   More specifically, this isn't where it will happen, but these values are what
+   could be used to create irregular communication needs.
+
+   For specific explanations for these values, see lines: 15-45 (benchmark structure section)
+ */
 static int typesize = 8;
 static int numpes = 0;
 static int niterations = 100;
@@ -106,19 +119,29 @@ static int blocksz = -1;
 static int stride = -1;
 static memspace_t memspace = MEMSPACE_HOST;
 
+/*
+ * these are options that are specified using the
+ * type defined in the getopt.h file.
+ *
+ * TODO: I need to ask what is going on
+ *       with this block of code
+ * This might be helpful:
+ * https://en.wikipedia.org/wiki/Getopt#Example_2_.28using_GNU_extension_getopt_long.29
+*/
 static struct option long_options[] = {
-          /* These options set a flag. */
-          {"typesize",   required_argument, 0, 't'},
+    /* These options set a flag. */
+    {"typesize",   required_argument, 0, 't'},
     {"iterations", required_argument, 0, 'i'},
-          {"owned",      required_argument, 0, 'o'},
-          {"neighbors",  required_argument, 0, 'n'},
-          {"remote",     required_argument, 0, 'r'},
-          {"blocksize",  required_argument, 0, 'b'},
-          {"stride",     required_argument, 0, 's'},
-          {"memspace",   required_argument, 0, 'm'},
-          {0, 0, 0, 0}
-        };
+    {"owned",      required_argument, 0, 'o'},
+    {"neighbors",  required_argument, 0, 'n'},
+    {"remote",     required_argument, 0, 'r'},
+    {"blocksize",  required_argument, 0, 'b'},
+    {"stride",     required_argument, 0, 's'},
+    {"memspace",   required_argument, 0, 'm'},
+    {0, 0, 0, 0}
+};
 
+// offers a help string to define parameters in the CLI
 void
 usage(char *exename)
 {
@@ -129,95 +152,104 @@ usage(char *exename)
 void
 parse_arguments(int argc, char **argv)
 {
-   int c;
-   while (1) {
-      /* getopt_long stores the option index here. */
-      int option_index = 0;
+    int c;
+    while (1) {
+        /* getopt_long stores the option index here. */
+        int option_index = 0;
 
-      c = getopt_long (argc, argv, "t:i:n:o:r:b:s:m:",
+        c = getopt_long (argc, argv, "t:i:n:o:r:b:s:m:",
                        long_options, &option_index);
-      if (c == -1) {
-         break;
-      }
+        if (c == -1) {
+            break;
+        }
 
-      switch (c) {
-      case 'i':
-         niterations = atoi(optarg);
-         if (niterations < 0) usage(argv[0]);
-         break;
-      case 't':
-         typesize = atoi(optarg);
-         if (typesize < 1 || typesize > 8) usage(argv[0]);
-         break;
-      case 'n':
-         nneighbors = atoi(optarg);
-         if (nneighbors < 0) usage(argv[0]);
-         break;
-      case 'o':
-         nowned = atoi(optarg);
-         if (nowned < 0) usage(argv[0]);
-         break;
-      case 'r':
-         nremote = atoi(optarg);
-         if (nremote < 0) usage(argv[0]);
-         break;
-      case 'b':
-         blocksz = atoi(optarg);
-         if (blocksz < 0) usage(argv[0]);
-         break;
-      case 's':
-         stride = atoi(optarg);
-         if (stride < 0) usage(argv[0]);
-         break;
-      case 'm':
-         if (strcmp(optarg, "host") == 0) {
-            memspace = MEMSPACE_HOST;
-         } else if (strcmp(optarg, "cuda") == 0) {
-#ifdef HAVE_CUDA
-            memspace = MEMSPACE_CUDA;
-#else
-      fprintf(stderr, "No compiler support for CUDA accelerator memory\n");
+        switch (c) {
+        case 'i':
+            // used to set custom iteration's value
+            niterations = atoi(optarg);
+            if (niterations < 0) usage(argv[0]);
+            break;
+        case 't':
+            // used to set typesize value
+            typesize = atoi(optarg);
+            if (typesize < 1 || typesize > 8) usage(argv[0]);
+            break;
+        case 'n':
+            // used to set nneighbors value
+            nneighbors = atoi(optarg);
+            if (nneighbors < 0) usage(argv[0]);
+            break;
+        case 'o':
+            // used to set nowned value
+            nowned = atoi(optarg);
+            if (nowned < 0) usage(argv[0]);
+            break;
+        case 'r':
+            // used to set nremote value
+            nremote = atoi(optarg);
+            if (nremote < 0) usage(argv[0]);
+            break;
+        case 'b':
+            // used to set blocksz value
+            blocksz = atoi(optarg);
+            if (blocksz < 0) usage(argv[0]);
+            break;
+        case 's':
+            // used to set stride size value
+            stride = atoi(optarg);
+            if (stride < 0) usage(argv[0]);
+            break;
+        case 'm':
+            // used to set memory space
+            // valid options include host, cuda, opencl, or openmp
+            if (strcmp(optarg, "host") == 0) {
+                memspace = MEMSPACE_HOST;
+            } else if (strcmp(optarg, "cuda") == 0) {
+                #ifdef HAVE_CUDA
+                    memspace = MEMSPACE_CUDA;
+                #else
+                    fprintf(stderr, "No compiler support for CUDA accelerator memory\n");
+                    usage(argv[0]);
+                #endif
+            } else if (strcmp(optarg, "opencl") == 0) {
+                #ifdef HAVE_OPENCL
+                    memspace = MEMSPACE_OPENCL;
+                #else
+                    fprintf(stderr, "No compiler support for OpenCL accelerator memory\n");
+                    usage(argv[0]);
+                #endif
+            } else if (strcmp(optarg, "openmp") == 0) {
+                #if defined(_OPENMP) && _OPENMP >= 201511
+                    memspace = MEMSPACE_OPENMP;
+                #else
+                    fprintf(stderr, "No compiler support for OpenMP accelerator memory\n");
+                    usage(argv[0]);
+                #endif
+            } else {
+                fprintf(stderr, "Invalid memory space %s\n", optarg);
+                usage(argv[0]);
+            }
+            break;
+        case '?':
             usage(argv[0]);
-#endif
-         } else if (strcmp(optarg, "opencl") == 0) {
-#ifdef HAVE_OPENCL
-            memspace = MEMSPACE_OPENCL;
-#else
-      fprintf(stderr, "No compiler support for OpenCL accelerator memory\n");
-            usage(argv[0]);
-#endif
-         } else if (strcmp(optarg, "openmp") == 0) {
-#if defined(_OPENMP) && _OPENMP >= 201511
-            memspace = MEMSPACE_OPENMP;
-#else
-      fprintf(stderr, "No compiler support for OpenMP accelerator memory\n");
-            usage(argv[0]);
-#endif
-   } else {
-      fprintf(stderr, "Invalid memory space %s\n", optarg);
-            usage(argv[0]);
-         }
-         break;
-      case '?':
-         usage(argv[0]);
-         break;
-      }
-   }
-   /* Now compute any unset values from the defaults */
-   if (niterations < 0)
-      niterations = 100;
-   if (nneighbors < 0)
-      nneighbors = sqrt(numpes);
-   if (nowned < 0)
-      nowned = (1<<28) / typesize;
-   if (nremote < 0)
-      nremote = nowned/(1 << 6);
-   if (blocksz < 0)
-      blocksz = nowned/(1 << 15);
-   if (stride < 0)
-      stride = 16;
+            break;
+        }
+    }
+    /* Now compute any unset values from the defaults */
+    if (niterations < 0)
+        niterations = 100;
+    if (nneighbors < 0)
+        nneighbors = sqrt(numpes);
+    if (nowned < 0)
+        nowned = (1<<28) / typesize;
+    if (nremote < 0)
+        nremote = nowned/(1 << 6);
+    if (blocksz < 0)
+        blocksz = nowned/(1 << 15);
+    if (stride < 0)
+        stride = 16;
 
-   return;
+    return;
 }
 
 int double_compare(const void *va, const void *vb)
