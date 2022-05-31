@@ -570,9 +570,9 @@ if(KOKKOS_ENABLE)
 endif(KOKKOS_ENABLE)
 
 ########### l7_update_perf target ###############
-add_executable(l7_update_perf l7_update_perf.cpp l7_update_host.c)
+add_executable(l7_update_perf l7_update_perf.c l7_update_host.c)
 
-# Add source files we need for different acceleratorss
+# Add source files we need for different accelerators
 if(L7_CUDA_OFFLOAD)
    enable_language(CUDA)
    if(CMAKE_CUDA_COMPILER)
