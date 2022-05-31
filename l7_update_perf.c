@@ -311,60 +311,79 @@ enum  L7_Datatype typesize_to_l7type(int type_size)
 void
 report_results_update(int penum, double *time_total_pe, int count_updated_pe, int num_timings, int type_size)
 {
-   int i, count_updated_global, bytes_updated, remainder;
+    int i, count_updated_global, bytes_updated, remainder;
 
-   double *time_total_global;
-   time_total_global = (double *)malloc(num_timings*sizeof(double));
+    // pointer which will store all timing values
+    double *time_total_global;
+    // allocates enough space for num_timings # of doubles
+    time_total_global = (double *)malloc(num_timings*sizeof(double));
 
-   /* Gather iteration data from each node */
-   /* The maximum iteration time */
-   L7_Array_Max(time_total_pe, num_timings, L7_DOUBLE, time_total_global);
-   /* The total number of items received */
-   L7_Sum(&count_updated_pe, 1, L7_INT, &count_updated_global);
-   bytes_updated = count_updated_global*type_size;
+    /* Gather iteration data from each node */
+    /* The maximum iteration time */
+    L7_Array_Max(time_total_pe, num_timings, L7_DOUBLE, time_total_global);
+    /* The total number of items received */
+    L7_Sum(&count_updated_pe, 1, L7_INT, &count_updated_global);
+    bytes_updated = count_updated_global*type_size;
 
-   if (penum == 0)
-   {
-      double *bandwidth_global = (double *)malloc(num_timings*sizeof(double));
-      double latency_med, bandwidth_med;
-      double latency_mean = 0.0, bandwidth_mean = 0.0;
-      /* Compute the effective bandwidth for each iteration and the mean
-       * time and bandwidth */
-      for (i=0; i<num_timings; i++){
-         if (time_total_global[i] != 0.0)
-            bandwidth_global[i] = bytes_updated / time_total_global[i];
-   else
-      bandwidth_global[i] = 0.0;
-   latency_mean += time_total_global[i];
-   bandwidth_mean += bandwidth_global[i];
-      }
-      latency_mean /= num_timings;
-      bandwidth_mean /= num_timings;
+    // if the process is the first process
+    // (sets logic to run on first process)
+    if (penum == 0)
+    {
+        double *bandwidth_global = (double *)malloc(num_timings*sizeof(double));
+        double latency_med, bandwidth_med;
+        double latency_mean = 0.0, bandwidth_mean = 0.0;
+        /* Compute the effective bandwidth for each iteration and the mean
+         * time and bandwidth */
+        // iterates through all timings taken
+        for (i = 0; i < num_timings; i++) {
+            if (time_total_global[i] != 0.0)
+                // global bandwidth is calculated by bytes_updated/time_elapsed
+                bandwidth_global[i] = bytes_updated / time_total_global[i];
+            else
+                // sets global bandwidth to 0 since cannot divide by zero
+                bandwidth_global[i] = 0.0;
 
-      /* Sort the arrays to compute the min, median, and max latency/bandwidth */
-      qsort(time_total_global, num_timings, sizeof(double), double_compare);
-      qsort(bandwidth_global, num_timings, sizeof(double), double_compare);
+            // adds previously calculated latency (total time elapsed per iteration) to sum
+            latency_mean += time_total_global[i];
+            // adds previously calculated bandwidth to sum
+            bandwidth_mean += bandwidth_global[i];
+        }
 
-      /* Properly compute the median */
-      if (num_timings % 2) {
-         latency_med = time_total_global[num_timings/2];
-         bandwidth_med = bandwidth_global[num_timings/2];
-      } else {
-         latency_med = (time_total_global[num_timings/2]
-                        + time_total_global[num_timings/2 - 1]) / 2;
-         bandwidth_med = (bandwidth_global[num_timings/2]
-                        + bandwidth_global[num_timings/2 - 1]) / 2;
-      }
-      /* Print results */
-      printf("nPEs\tMem\tType\tnOwned\t\tnRemote\tBlockSz\tStride\tnIter");
-      printf("\tLat(avg/min/med/max)\t\t\tBW(avg/min/med/max)\n");
-      printf("%d,\t%d,\t%d,\t%d,\t%d,\t%d,\t%d,\t%d,",
-       numpes, memspace, typesize, nowned, nremote, blocksz, stride, num_timings);
-      printf("\t%f/%f/%f/%f,\t%f/%f/%f/%f\n",
-             latency_mean, time_total_global[0], latency_med, time_total_global[num_timings-1],
-             bandwidth_mean, bandwidth_global[0], bandwidth_med, bandwidth_global[num_timings-1]);
-      free(bandwidth_global);
-   }
+        // calculates mean based on number of timings and previously calculated sums
+        latency_mean /= num_timings;
+        bandwidth_mean /= num_timings;
+
+        /* Sort the arrays to compute the min, median, and max latency/bandwidth */
+        qsort(time_total_global, num_timings, sizeof(double), double_compare);
+        qsort(bandwidth_global, num_timings, sizeof(double), double_compare);
+
+        /* Properly compute the median */
+        if (num_timings % 2) {
+            // runs if odd number of timings
+            latency_med = time_total_global[num_timings/2];
+            bandwidth_med = bandwidth_global[num_timings/2];
+        } else {
+            // runs if even number of timings (runs average on two middle values)
+            latency_med = (time_total_global[num_timings/2]
+                          + time_total_global[num_timings/2 - 1]) / 2;
+            bandwidth_med = (bandwidth_global[num_timings/2]
+                            + bandwidth_global[num_timings/2 - 1]) / 2;
+        }
+
+        /* Print results */
+        printf("nPEs\tMem\tType\tnOwned\t\tnRemote\tBlockSz\tStride\tnIter");
+        printf("\tLat(avg/min/med/max)\t\t\tBW(avg/min/med/max)\n");
+        printf("%d,\t%d,\t%d,\t%d,\t%d,\t%d,\t%d,\t%d,",
+               numpes, memspace, typesize, nowned,
+               nremote, blocksz, stride, num_timings);
+        printf("\t%f/%f/%f/%f,\t%f/%f/%f/%f\n",
+               latency_mean, time_total_global[0], latency_med,
+               time_total_global[num_timings-1], bandwidth_mean,
+               bandwidth_global[0], bandwidth_med, bandwidth_global[num_timings-1]);
+
+
+        free(bandwidth_global);
+    }
 
    /*
     * Testing complete
