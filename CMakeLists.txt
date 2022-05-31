@@ -92,7 +92,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "PGI")
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "Cray")
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "XL")
 endif()
- 
+
 option (KOKKOS_ENABLE "Enable KOKKOS support" OFF)
 mark_as_advanced (KOKKOS_ENABLE)
 
@@ -253,7 +253,7 @@ if(HDF5_ENABLE)
       message (STATUS "HDF5-${HDF5_VERSION_STRING} found: INC=${HDF5_INCLUDE_DIR} TOOLS=${HDF5_TOOLS_DIR} HDF5_BUILD_SHARED_LIBS=${HDF5_BUILD_SHARED_LIBS}")
       set(HDF5_FOUND TRUE)
       add_definitions(-DHAVE_HDF5)
-    endif (HDF5_FOUND)    
+    endif (HDF5_FOUND)
   else (NOT HDF5_HDF5_HEADER)
     # This project is being called from within another and HDF5 is already configured
     set (HDF5_HAVE_H5PUBCONF_H 1)
@@ -423,7 +423,7 @@ endif (NOT OPENGL_FOUND)
 # this min version isn't correct -- FIXME
 #set (BOOST_MIN_VER "1.45.0")
 #find_package(Boost ${BOOST_MIN_VER})
- 
+
 find_library(POWER_GADGET IntelPowerGadget)
 if (POWER_GADGET)
    set (POWER_GADGET_FOUND on)
@@ -570,7 +570,7 @@ if(KOKKOS_ENABLE)
 endif(KOKKOS_ENABLE)
 
 ########### l7_update_perf target ###############
-add_executable(l7_update_perf l7_update_perf.c l7_update_host.c)
+add_executable(l7_update_perf l7_update_perf.cpp l7_update_host.c)
 
 # Add source files we need for different acceleratorss
 if(L7_CUDA_OFFLOAD)
@@ -606,7 +606,7 @@ if(OpenMP_FOUND)
    target_link_libraries(l7_update_perf PRIVATE OpenMP::OpenMP_C)
 
   if(L7_OPENMP_OFFLOAD)
-      if(OpenMP_C_VERSION VERSION_GREATER_EQUAL "4.5") 
+      if(OpenMP_C_VERSION VERSION_GREATER_EQUAL "4.5")
          add_definitions(-DL7_OPENMP_OFFLOAD)
          message("Compiling l7_update_perf with OpenMP accelerator support")
          target_sources(l7_update_perf PRIVATE l7_update_openmp.c)
