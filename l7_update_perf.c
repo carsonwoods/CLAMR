@@ -61,26 +61,27 @@
 
 // If OpenCL is present, load the EZCL library
 // The EZCL library provides OpenCL API endpoints
-#ifdef HAVE_OPENCL#include "ezcl/ezcl.h"
+#ifdef HAVE_OPENCL
+#include "ezcl/ezcl.h"
 
 #endif
 
-extern void initialize_data_host(void ** odata, int nowned, int nremote, int type_size, int start);
+extern void initialize_data_host(void **odata, int nowned, int nremote, int type_size, int start);
 
 // If CUDA is available, initialize data on CUDA device
 #ifdef HAVE_CUDA
-extern void initialize_data_cuda(void ** odata, int nowned, int nremote, int type_size, int start);
+extern void initialize_data_cuda(void **odata, int nowned, int nremote, int type_size, int start);
 #endif
 
 // If OpenCL is available, initialize data on OpenCL device
 #ifdef HAVE_OPENCL
-extern void initialize_data_opencl(void ** odata, int nowned, int nremote, int type_size, int start);
+extern void initialize_data_opencl(void **odata, int nowned, int nremote, int type_size, int start);
 #endif
 
 // If OpenMP is available and of sufficient version,
 // initialize data on OpenCL device
 #if defined(_OPENMP) && _OPENMP >= 201511
-extern void initialize_data_openmp(void ** odata, int nowned, int nremote, int type_size, int start);
+extern void initialize_data_openmp(void **odata, int nowned, int nremote, int type_size, int start);
 #endif
 
 // specifies the possible memory spaces (depends on support device)
@@ -137,7 +138,7 @@ static struct option long_options[] = {
 
 // offers a help string to define parameters in the CLI
 void
-usage(char * exename) {
+usage(char *exename) {
   fprintf(stderr, "usage: %s [-t typesize] [-i iterations] [-n neighbors] [-o owned] [-r remote] [-b blocksize] [-s stride] [-m memspace]\n", exename);
   exit(-1);
 }
