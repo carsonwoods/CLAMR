@@ -271,8 +271,7 @@ double normal_dist(double mean, double stdev) {
 // if a > b, return 1
 // if a == b, return 0
 int double_compare(const void * va, const void * vb) {
-  const double a = * (const double * ) va,
-               b = * (const double * ) vb;
+  const double a = * (const double *) va, b = * (const double *) vb;
   if (a < b) return -1;
   if (a > b) return 1;
   return 0;
@@ -281,8 +280,7 @@ int double_compare(const void * va, const void * vb) {
 // casts two void pointers (va, vb) into integers (a, b)
 // returns a - b
 int int_compare(const void * va, const void * vb) {
-  const int a = * (const int * ) va,
-            b = * (const int * ) vb;
+  const int a = *(const int *) va, b = *(const int *) vb;
   return a - b;
 }
 
