@@ -270,6 +270,10 @@ double normal_dist(double mean, double stdev) {
     return r*cos(theta);
 }
 
+// casts two void pointers (va, vb) into doubles (a, b)
+// if a < b, return -1
+// if a > b, return 1
+// if a == b, return 0
 int double_compare(const void *va, const void *vb)
 {
     const double a = *(const double *)va, b = *(const double *)vb;
@@ -278,25 +282,29 @@ int double_compare(const void *va, const void *vb)
     return 0;
 }
 
+// casts two void pointers (va, vb) into integers (a, b)
+// returns a - b
 int int_compare(const void *va, const void *vb)
 {
     const int a = *(const int *)va, b = *(const int *)vb;
     return a - b;
 }
 
+// returns L7_Datatype based on type_size integer
+// based on L7_Datatype enum
 enum  L7_Datatype typesize_to_l7type(int type_size)
 {
-   switch(type_size) {
-   case 1:
-      return L7_CHAR;
-   case 2:
-      return L7_SHORT;
-   case 4:
-      return L7_INT;
-   case 8:
-      return L7_DOUBLE;
-   default:
-      return -1;
+    switch(type_size) {
+        case 1:
+            return L7_CHAR;
+        case 2:
+            return L7_SHORT;
+        case 4:
+            return L7_INT;
+        case 8:
+            return L7_DOUBLE;
+        default:
+            return -1;
    }
 }
 
