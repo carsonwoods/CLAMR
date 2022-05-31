@@ -256,8 +256,8 @@ double normal_dist(double mean, double stdev) {
 
     // generates the R and Theta values from the above
     // documentation
-    double r = sqrt(-2.*log(u1))
-    double theta = (2*M_PI*u2)
+    double r = sqrt(-2.*log(u1));
+    double theta = (2*M_PI*u2);
 
     // an additional number can be generated in the
     // same distribution using the alternate form
