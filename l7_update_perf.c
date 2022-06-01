@@ -262,6 +262,8 @@ int gauss_dist_int(double mean, double stdev) {
     double u1 = ( (double)(rand()) + 1. )/( (double)(RAND_MAX) + 1. );
     double u2 = ( (double)(rand()) + 1. )/( (double)(RAND_MAX) + 1. );
 
+    printf("%d\t%d", u1, u2);
+
     // generates the R and Theta values from the above
     // documentation
     double r = sqrt(-2.*log(u1));
