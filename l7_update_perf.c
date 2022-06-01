@@ -597,6 +597,7 @@ int main(int argc, char *argv[])
     gtime = 1;
 
     for (i=0; i<niterations; i++) {
+        printf("%f\n", gauss_dist(10, 2));
         time_start = L7_Wtime();
 
         #ifdef HAVE_OPENCL
