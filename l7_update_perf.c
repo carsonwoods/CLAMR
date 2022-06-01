@@ -47,6 +47,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -271,9 +272,7 @@ int gauss_dist_int(double mean, double stdev) {
     // same distribution using the alternate form
     // ((r*sin(theta)) * stdev) + mean
 
-    printf("%f", (r*cos(theta)));
-
-    return ( (r*cos(theta)) * stdev ) + mean;
+    return round(((r*cos(theta)) * stdev ) + mean);
 }
 
 // casts two void pointers (va, vb) into doubles (a, b)
@@ -401,6 +400,9 @@ report_results_update(int penum, double *time_total_pe, int count_updated_pe, in
 
 int main(int argc, char *argv[])
 {
+    // sets random seed for generating random distributions
+    srand(time(0));
+
     int penum = 0, ierr;
 
     int i, j, my_start_index,  remainder,
