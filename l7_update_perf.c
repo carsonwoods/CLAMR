@@ -253,7 +253,7 @@ void parse_arguments(int argc, char **argv)
 
 // implementation of the following
 // https://en.wikipedia.org/wiki/Box–Muller_transform
-double gauss_dist(double mean, double stdev) {
+int gauss_dist_int(double mean, double stdev) {
     // generates two random numbers that form the seeds
     // of the transform
     double u1 = ( (double)(rand()) + 1. )/( (double)(RAND_MAX) + 1. );
@@ -266,10 +266,8 @@ double gauss_dist(double mean, double stdev) {
 
     // an additional number can be generated in the
     // same distribution using the alternate form
-    // r*sin(theta)
-    double r1 = ((r*cos(theta)) * stdev) + mean;
-
-    return r1;
+    // ((r*sin(theta)) * stdev) + mean
+    return (int)round(((r*cos(theta)) * stdev) + mean);
 }
 
 // casts two void pointers (va, vb) into doubles (a, b)
@@ -597,7 +595,7 @@ int main(int argc, char *argv[])
     gtime = 1;
 
     for (i=0; i<niterations; i++) {
-        printf("%f\n", gauss_dist(10, 2));
+        printf("%d\n", gauss_dist_int(10, 2));
         time_start = L7_Wtime();
 
         #ifdef HAVE_OPENCL
