@@ -270,7 +270,7 @@ int gauss_dist_int(double mean, double stdev) {
     // an additional number can be generated in the
     // same distribution using the alternate form
     // ((r*sin(theta)) * stdev) + mean
-    printf("%f", (r*cos(theta)) * stdev ) + mean);
+    printf("%f", ((r*cos(theta)) * stdev)  + mean);
 
     return ( (r*cos(theta)) * stdev ) + mean;
 }
