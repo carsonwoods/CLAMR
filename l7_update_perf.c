@@ -93,6 +93,25 @@ enum memspace {
 };
 typedef enum memspace memspace_t;
 
+// implementation of the following
+// https://en.wikipedia.org/wiki/Box–Muller_transform
+int gauss_dist_int(double mean, double stdev) {
+    // generates two random numbers that form the seeds
+    // of the transform
+    double u1 = ( (double)(rand()) + 1. )/( (double)(RAND_MAX) + 1. );
+    double u2 = ( (double)(rand()) + 1. )/( (double)(RAND_MAX) + 1. );
+
+    // generates the R and Theta values from the above
+    // documentation
+    double r = sqrt(-2.*log(u1));
+    double theta = (2*M_PI*u2);
+
+    // an additional number can be generated in the
+    // same distribution using the alternate form
+    // ((r*sin(theta)) * stdev) + mean
+    return (int)round(((r*cos(theta)) * stdev) + mean);
+}
+
 /*
  * We declare these settings as global
  * because they're used by basically every
@@ -250,25 +269,6 @@ void parse_arguments(int argc, char **argv)
         stride = 16;
 
     return;
-}
-
-// implementation of the following
-// https://en.wikipedia.org/wiki/Box–Muller_transform
-int gauss_dist_int(double mean, double stdev) {
-    // generates two random numbers that form the seeds
-    // of the transform
-    double u1 = ( (double)(rand()) + 1. )/( (double)(RAND_MAX) + 1. );
-    double u2 = ( (double)(rand()) + 1. )/( (double)(RAND_MAX) + 1. );
-
-    // generates the R and Theta values from the above
-    // documentation
-    double r = sqrt(-2.*log(u1));
-    double theta = (2*M_PI*u2);
-
-    // an additional number can be generated in the
-    // same distribution using the alternate form
-    // ((r*sin(theta)) * stdev) + mean
-    return (int)round(((r*cos(theta)) * stdev) + mean);
 }
 
 // casts two void pointers (va, vb) into doubles (a, b)
