@@ -267,7 +267,7 @@ void parse_arguments(int argc, char **argv)
     if (nremote < 0)
         nremote = nowned/(1 << 6);
     if (blocksz < 0) {
-        double x = gauss_dist(64.0, 8.0);
+        int x = gauss_dist(64.0, 8.0);
         printf("%f\n", x);
         blocksz = nowned/(1 << 15);
     }
