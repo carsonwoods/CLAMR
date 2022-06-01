@@ -120,6 +120,8 @@ static int blocksz = -1;
 static int stride = -1;
 static memspace_t memspace = MEMSPACE_HOST;
 
+double gauss_dist(double mean, double stdev);
+
 /*
  * these are options that are specified using the
  * type defined in the getopt.h file.
