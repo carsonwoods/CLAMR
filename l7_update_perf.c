@@ -260,7 +260,7 @@ int gauss_dist_int(double mean, double stdev) {
     // generates two random numbers that form the seeds
     // of the transform
     double u1 = (double)rand() / RAND_MAX;
-    double u2 = (double)rand() / RAND_MAX
+    double u2 = (double)rand() / RAND_MAX;
 
     // generates the R and Theta values from the above
     // documentation
