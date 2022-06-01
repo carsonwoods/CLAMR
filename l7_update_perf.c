@@ -120,8 +120,6 @@ static int blocksz = -1;
 static int stride = -1;
 static memspace_t memspace = MEMSPACE_HOST;
 
-int gauss_dist(double mean, double stdev);
-
 /*
  * these are options that are specified using the
  * type defined in the getopt.h file.
@@ -143,6 +141,28 @@ static struct option long_options[] = {
     {"memspace",   required_argument, 0, 'm'},
     {0, 0, 0, 0}
 };
+
+
+// implementation of the following
+// https://en.wikipedia.org/wiki/Box–Muller_transform
+int gauss_dist(double mean, double stdev) {
+    // generates two random numbers that form the seeds
+    // of the transform
+    double u1 = (double)rand() / RAND_MAX;
+    double u2 = (double)rand() / RAND_MAX;
+
+    // generates the R and Theta values from the above
+    // documentation
+    double r = sqrt(-2.*log(u1));
+    double theta = (2*M_PI*u2);
+
+    // an additional number can be generated in the
+    // same distribution using the alternate form
+    // ((r*sin(theta)) * stdev) + mean
+
+    return round(((r*cos(theta)) * stdev ) + mean);
+}
+
 
 // offers a help string to define parameters in the CLI
 void
@@ -255,26 +275,6 @@ void parse_arguments(int argc, char **argv)
         stride = 16;
 
     return;
-}
-
-// implementation of the following
-// https://en.wikipedia.org/wiki/Box–Muller_transform
-int gauss_dist(double mean, double stdev) {
-    // generates two random numbers that form the seeds
-    // of the transform
-    double u1 = (double)rand() / RAND_MAX;
-    double u2 = (double)rand() / RAND_MAX;
-
-    // generates the R and Theta values from the above
-    // documentation
-    double r = sqrt(-2.*log(u1));
-    double theta = (2*M_PI*u2);
-
-    // an additional number can be generated in the
-    // same distribution using the alternate form
-    // ((r*sin(theta)) * stdev) + mean
-
-    return round(((r*cos(theta)) * stdev ) + mean);
 }
 
 // casts two void pointers (va, vb) into doubles (a, b)
