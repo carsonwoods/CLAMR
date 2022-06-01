@@ -259,15 +259,15 @@ void parse_arguments(int argc, char **argv)
 int gauss_dist_int(double mean, double stdev) {
     // generates two random numbers that form the seeds
     // of the transform
-    double u1 = ( (double)(rand()) + 1. )/( (double)(RAND_MAX) + 1. );
-    double u2 = ( (double)(rand()) + 1. )/( (double)(RAND_MAX) + 1. );
-
-    printf("%d\t%d", u1, u2);
+    double u1 = (double)rand() / RAND_MAX;
+    double u2 = (double)rand() / RAND_MAX
 
     // generates the R and Theta values from the above
     // documentation
     double r = sqrt(-2.*log(u1));
     double theta = (2*M_PI*u2);
+
+    printf("%f\t%f", r, theta);
 
     // an additional number can be generated in the
     // same distribution using the alternate form
