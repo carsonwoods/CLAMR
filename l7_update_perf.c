@@ -272,7 +272,7 @@ double gauss_dist_int(double mean, double stdev) {
     // same distribution using the alternate form
     // ((r*sin(theta)) * stdev) + mean
 
-    return round(((r*cos(theta)) * stdev ) + mean);
+    return ((r*cos(theta)) * stdev ) + mean;
 }
 
 // casts two void pointers (va, vb) into doubles (a, b)
