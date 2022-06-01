@@ -245,7 +245,7 @@ void parse_arguments(int argc, char **argv)
     if (nremote < 0)
         nremote = nowned/(1 << 6);
     if (blocksz < 0) {
-        double x = gauss_dist_int(64, 8);
+        double x = gauss_dist(64.0, 8.0);
         printf("%f\n", x);
         blocksz = nowned/(1 << 15);
     }
@@ -257,7 +257,7 @@ void parse_arguments(int argc, char **argv)
 
 // implementation of the following
 // https://en.wikipedia.org/wiki/Box–Muller_transform
-double gauss_dist_int(double mean, double stdev) {
+double gauss_dist(double mean, double stdev) {
     // generates two random numbers that form the seeds
     // of the transform
     double u1 = (double)rand() / RAND_MAX;
@@ -272,7 +272,7 @@ double gauss_dist_int(double mean, double stdev) {
     // same distribution using the alternate form
     // ((r*sin(theta)) * stdev) + mean
 
-    return ((r*cos(theta)) * stdev ) + mean;
+    return (double) (((r*cos(theta)) * stdev ) + mean);
 }
 
 // casts two void pointers (va, vb) into doubles (a, b)
