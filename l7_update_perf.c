@@ -253,7 +253,7 @@ void parse_arguments(int argc, char **argv)
 
 // implementation of the following
 // https://en.wikipedia.org/wiki/Box–Muller_transform
-double normal_dist(double mean, double stdev) {
+double gauss_dist(double mean, double stdev) {
     // generates two random numbers that form the seeds
     // of the transform
     double u1 = ( (double)(rand()) + 1. )/( (double)(RAND_MAX) + 1. );
@@ -267,7 +267,9 @@ double normal_dist(double mean, double stdev) {
     // an additional number can be generated in the
     // same distribution using the alternate form
     // r*sin(theta)
-    return r*cos(theta);
+    double r1 = ((r*cos(theta)) * stdev) + mean;
+
+    return r1;
 }
 
 // casts two void pointers (va, vb) into doubles (a, b)
@@ -591,7 +593,9 @@ int main(int argc, char *argv[])
      * Begin updating data
      * This is what is being "benchmarked", how quickly the data amount
      * of data specified is being updated across all members of the database
-    */   gtime = 1;
+    */
+    gtime = 1;
+
     for (i=0; i<niterations; i++) {
         time_start = L7_Wtime();
 
