@@ -259,7 +259,7 @@ void parse_arguments(int argc, char **argv)
 
 // implementation of the following
 // https://en.wikipedia.org/wiki/Box–Muller_transform
-double gauss_dist(double mean, double stdev) {
+int gauss_dist(double mean, double stdev) {
     // generates two random numbers that form the seeds
     // of the transform
     double u1 = (double)rand() / RAND_MAX;
@@ -274,7 +274,7 @@ double gauss_dist(double mean, double stdev) {
     // same distribution using the alternate form
     // ((r*sin(theta)) * stdev) + mean
 
-    return (double) (((r*cos(theta)) * stdev ) + mean);
+    return round(((r*cos(theta)) * stdev ) + mean);
 }
 
 // casts two void pointers (va, vb) into doubles (a, b)
