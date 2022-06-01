@@ -267,11 +267,11 @@ int gauss_dist_int(double mean, double stdev) {
     double r = sqrt(-2.*log(u1));
     double theta = (2*M_PI*u2);
 
-    printf("%f\t%f", r, theta);
-
     // an additional number can be generated in the
     // same distribution using the alternate form
     // ((r*sin(theta)) * stdev) + mean
+    printf("%f", (r*cos(theta)) * stdev ) + mean);
+
     return ( (r*cos(theta)) * stdev ) + mean;
 }
 
