@@ -242,7 +242,8 @@ void parse_arguments(int argc, char **argv)
     if (nowned < 0)
         nowned = (1<<28) / typesize;
     if (nremote < 0)
-        nremote = nowned/(1 << 6);
+        nremote = nowned/(guass_dist_int(64, 7));
+        //nremote = nowned/(1 << 6);
     if (blocksz < 0)
         blocksz = nowned/(1 << 15);
     if (stride < 0)
