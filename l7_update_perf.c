@@ -243,9 +243,11 @@ void parse_arguments(int argc, char **argv)
         nowned = (1<<28) / typesize;
     if (nremote < 0)
         nremote = nowned/(1 << 6);
-    if (blocksz < 0)
-        blocksz = nowned/(gauss_dist_int(1<<15, 10));
-        //blocksz = nowned/(1 << 15);
+    if (blocksz < 0) {
+        int x = gauss_dist_int(1<<15, 10)
+        printf("%d\n", x);
+        blocksz = nowned/(1 << 15);
+    }
     if (stride < 0)
         stride = 16;
 
@@ -596,7 +598,6 @@ int main(int argc, char *argv[])
     gtime = 1;
 
     for (i=0; i<niterations; i++) {
-        printf("%d\n", gauss_dist_int(10, 2));
         time_start = L7_Wtime();
 
         #ifdef HAVE_OPENCL
