@@ -263,14 +263,13 @@ void parse_arguments(int argc, char **argv)
     if (nneighbors < 0)
         nneighbors = sqrt(numpes);
     if (nowned < 0)
-        nowned = (1<<28) / typesize;
+        nowned = gauss_dist(33554432, 1000);
+        //nowned = (1<<28) / typesize;
     if (nremote < 0)
         nremote = nowned/(1 << 6);
     if (blocksz < 0) {
-        int x = gauss_dist(1024.0, 10.0);
-        printf("%d\n", x);
-        blocksz = x;
-        //blocksz = nowned/(1 << 15);
+        //blocksz = gauss_dist(1024.0, 10.0);
+        blocksz = nowned/(1 << 15);
     }
     if (stride < 0)
         stride = 16;
