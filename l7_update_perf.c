@@ -140,7 +140,7 @@ static struct option long_options[] = {
     {"blocksize",  required_argument,   0, 'b'},
     {"stride",     required_argument,   0, 's'},
     {"memspace",   required_argument,   0, 'm'},
-    {"units",      required_argument, "c", 'u'},
+    //{"units",      required_argument, "c", 'u'},
     {0, 0, 0, 0}
 };
 
@@ -254,12 +254,12 @@ void parse_arguments(int argc, char **argv)
                     usage(argv[0]);
                 }
                 break;
-            case 'u':
-                // used to set units value
-                units = optarg;
-                printf(
-                    usage(argv[0]);
-                break;
+//             case 'u':
+//                 // used to set units value
+//                 units = optarg;
+//                 printf(
+//                     usage(argv[0]);
+//                 break;
             case '?':
                 usage(argv[0]);
                 break;
@@ -390,16 +390,16 @@ report_results_update(int penum, double *time_total_pe, int count_updated_pe, in
 
         
         // sets formatting divisor to adjust printing format
-        if (strcmp(unit, "b") == 0) {
-            unit_div = 1;
-        } else if (strcmp(unit, "k") == 0) {
-            unit_div = 1000;
-        } else if (strcmp(unit, "m") == 0) {
-            unit_div = 1000000;
-        } else if (strcmp(unit, "g") == 0) {
-            unit_div = 1000000000;
-        }
-        
+//         if (strcmp(unit, "b") == 0) {
+//             unit_div = 1;
+//         } else if (strcmp(unit, "k") == 0) {
+//             unit_div = 1000;
+//         } else if (strcmp(unit, "m") == 0) {
+//             unit_div = 1000000;
+//         } else if (strcmp(unit, "g") == 0) {
+//             unit_div = 1000000000;
+//         }
+//         
         /* Print results */
         printf("nPEs\tMem\tType\tnOwned\t\tnRemote\tBlockSz\tStride\tnIter");
         printf("\tLat(avg/min/med/max)\t\t\tBW(avg/min/med/max)\n");
