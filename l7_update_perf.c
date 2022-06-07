@@ -119,7 +119,7 @@ static int nremote = -1;
 static int blocksz = -1;
 static int stride = -1;
 static int unit_div = 1;
-static char * unit_symbol = "b";
+static char * unit_symbol = "Bytes";
 static memspace_t memspace = MEMSPACE_HOST;
 
 /*
@@ -259,16 +259,16 @@ void parse_arguments(int argc, char **argv)
                 // used to set units value
                 if (strcmp(optarg, "b") == 0) {
                     unit_div = 1;
-                    unit_symbol = "B";
+                    unit_symbol = "Bytes";
                 } else if (strcmp(optarg, "k") == 0) {
                     unit_div = 1000;
-                    unit_symbol = "KB";
+                    unit_symbol = "Kilobytes";
                 } else if (strcmp(optarg, "m") == 0) {
                     unit_div = 1000000;
-                    unit_symbol = "MB";
+                    unit_symbol = "Megabytes";
                 } else if (strcmp(optarg, "g") == 0) {
                     unit_div = 1000000000;
-                    unit_symbol = "GB";
+                    unit_symbol = "Gigabytes";
                 } else {
                     fprintf(stderr, "Invalid formatting choice [b, k, m, g] %s\n", optarg);
                     usage(argv[0]);
@@ -397,9 +397,7 @@ report_results_update(int penum, double *time_total_pe, int count_updated_pe, in
             bandwidth_med = (bandwidth_global[num_timings/2]
                             + bandwidth_global[num_timings/2 - 1]) / 2;
         }
-        
-        printf("%d\n", unit_div);
-    
+            
         /* Print results */
         printf("nPEs\tMem\tType\tnOwned\t\tnRemote\tBlockSz\tStride\tnIter");
         printf("\tLat(avg/min/med/max)\t\t\tBW - %s (avg/min/med/max)\n", unit_symbol);
