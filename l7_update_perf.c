@@ -386,7 +386,7 @@ report_results_update(int penum, double *time_total_pe, int count_updated_pe, in
         }
         
         
-        int unit_div = 1
+        int unit_div = 1;
 
         
         // sets formatting divisor to adjust printing format
