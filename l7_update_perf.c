@@ -142,7 +142,7 @@ static struct option long_options[] = {
     {"memspace",   required_argument, 0, 'm'},
     {"units",      required_argument, 0, 'u'},
     {0, 0, 0, 0}
-}
+};
 
 
 // implementation of the following
