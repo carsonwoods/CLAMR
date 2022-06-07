@@ -391,13 +391,13 @@ report_results_update(int penum, double *time_total_pe, int count_updated_pe, in
         
         // sets formatting divisor to adjust printing format
         if (strcmp(unit, "b") == 0) {
-            unit_dev = 1;
+            unit_div = 1;
         } else if (strcmp(unit, "k") == 0) {
-            unit_dev = 1000;
+            unit_div = 1000;
         } else if (strcmp(unit, "m") == 0) {
-            unit_dev = 1000000;
+            unit_div = 1000000;
         } else if (strcmp(unit, "g") == 0) {
-            unit_dev = 1000000000;
+            unit_div = 1000000000;
         }
         
         /* Print results */
@@ -408,8 +408,8 @@ report_results_update(int penum, double *time_total_pe, int count_updated_pe, in
                nremote, blocksz, stride, num_timings);
         printf("\t%f/%f/%f/%f,\t%f/%f/%f/%f\n",
                latency_mean, time_total_global[0], latency_med,
-               time_total_global[num_timings-1], bandwidth_mean/unit_dev,
-               bandwidth_global[0]/unit_dev, bandwidth_med/unit_dev, bandwidth_global[num_timings-1]/unit_dev);
+               time_total_global[num_timings-1], bandwidth_mean/unit_div,
+               bandwidth_global[0]/unit_div, bandwidth_med/unit_div, bandwidth_global[num_timings-1]/unit_div);
 
 
         free(bandwidth_global);
