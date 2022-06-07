@@ -118,7 +118,7 @@ static int nowned = -1;
 static int nremote = -1;
 static int blocksz = -1;
 static int stride = -1;
-static char* units = "b";
+static int unit_div = 1;
 static memspace_t memspace = MEMSPACE_HOST;
 
 /*
@@ -142,7 +142,7 @@ static struct option long_options[] = {
     {"memspace",   required_argument, 0, 'm'},
     {"units",      required_argument, 0, 'u'},
     {0, 0, 0, 0}
-};
+}
 
 
 // implementation of the following
@@ -254,12 +254,21 @@ void parse_arguments(int argc, char **argv)
                     usage(argv[0]);
                 }
                 break;
-//             case 'u':
-//                 // used to set units value
-//                 units = optarg;
-//                 printf(
-//                     usage(argv[0]);
-//                 break;
+            case 'u':
+                // used to set units value
+                if (strcmp(optarg, "b") == 0) {
+                    unit_div = 1;
+                } else if (strcmp(optarg, "k") == 0) {
+                    unit_div = 1000;
+                } else if (strcmp(optarg, "m") == 0) {
+                    unit_div = 1000000;
+                } else if (strcmp(optarg, "g") == 0) {
+                    unit_div = 1000000000;
+                } else {
+                    fprintf(stderr, "Invalid formatting choice [b, k, m, g] %s\n", optarg);
+                    usage(argv[0]);
+                }
+                break;
             case '?':
                 usage(argv[0]);
                 break;
@@ -275,10 +284,9 @@ void parse_arguments(int argc, char **argv)
         //nowned = (1<<28) / typesize;
     if (nremote < 0)
         nremote = nowned/(1 << 6);
-    if (blocksz < 0) {
-        //blocksz = gauss_dist(1024, 32);
+    if (blocksz < 0) 
         blocksz = nowned/(1 << 15);
-    }
+        //blocksz = gauss_dist(1024, 32);
     if (stride < 0)
         stride = 16;
 
@@ -385,21 +393,7 @@ report_results_update(int penum, double *time_total_pe, int count_updated_pe, in
                             + bandwidth_global[num_timings/2 - 1]) / 2;
         }
         
-        
-        int unit_div = 1;
-
-        
-        // sets formatting divisor to adjust printing format
-//         if (strcmp(unit, "b") == 0) {
-//             unit_div = 1;
-//         } else if (strcmp(unit, "k") == 0) {
-//             unit_div = 1000;
-//         } else if (strcmp(unit, "m") == 0) {
-//             unit_div = 1000000;
-//         } else if (strcmp(unit, "g") == 0) {
-//             unit_div = 1000000000;
-//         }
-//         
+    
         /* Print results */
         printf("nPEs\tMem\tType\tnOwned\t\tnRemote\tBlockSz\tStride\tnIter");
         printf("\tLat(avg/min/med/max)\t\t\tBW(avg/min/med/max)\n");
