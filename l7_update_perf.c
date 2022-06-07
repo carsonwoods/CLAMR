@@ -132,15 +132,15 @@ static memspace_t memspace = MEMSPACE_HOST;
 */
 static struct option long_options[] = {
     /* These options set a flag. */
-    {"typesize",   required_argument,   0, 't'},
-    {"iterations", required_argument,   0, 'i'},
-    {"owned",      required_argument,   0, 'o'},
-    {"neighbors",  required_argument,   0, 'n'},
-    {"remote",     required_argument,   0, 'r'},
-    {"blocksize",  required_argument,   0, 'b'},
-    {"stride",     required_argument,   0, 's'},
-    {"memspace",   required_argument,   0, 'm'},
-    {"units",      required_argument, "c", 'u'},
+    {"typesize",   required_argument, 0, 't'},
+    {"iterations", required_argument, 0, 'i'},
+    {"owned",      required_argument, 0, 'o'},
+    {"neighbors",  required_argument, 0, 'n'},
+    {"remote",     required_argument, 0, 'r'},
+    {"blocksize",  required_argument, 0, 'b'},
+    {"stride",     required_argument, 0, 's'},
+    {"memspace",   required_argument, 0, 'm'},
+    {"units",      required_argument, 0, 'u'},
     {0, 0, 0, 0}
 };
 
