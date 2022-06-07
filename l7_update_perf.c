@@ -393,6 +393,7 @@ report_results_update(int penum, double *time_total_pe, int count_updated_pe, in
                             + bandwidth_global[num_timings/2 - 1]) / 2;
         }
         
+        printf("%d\n", unit_div);
     
         /* Print results */
         printf("nPEs\tMem\tType\tnOwned\t\tnRemote\tBlockSz\tStride\tnIter");
