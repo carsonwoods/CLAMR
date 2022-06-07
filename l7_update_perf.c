@@ -118,6 +118,7 @@ static int nowned = -1;
 static int nremote = -1;
 static int blocksz = -1;
 static int stride = -1;
+static char units = "b"
 static memspace_t memspace = MEMSPACE_HOST;
 
 /*
@@ -131,14 +132,15 @@ static memspace_t memspace = MEMSPACE_HOST;
 */
 static struct option long_options[] = {
     /* These options set a flag. */
-    {"typesize",   required_argument, 0, 't'},
-    {"iterations", required_argument, 0, 'i'},
-    {"owned",      required_argument, 0, 'o'},
-    {"neighbors",  required_argument, 0, 'n'},
-    {"remote",     required_argument, 0, 'r'},
-    {"blocksize",  required_argument, 0, 'b'},
-    {"stride",     required_argument, 0, 's'},
-    {"memspace",   required_argument, 0, 'm'},
+    {"typesize",   required_argument,   0, 't'},
+    {"iterations", required_argument,   0, 'i'},
+    {"owned",      required_argument,   0, 'o'},
+    {"neighbors",  required_argument,   0, 'n'},
+    {"remote",     required_argument,   0, 'r'},
+    {"blocksize",  required_argument,   0, 'b'},
+    {"stride",     required_argument,   0, 's'},
+    {"memspace",   required_argument,   0, 'm'},
+    {"units",      required_argument, "c", 'u'},
     {0, 0, 0, 0}
 };
 
@@ -168,7 +170,7 @@ int gauss_dist(double mean, double stdev) {
 void
 usage(char *exename)
 {
-   fprintf(stderr, "usage: %s [-t typesize] [-i iterations] [-n neighbors] [-o owned] [-r remote] [-b blocksize] [-s stride] [-m memspace]\n", exename);
+   fprintf(stderr, "usage: %s [-t typesize] [-i iterations] [-n neighbors] [-o owned] [-r remote] [-b blocksize] [-s stride] [-m memspace] [-u b,k,m,g]\n", exename);
    exit(-1);
 }
 
@@ -179,82 +181,88 @@ void parse_arguments(int argc, char **argv)
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long (argc, argv, "t:i:n:o:r:b:s:m:",
+        c = getopt_long (argc, argv, "t:i:n:o:r:b:s:m:u:",
                        long_options, &option_index);
         if (c == -1) {
             break;
         }
 
         switch (c) {
-        case 'i':
-            // used to set custom iteration's value
-            niterations = atoi(optarg);
-            if (niterations < 0) usage(argv[0]);
-            break;
-        case 't':
-            // used to set typesize value
-            typesize = atoi(optarg);
-            if (typesize < 1 || typesize > 8) usage(argv[0]);
-            break;
-        case 'n':
-            // used to set nneighbors value
-            nneighbors = atoi(optarg);
-            if (nneighbors < 0) usage(argv[0]);
-            break;
-        case 'o':
-            // used to set nowned value
-            nowned = atoi(optarg);
-            if (nowned < 0) usage(argv[0]);
-            break;
-        case 'r':
-            // used to set nremote value
-            nremote = atoi(optarg);
-            if (nremote < 0) usage(argv[0]);
-            break;
-        case 'b':
-            // used to set blocksz value
-            blocksz = atoi(optarg);
-            if (blocksz < 0) usage(argv[0]);
-            break;
-        case 's':
-            // used to set stride size value
-            stride = atoi(optarg);
-            if (stride < 0) usage(argv[0]);
-            break;
-        case 'm':
-            // used to set memory space
-            // valid options include host, cuda, opencl, or openmp
-            if (strcmp(optarg, "host") == 0) {
-                memspace = MEMSPACE_HOST;
-            } else if (strcmp(optarg, "cuda") == 0) {
-                #ifdef HAVE_CUDA
-                    memspace = MEMSPACE_CUDA;
-                #else
-                    fprintf(stderr, "No compiler support for CUDA accelerator memory\n");
+            case 'i':
+                // used to set custom iteration's value
+                niterations = atoi(optarg);
+                if (niterations < 0) usage(argv[0]);
+                break;
+            case 't':
+                // used to set typesize value
+                typesize = atoi(optarg);
+                if (typesize < 1 || typesize > 8) usage(argv[0]);
+                break;
+            case 'n':
+                // used to set nneighbors value
+                nneighbors = atoi(optarg);
+                if (nneighbors < 0) usage(argv[0]);
+                break;
+            case 'o':
+                // used to set nowned value
+                nowned = atoi(optarg);
+                if (nowned < 0) usage(argv[0]);
+                break;
+            case 'r':
+                // used to set nremote value
+                nremote = atoi(optarg);
+                if (nremote < 0) usage(argv[0]);
+                break;
+            case 'b':
+                // used to set blocksz value
+                blocksz = atoi(optarg);
+                if (blocksz < 0) usage(argv[0]);if (units != 'b' && units != 'k' && units != 'm' && units != 'g') 
+                break;
+            case 's':
+                // used to set stride size value
+                stride = atoi(optarg);
+                if (stride < 0) usage(argv[0]);
+                break;
+            case 'm':
+                // used to set memory space
+                // valid options include host, cuda, opencl, or openmp
+                if (strcmp(optarg, "host") == 0) {
+                    memspace = MEMSPACE_HOST;
+                } else if (strcmp(optarg, "cuda") == 0) {
+                    #ifdef HAVE_CUDA
+                        memspace = MEMSPACE_CUDA;
+                    #else
+                        fprintf(stderr, "No compiler support for CUDA accelerator memory\n");
+                        usage(argv[0]);
+                    #endif
+                } else if (strcmp(optarg, "opencl") == 0) {
+                    #ifdef HAVE_OPENCL
+                        memspace = MEMSPACE_OPENCL;
+                    #else
+                        fprintf(stderr, "No compiler support for OpenCL accelerator memory\n");
+                        usage(argv[0]);
+                    #endif
+                } else if (strcmp(optarg, "openmp") == 0) {
+                    #if defined(_OPENMP) && _OPENMP >= 201511
+                        memspace = MEMSPACE_OPENMP;
+                    #else
+                        fprintf(stderr, "No compiler support for OpenMP accelerator memory\n");
+                        usage(argv[0]);
+                    #endif
+                } else {
+                    fprintf(stderr, "Invalid memory space %s\n", optarg);
                     usage(argv[0]);
-                #endif
-            } else if (strcmp(optarg, "opencl") == 0) {
-                #ifdef HAVE_OPENCL
-                    memspace = MEMSPACE_OPENCL;
-                #else
-                    fprintf(stderr, "No compiler support for OpenCL accelerator memory\n");
+                }
+                break;
+            case 'u':
+                // used to set units value
+                units = optarg;
+                printf(
                     usage(argv[0]);
-                #endif
-            } else if (strcmp(optarg, "openmp") == 0) {
-                #if defined(_OPENMP) && _OPENMP >= 201511
-                    memspace = MEMSPACE_OPENMP;
-                #else
-                    fprintf(stderr, "No compiler support for OpenMP accelerator memory\n");
-                    usage(argv[0]);
-                #endif
-            } else {
-                fprintf(stderr, "Invalid memory space %s\n", optarg);
+                break;
+            case '?':
                 usage(argv[0]);
-            }
-            break;
-        case '?':
-            usage(argv[0]);
-            break;
+                break;
         }
     }
     /* Now compute any unset values from the defaults */
@@ -268,7 +276,7 @@ void parse_arguments(int argc, char **argv)
     if (nremote < 0)
         nremote = nowned/(1 << 6);
     if (blocksz < 0) {
-        //blocksz = gauss_dist(1024.0, 10.0);
+        //blocksz = gauss_dist(1024, 32);
         blocksz = nowned/(1 << 15);
     }
     if (stride < 0)
@@ -316,7 +324,7 @@ enum  L7_Datatype typesize_to_l7type(int type_size)
 }
 
 void
-report_results_update(int penum, double *time_total_pe, int count_updated_pe, int num_timings, int type_size)
+report_results_update(int penum, double *time_total_pe, int count_updated_pe, int num_timings, int type_size, char units)
 {
     int i, count_updated_global, bytes_updated, remainder;
 
@@ -376,7 +384,22 @@ report_results_update(int penum, double *time_total_pe, int count_updated_pe, in
             bandwidth_med = (bandwidth_global[num_timings/2]
                             + bandwidth_global[num_timings/2 - 1]) / 2;
         }
+        
+        
+        int unit_div = 1
 
+        
+        // sets formatting divisor to adjust printing format
+        if (strcmp(unit, "b") == 0) {
+            unit_dev = 1;
+        } else if (strcmp(unit, "k") == 0) {
+            unit_dev = 1000;
+        } else if (strcmp(unit, "m") == 0) {
+            unit_dev = 1000000;
+        } else if (strcmp(unit, "g") == 0) {
+            unit_dev = 1000000000;
+        }
+        
         /* Print results */
         printf("nPEs\tMem\tType\tnOwned\t\tnRemote\tBlockSz\tStride\tnIter");
         printf("\tLat(avg/min/med/max)\t\t\tBW(avg/min/med/max)\n");
@@ -385,8 +408,8 @@ report_results_update(int penum, double *time_total_pe, int count_updated_pe, in
                nremote, blocksz, stride, num_timings);
         printf("\t%f/%f/%f/%f,\t%f/%f/%f/%f\n",
                latency_mean, time_total_global[0], latency_med,
-               time_total_global[num_timings-1], bandwidth_mean,
-               bandwidth_global[0], bandwidth_med, bandwidth_global[num_timings-1]);
+               time_total_global[num_timings-1], bandwidth_mean/unit_dev,
+               bandwidth_global[0]/unit_dev, bandwidth_med/unit_dev, bandwidth_global[num_timings-1]/unit_dev);
 
 
         free(bandwidth_global);
@@ -402,15 +425,12 @@ report_results_update(int penum, double *time_total_pe, int count_updated_pe, in
 
 int main(int argc, char *argv[])
 {
-    // sets random seed for generating random distributions
-    srand(time(0));
-
     int penum = 0, ierr;
 
     int i, j, my_start_index,  remainder,
         num_partners_lo, num_partners_hi,
         offset, num_indices_per_partner, num_indices_offpe,
-        inum, l7_id, gtime, count_updated_pe, iout;
+        inum, l7_id, count_updated_pe, iout;
 
     enum L7_Datatype l7type;
 
@@ -430,9 +450,14 @@ int main(int argc, char *argv[])
     // L7_Init(process_number, number_of_processes, argc, argv, do_quo_setup, lttrace_on)
     // I think L7_Init places process number in penum here
     ierr = L7_Init(&penum, &numpes, &argc, argv, 0, 0);
-
+    
+    // sets random seed for generating random distributions
+    srand(time(0));
+    
     // parse CLI arguments
     parse_arguments(argc, argv);
+    
+    printf("Process Number %d -- Block Size %d\n", nowned);
 
     // if compiled with OpenCL support
     #ifdef HAVE_OPENCL
@@ -602,9 +627,8 @@ int main(int argc, char *argv[])
      * This is what is being "benchmarked", how quickly the data amount
      * of data specified is being updated across all members of the database
     */
-    gtime = 1;
-
     for (i=0; i<niterations; i++) {
+        
         time_start = L7_Wtime();
 
         #ifdef HAVE_OPENCL
@@ -630,7 +654,7 @@ int main(int argc, char *argv[])
     count_updated_pe = nremote;
 
     // This involves L7 collectives, so we can't shut down L7 or MPI yet.
-    report_results_update(penum, time_total_pe, count_updated_pe, niterations, typesize);
+    report_results_update(penum, time_total_pe, count_updated_pe, niterations, typesize, units);
 
     // gracefully clean memory
     free(time_total_pe);
