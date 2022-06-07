@@ -140,7 +140,7 @@ static struct option long_options[] = {
     {"blocksize",  required_argument,   0, 'b'},
     {"stride",     required_argument,   0, 's'},
     {"memspace",   required_argument,   0, 'm'},
-    //{"units",      required_argument, "c", 'u'},
+    {"units",      required_argument, "c", 'u'},
     {0, 0, 0, 0}
 };
 
@@ -324,7 +324,7 @@ enum  L7_Datatype typesize_to_l7type(int type_size)
 }
 
 void
-report_results_update(int penum, double *time_total_pe, int count_updated_pe, int num_timings, int type_size, char units)
+report_results_update(int penum, double *time_total_pe, int count_updated_pe, int num_timings, int type_size, char* units)
 {
     int i, count_updated_global, bytes_updated, remainder;
 
