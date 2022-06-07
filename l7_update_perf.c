@@ -118,7 +118,7 @@ static int nowned = -1;
 static int nremote = -1;
 static int blocksz = -1;
 static int stride = -1;
-static char units = "b"
+static char* units = "b";
 static memspace_t memspace = MEMSPACE_HOST;
 
 /*
