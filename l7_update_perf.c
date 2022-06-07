@@ -332,7 +332,7 @@ enum  L7_Datatype typesize_to_l7type(int type_size)
 }
 
 void
-report_results_update(int penum, double *time_total_pe, int count_updated_pe, int num_timings, int type_size, char* units)
+report_results_update(int penum, double *time_total_pe, int count_updated_pe, int num_timings, int type_size)
 {
     int i, count_updated_global, bytes_updated, remainder;
 
@@ -648,7 +648,7 @@ int main(int argc, char *argv[])
     count_updated_pe = nremote;
 
     // This involves L7 collectives, so we can't shut down L7 or MPI yet.
-    report_results_update(penum, time_total_pe, count_updated_pe, niterations, typesize, units);
+    report_results_update(penum, time_total_pe, count_updated_pe, niterations, typesize);
 
     // gracefully clean memory
     free(time_total_pe);
