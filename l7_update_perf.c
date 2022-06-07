@@ -216,7 +216,7 @@ void parse_arguments(int argc, char **argv)
             case 'b':
                 // used to set blocksz value
                 blocksz = atoi(optarg);
-                if (blocksz < 0) usage(argv[0]);if (units != 'b' && units != 'k' && units != 'm' && units != 'g') 
+                if (blocksz < 0) usage(argv[0]);
                 break;
             case 's':
                 // used to set stride size value
