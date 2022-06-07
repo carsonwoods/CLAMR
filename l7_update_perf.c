@@ -119,6 +119,7 @@ static int nremote = -1;
 static int blocksz = -1;
 static int stride = -1;
 static int unit_div = 1;
+static char * unit_symbol = "b";
 static memspace_t memspace = MEMSPACE_HOST;
 
 /*
@@ -258,12 +259,16 @@ void parse_arguments(int argc, char **argv)
                 // used to set units value
                 if (strcmp(optarg, "b") == 0) {
                     unit_div = 1;
+                    unit_symbol = "B";
                 } else if (strcmp(optarg, "k") == 0) {
                     unit_div = 1000;
+                    unit_symbol = "KB";
                 } else if (strcmp(optarg, "m") == 0) {
                     unit_div = 1000000;
+                    unit_symbol = "MB";
                 } else if (strcmp(optarg, "g") == 0) {
                     unit_div = 1000000000;
+                    unit_symbol = "GB";
                 } else {
                     fprintf(stderr, "Invalid formatting choice [b, k, m, g] %s\n", optarg);
                     usage(argv[0]);
@@ -397,7 +402,7 @@ report_results_update(int penum, double *time_total_pe, int count_updated_pe, in
     
         /* Print results */
         printf("nPEs\tMem\tType\tnOwned\t\tnRemote\tBlockSz\tStride\tnIter");
-        printf("\tLat(avg/min/med/max)\t\t\tBW(avg/min/med/max)\n");
+        printf("\tLat(avg/min/med/max)\t\t\tBW - %s (avg/min/med/max)\n", unit_symbol);
         printf("%d,\t%d,\t%d,\t%d,\t%d,\t%d,\t%d,\t%d,",
                numpes, memspace, typesize, nowned,
                nremote, blocksz, stride, num_timings);
