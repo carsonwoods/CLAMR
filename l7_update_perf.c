@@ -455,7 +455,7 @@ int main(int argc, char *argv[])
     // parse CLI arguments
     parse_arguments(argc, argv);
     
-    printf("Process Number %d -- Block Size %d\n", nowned);
+    printf("Process Number %d -- Block Size %d\n", penum, nowned);
 
     // if compiled with OpenCL support
     #ifdef HAVE_OPENCL
