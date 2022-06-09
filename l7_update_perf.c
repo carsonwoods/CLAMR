@@ -151,19 +151,27 @@ static struct option long_options[] = {
 int gauss_dist(double mean, double stdev) {
     // generates two random numbers that form the seeds
     // of the transform
-    double u1 = (double)rand() / RAND_MAX;
-    double u2 = (double)rand() / RAND_MAX;
 
-    // generates the R and Theta values from the above
-    // documentation
-    double r = sqrt(-2.*log(u1));
-    double theta = (2*M_PI*u2);
+    double u1, u2, r, theta;
+    int generated = -1;
 
-    // an additional number can be generated in the
-    // same distribution using the alternate form
-    // ((r*sin(theta)) * stdev) + mean
+    while (generated <= 0) {
+        u1 = (double)rand() / RAND_MAX;
+        u2 = (double)rand() / RAND_MAX;
 
-    return round(((r*cos(theta)) * stdev ) + mean);
+        // generates the R and Theta values from the above
+        // documentation
+        r = sqrt(-2.*log(u1));
+        theta = (2*M_PI*u2);
+
+        // an additional number can be generated in the
+        // same distribution using the alternate form
+        // ((r*sin(theta)) * stdev) + mean
+
+        generated = round(((r*cos(theta)) * stdev ) + mean);
+    }
+    return generated;
+
 }
 
 
@@ -282,10 +290,9 @@ void parse_arguments(int argc, char **argv, int penum)
         }
     }
     /* Now compute any unset values from the defaults */
-    if (niterations < 0)
-        niterations = 100;
     if (nneighbors < 0)
-        nneighbors = sqrt(numpes);
+        nneighbors = gauss_dist(sqrt(numpes), 1);
+        //nneighbors = sqrt(numpes);
     if (nowned < 0)
         nowned = gauss_dist(33554432, 1000);
         //nowned = (1<<28) / typesize;
@@ -456,8 +463,6 @@ int main(int argc, char *argv[])
 
     // parse CLI arguments
     parse_arguments(argc, argv, penum);
-
-    printf("Process Number %d -- nowned %d\n", penum, nowned);
 
     // if compiled with OpenCL support
     #ifdef HAVE_OPENCL
