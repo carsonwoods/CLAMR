@@ -169,13 +169,15 @@ int gauss_dist(double mean, double stdev) {
 
 // offers a help string to define parameters in the CLI
 void
-usage(char *exename)
+usage(char *exename, int penum)
 {
-   fprintf(stderr, "usage: %s [-t typesize] [-i iterations] [-n neighbors] [-o owned] [-r remote] [-b blocksize] [-s stride] [-m memspace] [-u b,k,m,g]\n", exename);
-   exit(-1);
+    if (penum == 0)
+      fprintf(stderr, "usage: %s [-t typesize] [-i iterations] [-n neighbors] [-o owned] [-r remote] [-b blocksize] [-s stride] [-m memspace] [-u b,k,m,g]\n", exename);
+
+    exit(-1);
 }
 
-void parse_arguments(int argc, char **argv)
+void parse_arguments(int argc, char **argv, int penum)
 {
     int c;
     while (1) {
@@ -192,37 +194,37 @@ void parse_arguments(int argc, char **argv)
             case 'i':
                 // used to set custom iteration's value
                 niterations = atoi(optarg);
-                if (niterations < 0) usage(argv[0]);
+                if (niterations < 0) usage(argv[0], penum);
                 break;
             case 't':
                 // used to set typesize value
                 typesize = atoi(optarg);
-                if (typesize < 1 || typesize > 8) usage(argv[0]);
+                if (typesize < 1 || typesize > 8) usage(argv[0], penum);
                 break;
             case 'n':
                 // used to set nneighbors value
                 nneighbors = atoi(optarg);
-                if (nneighbors < 0) usage(argv[0]);
+                if (nneighbors < 0) usage(argv[0], penum);
                 break;
             case 'o':
                 // used to set nowned value
                 nowned = atoi(optarg);
-                if (nowned < 0) usage(argv[0]);
+                if (nowned < 0) usage(argv[0], penum);
                 break;
             case 'r':
                 // used to set nremote value
                 nremote = atoi(optarg);
-                if (nremote < 0) usage(argv[0]);
+                if (nremote < 0) usage(argv[0], penum);
                 break;
             case 'b':
                 // used to set blocksz value
                 blocksz = atoi(optarg);
-                if (blocksz < 0) usage(argv[0]);
+                if (blocksz < 0) usage(argv[0], penum);
                 break;
             case 's':
                 // used to set stride size value
                 stride = atoi(optarg);
-                if (stride < 0) usage(argv[0]);
+                if (stride < 0) usage(argv[0], penum);
                 break;
             case 'm':
                 // used to set memory space
@@ -234,25 +236,25 @@ void parse_arguments(int argc, char **argv)
                         memspace = MEMSPACE_CUDA;
                     #else
                         fprintf(stderr, "No compiler support for CUDA accelerator memory\n");
-                        usage(argv[0]);
+                        usage(argv[0], penum);
                     #endif
                 } else if (strcmp(optarg, "opencl") == 0) {
                     #ifdef HAVE_OPENCL
                         memspace = MEMSPACE_OPENCL;
                     #else
                         fprintf(stderr, "No compiler support for OpenCL accelerator memory\n");
-                        usage(argv[0]);
+                        usage(argv[0], penum);
                     #endif
                 } else if (strcmp(optarg, "openmp") == 0) {
                     #if defined(_OPENMP) && _OPENMP >= 201511
                         memspace = MEMSPACE_OPENMP;
                     #else
                         fprintf(stderr, "No compiler support for OpenMP accelerator memory\n");
-                        usage(argv[0]);
+                        usage(argv[0], penum);
                     #endif
                 } else {
                     fprintf(stderr, "Invalid memory space %s\n", optarg);
-                    usage(argv[0]);
+                    usage(argv[0], penum);
                 }
                 break;
             case 'u':
@@ -271,11 +273,11 @@ void parse_arguments(int argc, char **argv)
                     unit_symbol = "Gigabytes";
                 } else {
                     fprintf(stderr, "Invalid formatting choice [b, k, m, g] %s\n", optarg);
-                    usage(argv[0]);
+                    usage(argv[0], penum);
                 }
                 break;
             case '?':
-                usage(argv[0]);
+                usage(argv[0], penum);
                 break;
         }
     }
@@ -289,7 +291,7 @@ void parse_arguments(int argc, char **argv)
         //nowned = (1<<28) / typesize;
     if (nremote < 0)
         nremote = nowned/(1 << 6);
-    if (blocksz < 0) 
+    if (blocksz < 0)
         blocksz = nowned/(1 << 15);
         //blocksz = gauss_dist(1024, 32);
     if (stride < 0)
@@ -397,7 +399,7 @@ report_results_update(int penum, double *time_total_pe, int count_updated_pe, in
             bandwidth_med = (bandwidth_global[num_timings/2]
                             + bandwidth_global[num_timings/2 - 1]) / 2;
         }
-            
+
         /* Print results */
         printf("nPEs\tMem\tType\tnOwned\t\tnRemote\tBlockSz\tStride\tnIter");
         printf("\tLat(avg/min/med/max)\t\t\tBW - %s (avg/min/med/max)\n", unit_symbol);
@@ -448,14 +450,14 @@ int main(int argc, char *argv[])
     // L7_Init(process_number, number_of_processes, argc, argv, do_quo_setup, lttrace_on)
     // I think L7_Init places process number in penum here
     ierr = L7_Init(&penum, &numpes, &argc, argv, 0, 0);
-    
+
     // sets random seed for generating random distributions
     srand(time(0));
-    
+
     // parse CLI arguments
-    parse_arguments(argc, argv);
-    
-    printf("Process Number %d -- Block Size %d\n", penum, nowned);
+    parse_arguments(argc, argv, penum);
+
+    printf("Process Number %d -- nowned %d\n", penum, nowned);
 
     // if compiled with OpenCL support
     #ifdef HAVE_OPENCL
@@ -626,7 +628,7 @@ int main(int argc, char *argv[])
      * of data specified is being updated across all members of the database
     */
     for (i=0; i<niterations; i++) {
-        
+
         time_start = L7_Wtime();
 
         #ifdef HAVE_OPENCL
