@@ -4,12 +4,12 @@
  *
  *  CLAMR -- LA-CC-11-094
  *
- *  Copyright 2011-2019. Triad National Security, LLC. This software was produced 
- *  under U.S. Government contract 89233218CNA000001 for Los Alamos National 
- *  Laboratory (LANL), which is operated by Triad National Security, LLC 
- *  for the U.S. Department of Energy. The U.S. Government has rights to use, 
+ *  Copyright 2011-2019. Triad National Security, LLC. This software was produced
+ *  under U.S. Government contract 89233218CNA000001 for Los Alamos National
+ *  Laboratory (LANL), which is operated by Triad National Security, LLC
+ *  for the U.S. Department of Energy. The U.S. Government has rights to use,
  *  reproduce, and distribute this software.  NEITHER THE GOVERNMENT NOR
- *  TRIAD NATIONAL SECURITY, LLC MAKES ANY WARRANTY, EXPRESS OR IMPLIED, OR 
+ *  TRIAD NATIONAL SECURITY, LLC MAKES ANY WARRANTY, EXPRESS OR IMPLIED, OR
  *  ASSUMES ANY LIABILITY FOR THE USE OF THIS SOFTWARE.  If software is modified
  *  to produce derivative works, such modified software should be clearly marked,
  *  so as not to confuse it with the version available from LANL.
@@ -21,13 +21,13 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the Triad National Security, LLC, Los Alamos 
- *       National Laboratory, LANL, the U.S. Government, nor the names of its 
- *       contributors may be used to endorse or promote products derived from 
+ *     * Neither the name of the Triad National Security, LLC, Los Alamos
+ *       National Laboratory, LANL, the U.S. Government, nor the names of its
+ *       contributors may be used to endorse or promote products derived from
  *       this software without specific prior written permission.
- *  
- *  THIS SOFTWARE IS PROVIDED BY THE TRIAD NATIONAL SECURITY, LLC AND 
- *  CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE TRIAD NATIONAL SECURITY, LLC AND
+ *  CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
  *  NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
  *  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL TRIAD NATIONAL
  *  SECURITY, LLC OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
@@ -37,29 +37,41 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
- *  
+ *
  *  CLAMR -- LA-CC-11-094
- *  This research code is being developed as part of the 
+ *  This research code is being developed as part of the
  *  2011 X Division Summer Workshop for the express purpose
  *  of a collaborative code for development of ideas in
  *  the implementation of AMR codes for Exascale platforms
- *  
+ *
  *  AMR implementation of the Wave code previously developed
  *  as a demonstration code for regular grids on Exascale platforms
- *  as part of the Supercomputing Challenge and Los Alamos 
+ *  as part of the Supercomputing Challenge and Los Alamos
  *  National Laboratory
- *  
+ *
  *  Authors: Bob Robey       XCP-2   brobey@lanl.gov
  *           Neal Davis              davis68@lanl.gov, davis68@illinois.edu
  *           David Nicholaeff        dnic@lanl.gov, mtrxknight@aol.com
  *           Dennis Trujillo         dptrujillo@lanl.gov, dptru10@gmail.com
- * 
+ *
  */
 #include <sys/time.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
-#include <sys/sysctl.h>
+
+#ifdef __GLIBC__
+// sys/sysctl.h was replaced by linux/sysctl.h ih
+// newer GLIBC versions (>= 2.32)
+// if logic is instantiated iff GLIBC is used
+if (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 32) {
+   #include <linux/sysctl.h>
+} else if (__GLIBC__ >= 3) {
+   #include <linux/sysctl.h>
+} else #endif {
+   #include <sys/sysctl.h>
+}
+
 #include <unistd.h>
 #include <string.h>
 
@@ -136,8 +148,8 @@ long long memstats_memused(){
       if (!strcmp(p, "VmRSS")) {
          p = strtok('\0'," ");
          p = strtok('\0'," ");
-         //mem_current = atoll(p)*1024; // Size is in kB 
-         mem_current = atoll(p); // Size is in kB 
+         //mem_current = atoll(p)*1024; // Size is in kB
+         mem_current = atoll(p); // Size is in kB
          if (memdebug) {
             printf("VmRSS %lld\n",mem_current);
          }
@@ -193,8 +205,8 @@ long long memstats_mempeak(){
       if (!strcmp(p, "VmHWM")) {
          p = strtok('\0'," ");
          p = strtok('\0'," ");
-         //mem_current = atoll(p)*1024; // Size is in kB 
-         mem_current = atoll(p); // Size is in kB 
+         //mem_current = atoll(p)*1024; // Size is in kB
+         mem_current = atoll(p); // Size is in kB
          if (memdebug) {
             printf("VmRSS %lld\n",mem_current);
          }
