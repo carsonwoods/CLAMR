@@ -59,21 +59,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
-
-#ifdef __GLIBC__
-// sys/sysctl.h was replaced by linux/sysctl.h ih
-// newer GLIBC versions (>= 2.32)
-// if logic is instantiated iff GLIBC is used
-if (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 32) {
-   #include <linux/sysctl.h>
-} else if (__GLIBC__ >= 3) {
-   #include <linux/sysctl.h>
-} else
-#endif
-{
-   #include <sys/sysctl.h>
-}
-
+#include <linux/sysctl.h>
 #include <unistd.h>
 #include <string.h>
 
