@@ -59,13 +59,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
-#include <linux/sysctl.h>
 #include <unistd.h>
 #include <string.h>
 
 #ifdef __APPLE_CC__
 #include <mach/mach_host.h>
 #include <mach/task.h>
+#include <sys/sysctl.h>
+#else
+#include <linux/sysctl.h>
 #endif
 
 #ifdef HAVE_CONFIG_H
