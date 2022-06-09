@@ -68,7 +68,9 @@ if (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 32) {
    #include <linux/sysctl.h>
 } else if (__GLIBC__ >= 3) {
    #include <linux/sysctl.h>
-} else #endif {
+} else
+#endif
+{
    #include <sys/sysctl.h>
 }
 
