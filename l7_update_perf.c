@@ -119,7 +119,7 @@ static int nremote = -1;
 static int blocksz = -1;
 static int stride = -1;
 static int unit_div = 1;
-static char * unit_symbol = "Bytes";
+static char * unit_symbol = "auto";
 static memspace_t memspace = MEMSPACE_HOST;
 
 /*
@@ -180,7 +180,7 @@ void
 usage(char *exename, int penum)
 {
     if (penum == 0)
-      fprintf(stderr, "usage: %s [-t typesize] [-i iterations] [-n neighbors] [-o owned] [-r remote] [-b blocksize] [-s stride] [-m memspace] [-u b,k,m,g]\n", exename);
+      fprintf(stderr, "usage: %s [-t typesize] [-i iterations] [-n neighbors] [-o owned] [-r remote] [-b blocksize] [-s stride] [-m memspace] [-u a,b,k,m,g]\n", exename);
 
     exit(-1);
 }
@@ -267,18 +267,20 @@ void parse_arguments(int argc, char **argv, int penum)
                 break;
             case 'u':
                 // used to set units value
-                if (strcmp(optarg, "b") == 0) {
+                if (strcmp(optarg, "a") == 0) {
+                    unit_symbol = "auto";
+                } else if (strcmp(optarg, "b") == 0) {
                     unit_div = 1;
-                    unit_symbol = "Bytes";
+                    unit_symbol = "B/s";
                 } else if (strcmp(optarg, "k") == 0) {
                     unit_div = 1000;
-                    unit_symbol = "Kilobytes";
+                    unit_symbol = "KB/s";
                 } else if (strcmp(optarg, "m") == 0) {
                     unit_div = 1000000;
-                    unit_symbol = "Megabytes";
+                    unit_symbol = "MB/s";
                 } else if (strcmp(optarg, "g") == 0) {
                     unit_div = 1000000000;
-                    unit_symbol = "Gigabytes";
+                    unit_symbol = "GB/s";
                 } else {
                     fprintf(stderr, "Invalid formatting choice [b, k, m, g] %s\n", optarg);
                     usage(argv[0], penum);
@@ -405,6 +407,22 @@ report_results_update(int penum, double *time_total_pe, int count_updated_pe, in
                           + time_total_global[num_timings/2 - 1]) / 2;
             bandwidth_med = (bandwidth_global[num_timings/2]
                             + bandwidth_global[num_timings/2 - 1]) / 2;
+        }
+
+        if (strcmp(unit_symbol, "auto") == 0) {
+            if (bandwidth_mean >= 1000000000) {
+                unit_div = 1000000000;
+                unit_symbol = "GB/s";
+            } else if (bandwidth_mean >= 1000000) {
+                unit_div = 1000000;
+                unit_symbol = "MB/s";
+            } else if (bandwidth_mean >= 1000) {
+                unit_div = 1000;
+                unit_symbol = "KB/s";
+            } else {
+                unit_div = 1;
+                unit_symbol = "Bytes/s";
+            }
         }
 
         /* Print results */
