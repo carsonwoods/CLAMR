@@ -120,6 +120,7 @@ static int blocksz = -1;
 static int stride = -1;
 static int unit_div = 1;
 static char * unit_symbol = "auto";
+static int irregularity = 1;
 static memspace_t memspace = MEMSPACE_HOST;
 
 /*
@@ -134,14 +135,15 @@ static memspace_t memspace = MEMSPACE_HOST;
 static struct option long_options[] = {
     /* These options set a flag. */
     {"typesize",   required_argument, 0, 't'},
-    {"iterations", required_argument, 0, 'i'},
     {"owned",      required_argument, 0, 'o'},
+    {"iterations", required_argument, 0, 'i'},
     {"neighbors",  required_argument, 0, 'n'},
     {"remote",     required_argument, 0, 'r'},
     {"blocksize",  required_argument, 0, 'b'},
     {"stride",     required_argument, 0, 's'},
     {"memspace",   required_argument, 0, 'm'},
     {"units",      required_argument, 0, 'u'},
+    {"disable-irregularity", no_argument, &irregularity, 0},
     {0, 0, 0, 0}
 };
 
@@ -471,13 +473,13 @@ int main(int argc, char *argv[])
 
     void *data;
 
+    // sets random seed for generating random distributions
+    srand(time(0));
+
     // initialize L7
     // L7_Init(process_number, number_of_processes, argc, argv, do_quo_setup, lttrace_on)
     // I think L7_Init places process number in penum here
     ierr = L7_Init(&penum, &numpes, &argc, argv, 0, 0);
-
-    // sets random seed for generating random distributions
-    srand(time(0));
 
     // parse CLI arguments
     parse_arguments(argc, argv, penum);
