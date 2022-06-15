@@ -112,6 +112,7 @@ typedef enum memspace memspace_t;
  */
 static int typesize = 8;
 static int numpes = 0;
+static int nsamples = 50;
 static int niterations = 100;
 static int nneighbors = -1;
 static int nowned = -1;
@@ -137,6 +138,7 @@ static struct option long_options[] = {
     {"typesize",   required_argument, 0, 't'},
     {"owned",      required_argument, 0, 'o'},
     {"iterations", required_argument, 0, 'i'},
+    {"samples"   , required_argument, 0, 'I'},
     {"neighbors",  required_argument, 0, 'n'},
     {"remote",     required_argument, 0, 'r'},
     {"blocksize",  required_argument, 0, 'b'},
@@ -178,23 +180,21 @@ int gauss_dist(double mean, double stdev) {
 
 
 // offers a help string to define parameters in the CLI
-void
-usage(char *exename, int penum)
+void usage(char *exename)
 {
-    if (penum == 0)
-      fprintf(stderr, "usage: %s [-t typesize] [-i iterations] [-n neighbors] [-o owned] [-r remote] [-b blocksize] [-s stride] [-m memspace] [-u a,b,k,m,g]\n", exename);
+    fprintf(stderr, "usage: %s [-t typesize] [-i iterations] [-n neighbors] [-o owned] [-r remote] [-b blocksize] [-s stride] [-m memspace] [-u a,b,k,m,g]\n", exename);
 
     exit(-1);
 }
 
-void parse_arguments(int argc, char **argv, int penum)
+void parse_arguments(int argc, char **argv)
 {
     int c;
     while (1) {
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long (argc, argv, "t:i:n:o:r:b:s:m:u:",
+        c = getopt_long (argc, argv, "t:i:I:n:o:r:b:s:m:u:",
                        long_options, &option_index);
         if (c == -1) {
             break;
@@ -204,37 +204,45 @@ void parse_arguments(int argc, char **argv, int penum)
             case 'i':
                 // used to set custom iteration's value
                 niterations = atoi(optarg);
-                if (niterations < 0) usage(argv[0], penum);
+                if (niterations < 0) usage(argv[0]);
+                break;
+            case 'I':
+                nsamples = atoi(optarg);
+                if (nsamples < 0) usage(argv[0]);
+                if (nsamples > 50) {
+                    printf("ERROR: nsamples cannot be larger than 50\n");
+                    exit(-1);
+                };
                 break;
             case 't':
                 // used to set typesize value
                 typesize = atoi(optarg);
-                if (typesize < 1 || typesize > 8) usage(argv[0], penum);
+                if (typesize < 1 || typesize > 8) usage(argv[0]);
                 break;
             case 'n':
                 // used to set nneighbors value
                 nneighbors = atoi(optarg);
-                if (nneighbors < 0) usage(argv[0], penum);
+                if (nneighbors < 0) usage(argv[0]);
                 break;
             case 'o':
                 // used to set nowned value
                 nowned = atoi(optarg);
-                if (nowned < 0) usage(argv[0], penum);
+                if (nowned < 0) usage(argv[0]);
                 break;
             case 'r':
                 // used to set nremote value
                 nremote = atoi(optarg);
-                if (nremote < 0) usage(argv[0], penum);
+                if (nremote < 0) usage(argv[0]);
                 break;
             case 'b':
                 // used to set blocksz value
                 blocksz = atoi(optarg);
-                if (blocksz < 0) usage(argv[0], penum);
+                if (blocksz < 0) usage(argv[0]);
                 break;
             case 's':
                 // used to set stride size value
                 stride = atoi(optarg);
-                if (stride < 0) usage(argv[0], penum);
+                if (stride < 0) usage(argv[0]);
                 break;
             case 'm':
                 // used to set memory space
@@ -246,25 +254,25 @@ void parse_arguments(int argc, char **argv, int penum)
                         memspace = MEMSPACE_CUDA;
                     #else
                         fprintf(stderr, "No compiler support for CUDA accelerator memory\n");
-                        usage(argv[0], penum);
+                        usage(argv[0]);
                     #endif
                 } else if (strcmp(optarg, "opencl") == 0) {
                     #ifdef HAVE_OPENCL
                         memspace = MEMSPACE_OPENCL;
                     #else
                         fprintf(stderr, "No compiler support for OpenCL accelerator memory\n");
-                        usage(argv[0], penum);
+                        usage(argv[0]);
                     #endif
                 } else if (strcmp(optarg, "openmp") == 0) {
                     #if defined(_OPENMP) && _OPENMP >= 201511
                         memspace = MEMSPACE_OPENMP;
                     #else
                         fprintf(stderr, "No compiler support for OpenMP accelerator memory\n");
-                        usage(argv[0], penum);
+                        usage(argv[0]);
                     #endif
                 } else {
                     fprintf(stderr, "Invalid memory space %s\n", optarg);
-                    usage(argv[0], penum);
+                    usage(argv[0]);
                 }
                 break;
             case 'u':
@@ -285,18 +293,18 @@ void parse_arguments(int argc, char **argv, int penum)
                     unit_symbol = "GB/s";
                 } else {
                     fprintf(stderr, "Invalid formatting choice [b, k, m, g] %s\n", optarg);
-                    usage(argv[0], penum);
+                    usage(argv[0]);
                 }
                 break;
             case '?':
-                usage(argv[0], penum);
+                usage(argv[0]);
                 break;
         }
     }
     /* Now compute any unset values from the defaults */
     if (nneighbors < 0)
-        nneighbors = gauss_dist(sqrt(numpes), 1);
-        //nneighbors = sqrt(numpes);
+        //nneighbors = gauss_dist(sqrt(numpes), 1);
+        nneighbors = sqrt(numpes);
     if (nowned < 0)
         nowned = gauss_dist(33554432, 1000);
         //nowned = (1<<28) / typesize;
@@ -349,8 +357,7 @@ enum  L7_Datatype typesize_to_l7type(int type_size)
    }
 }
 
-void
-report_results_update(int penum, double *time_total_pe, int count_updated_pe, int num_timings, int type_size)
+void report_results_update(int penum, double *time_total_pe, int count_updated_pe, int num_timings, int type_size)
 {
     int i, count_updated_global, bytes_updated, remainder;
 
@@ -450,28 +457,269 @@ report_results_update(int penum, double *time_total_pe, int count_updated_pe, in
    return;
 }
 
+int benchmark(int penum) {
+
+    // for benchmarks with irregularity disabled,
+    // having more than 1 sample is not useless
+    if (irregularity == 0) {
+        if (penum == 0) {
+            printf("Irregularity has been disabled, setting nsamples to 1...\n");
+            printf("To increase iterations for benchmarks with irregularity disabled, please specify parameters via the \"-i [iterations]\"\n");
+        }
+        nsamples = 1;
+    }
+
+
+    for(int sample_iter = 0; sample_iter < nsamples; sample_iter++) {
+
+        if (irregularity) {
+            nowned = gauss_dist(33554432, 1000);
+            nremote = nowned/(1 << 6);
+            blocksz = nowned/(1 << 15);
+        }
+
+        if (penum == 0) {
+            printf("Benchmark Iteration: %d/%d\n", sample_iter+1, nsamples);
+        }
+
+        int i, j, my_start_index,  remainder,
+            num_partners_lo, num_partners_hi,
+            offset, num_indices_per_partner, num_indices_offpe,
+            inum, l7_id, count_updated_pe, iout;
+
+        enum L7_Datatype l7type;
+
+        // stores what time benchmark starts and stops (per process)
+        double time_start, time_stop;
+
+        // will store total time elapsed for benchmark (per process)
+        double *time_total_pe;
+
+        // will be array of partner process numbers
+        int *partner_pe;
+        int *needed_indices;
+
+        void *data;
+
+        // if compiled with OpenCL support
+        #ifdef HAVE_OPENCL
+        // attempts to initialize OpenCL on GPU
+        ierr = ezcl_devtype_init(CL_DEVICE_TYPE_GPU);
+        if (ierr == EZCL_NODEVICE) {
+            ierr = ezcl_devtype_init(CL_DEVICE_TYPE_CPU);
+        }
+
+        // if EZCL fails to initialize, exit
+        if (ierr != EZCL_SUCCESS) {
+            printf("No opencl device available -- aborting\n");
+            exit(-1);
+        }
+
+        // if OpenCL was initialized successfully,
+        // initialize L7 device
+        L7_Dev_Init();
+        #endif
+
+        // initialize pointer (type double)
+        // to hold niteration # of doubles
+        time_total_pe = (double *)malloc(niterations * sizeof(double));
+
+        // sets the start index of each process
+        // offset is process number * nowned
+        my_start_index = penum * nowned;
+
+        /* Compute which neighbors we talk to */
+        // initialize pointer (type int)
+        // to hold nneighbors # of ints
+        partner_pe = (int *)malloc(nneighbors * sizeof(int));
+        remainder = nneighbors % 2;
+
+        // assigns each process a high and low process to
+        // serve as a communication partner
+        if (penum < (nneighbors /2) ) {
+            num_partners_lo = nneighbors / 2;
+            num_partners_hi = nneighbors / 2 + remainder;
+        } else {
+            num_partners_lo = nneighbors / 2 + remainder;
+            num_partners_hi = nneighbors / 2;
+        }
+
+        /*
+         * Indices below this PE - make sure to go in ascending PE order so the
+         * indices are in ascending order!
+        */
+        offset = 0;
+        for (i=1; i <= num_partners_lo; i++) {
+            int partner = (i > penum) ? (numpes + penum - i) : penum - 1;
+            //printf("[pe %d] offset %d penum %d i %d \n",penum, offset, penum, i);
+            partner_pe[offset] = partner;
+            offset++;
+        }
+
+        /* Indices above this PE */
+        for (i=1; i<=num_partners_hi; i++){
+            int partner = (i + penum >= numpes) ? i + penum - numpes : i + penum;
+            //printf("[pe %d] offset %d penum %d i %d \n",penum, offset, penum, i);
+            partner_pe[offset] = partner;
+            offset++;
+        }
+
+        /*
+         * Note that neighbors need to be an ascending order. We do this by sorting
+         * our list of neighbors after computing it
+        */
+        qsort(partner_pe, nneighbors, sizeof(int), int_compare);
+
+        if (nneighbors != 0) {
+            num_indices_per_partner = nremote / nneighbors;
+        }
+        else {
+            nremote = 0;
+            num_indices_per_partner = 0;
+        }
+
+        /*
+         * Generate needed indices
+        */
+        needed_indices = (int *)malloc(nremote * sizeof(int));
+        num_indices_offpe = 0;
+        for (i=0; i<nneighbors; i++) {
+            int k;
+            inum = 0;
+
+            for (j=0, k = 0; j<num_indices_per_partner; j++, k++) {
+                /* Detect end of block */
+                if (k >= blocksz) {
+                    inum += (1 + stride);
+                    k = 0;
+                } else {
+                    inum++;
+                }
+
+                /* Detect if we would walk off the end of the remote */
+                if (inum >= nowned)
+                    break;
+
+                needed_indices[num_indices_offpe] = partner_pe[i] * nowned + inum;
+                num_indices_offpe++;
+            }
+        }
+
+        /* Detect if nremote is actually less than we thought due to block/striding
+        * and adjust appropriately so the eventual bandwidth calculation is right */
+        nremote = num_indices_offpe;
+
+        /*
+        * Allocate data arrays on device and wait for initialization to complete
+        */
+        l7type = typesize_to_l7type(typesize);
+        unsigned long data_size = nowned + nremote;
+        switch (memspace) {
+            case MEMSPACE_HOST:
+                initialize_data_host(&data, nowned, nremote, typesize, my_start_index);
+                break;
+            #if defined(HAVE_CUDA) && defined(L7_CUDA_OFFLOAD)
+            case MEMSPACE_CUDA:
+                initialize_data_cuda(&data, nowned, nremote, typesize, my_start_index);
+                break;
+            #endif
+            #ifdef HAVE_OPENCL
+            case MEMSPACE_OPENCL:
+                initialize_data_opencl(&data, nowned, nremote, typesize, my_start_index);
+                break;
+            #endif
+            #if defined(_OPENMP) && defined(L7_OPENMP_OFFLOAD) && _OPENMP >= 201511
+            case MEMSPACE_OPENMP:
+                initialize_data_openmp(&data, nowned, nremote, typesize, my_start_index);
+                break;
+            #endif
+            default:
+                fprintf(stderr, "Unsupported memory space to initialize.\n");
+                exit(-1);
+                break;
+        }
+
+        //printf("[pe %d] Finished array initialization.\n", penum);
+
+        /*
+         * Register decomposition with L7
+        */
+        // This is the ID linked to the database
+        l7_id = 0;
+
+        /*
+         * Register decomposition with L7
+        */
+        #ifdef HAVE_OPENCL
+        /*
+         * L7 uses a different operation for the opencl setup.
+         * if OpenCL is used, the if statement is instantiated
+        */
+        if (memspace == MEMSPACE_OPENCL) {
+            L7_Dev_Setup(0, my_start_index, nowned, needed_indices, nremote, &l7_id);
+        } else
+        #endif
+        {
+            L7_Setup(0, my_start_index, nowned, needed_indices, nremote, &l7_id);
+        }
+
+        /*
+         * Begin updating data
+         * This is what is being "benchmarked", how quickly the data amount
+         * of data specified is being updated across all members of the database
+        */
+        for (i=0; i<niterations; i++) {
+
+            time_start = L7_Wtime();
+
+            #ifdef HAVE_OPENCL
+            /*
+             * L7 uses a different operation for the opencl update which
+             * explicitly copies the data to the host
+             */
+            if (memspace == MEMSPACE_OPENCL) {
+                L7_Dev_Update(data, l7type, l7_id);
+            } else
+            #endif
+            {
+                L7_Update(data, l7type, l7_id);
+            }
+
+            time_stop = L7_Wtime();
+            time_total_pe[i] = time_stop - time_start;
+        }
+
+        /*
+         * Report results
+        */
+        count_updated_pe = nremote;
+
+        // This involves L7 collectives, so we can't shut down L7 or MPI yet.
+        report_results_update(penum, time_total_pe, count_updated_pe, niterations, typesize);
+        if (sample_iter != nsamples-1){
+            if (penum == 0) {
+                printf("\n");
+            }
+        }
+
+        // gracefully clean memory
+        free(time_total_pe);
+        free(partner_pe);
+        free(needed_indices);
+
+        // free's memory allocated through L7
+        L7_Free(&l7_id);
+    }
+
+    out:
+       L7_Terminate();
+
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
-    int penum = 0, ierr;
-
-    int i, j, my_start_index,  remainder,
-        num_partners_lo, num_partners_hi,
-        offset, num_indices_per_partner, num_indices_offpe,
-        inum, l7_id, count_updated_pe, iout;
-
-    enum L7_Datatype l7type;
-
-    // stores what time benchmark starts and stops (per process)
-    double time_start, time_stop;
-
-    // will store total time elapsed for benchmark (per process)
-    double *time_total_pe;
-
-    // will be array of partner process numbers
-    int *partner_pe;
-    int *needed_indices;
-
-    void *data;
+    int penum, ierr;
 
     // sets random seed for generating random distributions
     srand(time(0));
@@ -482,216 +730,10 @@ int main(int argc, char *argv[])
     ierr = L7_Init(&penum, &numpes, &argc, argv, 0, 0);
 
     // parse CLI arguments
-    parse_arguments(argc, argv, penum);
+    parse_arguments(argc, argv);
 
-    // if compiled with OpenCL support
-    #ifdef HAVE_OPENCL
-    // attempts to initialize OpenCL on GPU
-    ierr = ezcl_devtype_init(CL_DEVICE_TYPE_GPU);
-    if (ierr == EZCL_NODEVICE) {
-        ierr = ezcl_devtype_init(CL_DEVICE_TYPE_CPU);
-    }
-
-    // if EZCL fails to initialize, exit
-    if (ierr != EZCL_SUCCESS) {
-        printf("No opencl device available -- aborting\n");
-        exit(-1);
-    }
-
-    // if OpenCL was initialized successfully,
-    // initialize L7 device
-    L7_Dev_Init();
-    #endif
-
-    // initialize pointer (type double)
-    // to hold niteration # of doubles
-    time_total_pe = (double *)malloc(niterations * sizeof(double));
-
-    // sets the start index of each process
-    // offset is process number * nowned
-    my_start_index = penum * nowned;
-
-    /* Compute which neighbors we talk to */
-    // initialize pointer (type int)
-    // to hold nneighbors # of ints
-    partner_pe = (int *)malloc(nneighbors * sizeof(int));
-    remainder = nneighbors % 2;
-
-    // assigns each process a high and low process to
-    // serve as a communication partner
-    if (penum < (nneighbors /2) ) {
-        num_partners_lo = nneighbors / 2;
-        num_partners_hi = nneighbors / 2 + remainder;
-    }
-    else {
-        num_partners_lo = nneighbors / 2 + remainder;
-        num_partners_hi = nneighbors / 2;
-    }
-
-    /*
-     * Indices below this PE - make sure to go in ascending PE order so the
-     * indices are in ascending order!
-    */
-    offset = 0;
-    for (i=1; i <= num_partners_lo; i++) {
-        int partner = (i > penum) ? (numpes + penum - i) : penum - 1;
-        //printf("[pe %d] offset %d penum %d i %d \n",penum, offset, penum, i);
-        partner_pe[offset] = partner;
-        offset++;
-   }
-
-    /* Indices above this PE */
-    for (i=1; i<=num_partners_hi; i++){
-        int partner = (i + penum >= numpes) ? i + penum - numpes : i + penum;
-        //printf("[pe %d] offset %d penum %d i %d \n",penum, offset, penum, i);
-        partner_pe[offset] = partner;
-        offset++;
-   }
-
-    /*
-     * Note that neighbors need to be an ascending order. We do this by sorting
-     * our list of neighbors after computing it
-    */
-   qsort(partner_pe, nneighbors, sizeof(int), int_compare);
-
-    if (nneighbors != 0) {
-        num_indices_per_partner = nremote / nneighbors;
-    }
-    else {
-        nremote = 0;
-        num_indices_per_partner = 0;
-    }
-
-    /*
-     * Generate needed indices
-    */
-    needed_indices = (int *)malloc(nremote * sizeof(int));
-    num_indices_offpe = 0;
-    for (i=0; i<nneighbors; i++) {
-       int k;
-       inum = 0;
-
-       for (j=0, k = 0; j<num_indices_per_partner; j++, k++) {
-            /* Detect end of block */
-            if (k >= blocksz) {
-                inum += (1 + stride);
-                k = 0;
-            } else {
-                inum++;
-            }
-
-            /* Detect if we would walk off the end of the remote */
-            if (inum >= nowned)
-                break;
-
-            needed_indices[num_indices_offpe] = partner_pe[i] * nowned + inum;
-            num_indices_offpe++;
-      }
-   }
-
-   /* Detect if nremote is actually less than we thought due to block/striding
-    * and adjust appropriately so the eventual bandwidth calculation is right */
-   nremote = num_indices_offpe;
-
-   /*
-    * Allocate data arrays on device and wait for initialization to complete
-    */
-    l7type = typesize_to_l7type(typesize);
-    unsigned long data_size = nowned + nremote;
-    switch (memspace) {
-        case MEMSPACE_HOST:
-            initialize_data_host(&data, nowned, nremote, typesize, my_start_index);
-            break;
-        #if defined(HAVE_CUDA) && defined(L7_CUDA_OFFLOAD)
-        case MEMSPACE_CUDA:
-            initialize_data_cuda(&data, nowned, nremote, typesize, my_start_index);
-            break;
-        #endif
-        #ifdef HAVE_OPENCL
-        case MEMSPACE_OPENCL:
-            initialize_data_opencl(&data, nowned, nremote, typesize, my_start_index);
-            break;
-        #endif
-        #if defined(_OPENMP) && defined(L7_OPENMP_OFFLOAD) && _OPENMP >= 201511
-        case MEMSPACE_OPENMP:
-            initialize_data_openmp(&data, nowned, nremote, typesize, my_start_index);
-            break;
-        #endif
-        default:
-            fprintf(stderr, "Unsupported memory space to initialize.\n");
-            exit(-1);
-            break;
-    }
-
-    //printf("[pe %d] Finished array initialization.\n", penum);
-
-    /*
-     * Register decomposition with L7
-    */
-    // This is the ID linked to the database
-    l7_id = 0;
-
-    /*
-     * Register decomposition with L7
-    */
-    #ifdef HAVE_OPENCL
-    /*
-     * L7 uses a different operation for the opencl setup.
-     * if OpenCL is used, the if statement is instantiated
-    */
-    if (memspace == MEMSPACE_OPENCL) {
-        L7_Dev_Setup(0, my_start_index, nowned, needed_indices, nremote, &l7_id);
-    } else
-    #endif
-    {
-        L7_Setup(0, my_start_index, nowned, needed_indices, nremote, &l7_id);
-    }
-
-    /*
-     * Begin updating data
-     * This is what is being "benchmarked", how quickly the data amount
-     * of data specified is being updated across all members of the database
-    */
-    for (i=0; i<niterations; i++) {
-
-        time_start = L7_Wtime();
-
-        #ifdef HAVE_OPENCL
-        /*
-         * L7 uses a different operation for the opencl update which
-         * explicitly copies the data to the host
-         */
-        if (memspace == MEMSPACE_OPENCL) {
-            L7_Dev_Update(data, l7type, l7_id);
-        } else
-        #endif
-        {
-            L7_Update(data, l7type, l7_id);
-        }
-
-        time_stop = L7_Wtime();
-        time_total_pe[i] = time_stop - time_start;
-    }
-
-    /*
-     * Report results
-    */
-    count_updated_pe = nremote;
-
-    // This involves L7 collectives, so we can't shut down L7 or MPI yet.
-    report_results_update(penum, time_total_pe, count_updated_pe, niterations, typesize);
-
-    // gracefully clean memory
-    free(time_total_pe);
-    free(partner_pe);
-    free(needed_indices);
-
-    // free's memory allocated through L7
-    L7_Free(&l7_id);
-
-    out:
-       L7_Terminate();
+    // run benchmark
+    benchmark(penum);
 
    return 0;
 }
-
