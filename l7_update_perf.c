@@ -112,7 +112,7 @@ typedef enum memspace memspace_t;
  */
 static int typesize = 8;
 static int numpes = 0;
-static int nsamples = 50;
+static int nsamples = 25;
 static int niterations = 100;
 static int nneighbors = -1;
 static int nowned = -1;
@@ -182,7 +182,7 @@ int gauss_dist(double mean, double stdev) {
 // offers a help string to define parameters in the CLI
 void usage(char *exename)
 {
-    fprintf(stderr, "usage: %s [-t typesize] [-i iterations] [-n neighbors] [-o owned] [-r remote] [-b blocksize] [-s stride] [-m memspace] [-u a,b,k,m,g]\n", exename);
+    fprintf(stderr, "usage: %s [-t typesize] [-I samples] [-i iterations] [-n neighbors] [-o owned] [-r remote] [-b blocksize] [-s stride] [-m memspace] [-u a,b,k,m,g]\n", exename);
 
     exit(-1);
 }
@@ -303,16 +303,13 @@ void parse_arguments(int argc, char **argv)
     }
     /* Now compute any unset values from the defaults */
     if (nneighbors < 0)
-        //nneighbors = gauss_dist(sqrt(numpes), 1);
         nneighbors = sqrt(numpes);
     if (nowned < 0)
-        nowned = gauss_dist(33554432, 1000);
-        //nowned = (1<<28) / typesize;
+        nowned = (1<<28) / typesize;
     if (nremote < 0)
         nremote = nowned/(1 << 6);
     if (blocksz < 0)
         blocksz = nowned/(1 << 15);
-        //blocksz = gauss_dist(1024, 32);
     if (stride < 0)
         stride = 16;
 
@@ -470,18 +467,35 @@ int benchmark(int penum) {
     }
 
 
-    for(int sample_iter = 0; sample_iter < nsamples; sample_iter++) {
-
+    for(int sample_iter = 0; sample_iter < nsamples+1; sample_iter++) {
+        
+        // if irregularity is enabled, perform a reference benchmark first
         if (irregularity) {
-            nowned = gauss_dist(33554432, 1000);
-            nremote = nowned/(1 << 6);
-            blocksz = nowned/(1 << 15);
-        }
+            if (sample_iter == 0) {
+                // if this is the first iteration, print the reference benchmark information
+                if (penum == 0) {
+                    printf("Non-Irregular Reference Benchmark\n");
+                } 
+            } else {
+                
+                // if irregularity is enabled, set random parameters
+                nowned = gauss_dist(33554432, 10000000);
+                nremote = nowned/(1 << 6);
+                blocksz = nowned/(1 << 15);
 
-        if (penum == 0) {
-            printf("Benchmark Iteration: %d/%d\n", sample_iter+1, nsamples);
+                // print benchmark status each iteration
+                if (penum == 0) {
+                    printf("Benchmark Iteration: %d/%d\n", sample_iter, nsamples);
+                }
+            }
+        } else {
+            if (sample_iter == 0) {
+                nsamples--;
+            }
         }
-
+        
+        
+        
         int i, j, my_start_index,  remainder,
             num_partners_lo, num_partners_hi,
             offset, num_indices_per_partner, num_indices_offpe,
