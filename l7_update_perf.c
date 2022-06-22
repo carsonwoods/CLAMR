@@ -177,7 +177,6 @@ int gauss_dist(double mean, double stdev) {
         generated = round(((r*cos(theta)) * stdev ) + mean);
     }
     return generated;
-
 }
 
 
@@ -462,7 +461,6 @@ void report_results_update(int penum, double *time_total_pe, int count_updated_p
 }
 
 int benchmark(int penum) {
-
     // for benchmarks with irregularity disabled,
     // having more than 1 sample is not useless
     if (irregularity == 0) {
@@ -473,9 +471,7 @@ int benchmark(int penum) {
         nsamples = 1;
     }
 
-
     for(int sample_iter = 0; sample_iter < nsamples+1; sample_iter++) {
-
         // if irregularity is enabled, perform a reference benchmark first
         if (irregularity) {
             if (sample_iter == 0) {
@@ -500,8 +496,6 @@ int benchmark(int penum) {
                 nsamples--;
             }
         }
-
-
 
         int i, j, my_start_index,  remainder,
             num_partners_lo, num_partners_hi,
@@ -760,7 +754,6 @@ int main(int argc, char *argv[])
         }
         srand(seed);
     }
-
 
     // run benchmark
     benchmark(penum);
