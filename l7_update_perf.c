@@ -136,6 +136,7 @@ static memspace_t memspace = MEMSPACE_HOST;
 */
 static struct option long_options[] = {
     /* These options set a flag. */
+    {"help",       no_argument, 0, 'h'},
     {"typesize",   required_argument, 0, 't'},
     {"owned",      required_argument, 0, 'o'},
     {"iterations", required_argument, 0, 'i'},
@@ -181,21 +182,47 @@ int gauss_dist(double mean, double stdev) {
 
 
 // offers a help string to define parameters in the CLI
-void usage(char *exename)
+void usage(char *exename, int penum)
 {
-    fprintf(stderr, "usage: %s [-t typesize] [-I samples] [-i iterations] [-n neighbors] [-o owned] [-r remote] [-b blocksize] [-s stride] [-m memspace] [-u a,b,k,m,g]\n", exename);
-
+    if (penum == 0) {
+        fprintf(stderr, "usage: %s [-t typesize] [-I samples] [-i iterations] [-n neighbors] [-o owned] [-r remote] [-b blocksize] [-s stride] [-m memspace] \n use `--help` flag for more detailed instructions \n", exename);
+    }
     exit(-1);
 }
 
-void parse_arguments(int argc, char **argv)
+// longer version of the usage function
+// triggered on `--help` flag invocation
+void usage_long(char *exename, int penum) {
+    if (penum == 0) {
+        fprintf(stdout,
+            "usage: %s [-t typesize] [-I samples] [-i iterations] [-n neighbors] [-o owned] [-r remote] [-b blocksize] [-s stride] [-S seed] [-m memspace] [-u a,b,k,m,g]\n\n"
+            "[ -t typesize   ]\tspecify the size of the variable being sent (in bytes)\n"
+            "[ -I samples    ]\tspecify the number of random samples to generate\n"
+            "[ -i iterations ]\tspecify the number of updates each sample performs\n"
+            "[ -n neighbors  ]\tspecify the number of neighbors each process communicates with \n"
+            "[ -o owned      ]\tspecify byte count for data owned per node\n"
+            "[ -r remote     ]\tspecify how much data each process recieves\n"
+            "[ -b blocksize  ]\tspecify size of transmitted blocks\n"
+            "[ -s stride     ]\tspecify size of stride\n"
+            "[ -S seed       ]\tspecify positive integer to be used as seed for random number generation (current time used as default)\n"
+            "[ -m memspace   ]\tchoose from: host, cuda, openmp, opencl\n"
+            "[ -u units      ]\tchoose from: a,b,k,m,g (auto, bytes, kilobytes, etc.)\n\n"
+            "NOTE: setting parameters for the benchmark such as (neighbors, owned, remote, blocksize, and stride)\n\tonly sets parameters for the reference benchmark.\n"
+            "\tThose parameters are then randomized for the irregular samples.\n"
+            "\tUse the `--disable-irregularity` flag to only run the reference benchmark.\n\n", exename
+        );
+    }
+    exit(-1);
+}
+
+void parse_arguments(int argc, char **argv, int penum)
 {
     int c;
     while (1) {
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long (argc, argv, "t:i:I:n:o:r:b:s:S:m:u:",
+        c = getopt_long (argc, argv, ":h:t:i:I:n:o:r:b:s:S:m:u:",
                        long_options, &option_index);
         if (c == -1) {
             break;
@@ -205,11 +232,11 @@ void parse_arguments(int argc, char **argv)
             case 'i':
                 // used to set custom iteration's value
                 niterations = atoi(optarg);
-                if (niterations < 0) usage(argv[0]);
+                if (niterations < 0) usage(argv[0], penum);
                 break;
             case 'I':
                 nsamples = atoi(optarg);
-                if (nsamples < 0) usage(argv[0]);
+                if (nsamples < 0) usage(argv[0], penum);
                 if (nsamples > 50) {
                     printf("ERROR: nsamples cannot be larger than 50\n");
                     exit(-1);
@@ -218,37 +245,37 @@ void parse_arguments(int argc, char **argv)
             case 't':
                 // used to set typesize value
                 typesize = atoi(optarg);
-                if (typesize < 1 || typesize > 8) usage(argv[0]);
+                if (typesize < 1 || typesize > 8) usage(argv[0], penum);
                 break;
             case 'n':
                 // used to set nneighbors value
                 nneighbors = atoi(optarg);
-                if (nneighbors < 0) usage(argv[0]);
+                if (nneighbors < 0) usage(argv[0], penum);
                 break;
             case 'o':
                 // used to set nowned value
                 nowned = atoi(optarg);
-                if (nowned < 0) usage(argv[0]);
+                if (nowned < 0) usage(argv[0], penum);
                 break;
             case 'r':
                 // used to set nremote value
                 nremote = atoi(optarg);
-                if (nremote < 0) usage(argv[0]);
+                if (nremote < 0) usage(argv[0], penum);
                 break;
             case 'b':
                 // used to set blocksz value
                 blocksz = atoi(optarg);
-                if (blocksz < 0) usage(argv[0]);
+                if (blocksz < 0) usage(argv[0], penum);
                 break;
             case 's':
                 // used to set stride size value
                 stride = atoi(optarg);
-                if (stride < 0) usage(argv[0]);
+                if (stride < 0) usage(argv[0], penum);
                 break;
             case 'S':
                 // used to set stride size value
                 seed = atoi(optarg);
-                if (seed < 0) usage(argv[0]);
+                if (seed < 0) usage(argv[0], penum);
                 break;
             case 'm':
                 // used to set memory space
@@ -260,25 +287,25 @@ void parse_arguments(int argc, char **argv)
                         memspace = MEMSPACE_CUDA;
                     #else
                         fprintf(stderr, "No compiler support for CUDA accelerator memory\n");
-                        usage(argv[0]);
+                        usage(argv[0], penum);
                     #endif
                 } else if (strcmp(optarg, "opencl") == 0) {
                     #ifdef HAVE_OPENCL
                         memspace = MEMSPACE_OPENCL;
                     #else
                         fprintf(stderr, "No compiler support for OpenCL accelerator memory\n");
-                        usage(argv[0]);
+                        usage(argv[0], penum);
                     #endif
                 } else if (strcmp(optarg, "openmp") == 0) {
                     #if defined(_OPENMP) && _OPENMP >= 201511
                         memspace = MEMSPACE_OPENMP;
                     #else
                         fprintf(stderr, "No compiler support for OpenMP accelerator memory\n");
-                        usage(argv[0]);
+                        usage(argv[0], penum);
                     #endif
                 } else {
                     fprintf(stderr, "Invalid memory space %s\n", optarg);
-                    usage(argv[0]);
+                    usage(argv[0], penum);
                 }
                 break;
             case 'u':
@@ -299,11 +326,14 @@ void parse_arguments(int argc, char **argv)
                     unit_symbol = "GB/s";
                 } else {
                     fprintf(stderr, "Invalid formatting choice [b, k, m, g] %s\n", optarg);
-                    usage(argv[0]);
+                    usage(argv[0], penum);
                 }
                 break;
+            case 'h':
+                usage_long(argv[0], penum);
+                break;
             case '?':
-                usage(argv[0]);
+                usage(argv[0], penum);
                 break;
         }
     }
@@ -742,7 +772,7 @@ int main(int argc, char *argv[])
     ierr = L7_Init(&penum, &numpes, &argc, argv, 0, 0);
 
     // parse CLI arguments
-    parse_arguments(argc, argv);
+    parse_arguments(argc, argv, penum);
 
     // sets random seed for generating random distributions
     if (irregularity) {
