@@ -122,6 +122,7 @@ static int stride = -1;
 static int unit_div = 1;
 static char * unit_symbol = "auto";
 static int irregularity = 1;
+static int seed = -1;
 static memspace_t memspace = MEMSPACE_HOST;
 
 /*
@@ -143,6 +144,7 @@ static struct option long_options[] = {
     {"remote",     required_argument, 0, 'r'},
     {"blocksize",  required_argument, 0, 'b'},
     {"stride",     required_argument, 0, 's'},
+    {"seed",       required_argument, 0, 'S'},
     {"memspace",   required_argument, 0, 'm'},
     {"units",      required_argument, 0, 'u'},
     {"disable-irregularity", no_argument, &irregularity, 0},
@@ -194,7 +196,7 @@ void parse_arguments(int argc, char **argv)
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long (argc, argv, "t:i:I:n:o:r:b:s:m:u:",
+        c = getopt_long (argc, argv, "t:i:I:n:o:r:b:s:S:m:u:",
                        long_options, &option_index);
         if (c == -1) {
             break;
@@ -243,6 +245,11 @@ void parse_arguments(int argc, char **argv)
                 // used to set stride size value
                 stride = atoi(optarg);
                 if (stride < 0) usage(argv[0]);
+                break;
+            case 'S':
+                // used to set stride size value
+                seed = atoi(optarg);
+                if (seed < 0) usage(argv[0]);
                 break;
             case 'm':
                 // used to set memory space
@@ -468,16 +475,16 @@ int benchmark(int penum) {
 
 
     for(int sample_iter = 0; sample_iter < nsamples+1; sample_iter++) {
-        
+
         // if irregularity is enabled, perform a reference benchmark first
         if (irregularity) {
             if (sample_iter == 0) {
                 // if this is the first iteration, print the reference benchmark information
                 if (penum == 0) {
                     printf("Non-Irregular Reference Benchmark\n");
-                } 
+                }
             } else {
-                
+
                 // if irregularity is enabled, set random parameters
                 nowned = gauss_dist(33554432, 10000000);
                 nremote = nowned/(1 << 6);
@@ -493,9 +500,9 @@ int benchmark(int penum) {
                 nsamples--;
             }
         }
-        
-        
-        
+
+
+
         int i, j, my_start_index,  remainder,
             num_partners_lo, num_partners_hi,
             offset, num_indices_per_partner, num_indices_offpe,
@@ -735,9 +742,6 @@ int main(int argc, char *argv[])
 {
     int penum, ierr;
 
-    // sets random seed for generating random distributions
-    srand(time(0));
-
     // initialize L7
     // L7_Init(process_number, number_of_processes, argc, argv, do_quo_setup, lttrace_on)
     // I think L7_Init places process number in penum here
@@ -745,6 +749,18 @@ int main(int argc, char *argv[])
 
     // parse CLI arguments
     parse_arguments(argc, argv);
+
+    // sets random seed for generating random distributions
+    if (irregularity) {
+        if (seed == -1) {
+            seed = time(0);
+        }
+        if (penum == 0) {
+            printf("Irregularity Seed: %d\n", seed);
+        }
+        srand(seed);
+    }
+
 
     // run benchmark
     benchmark(penum);
