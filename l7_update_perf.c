@@ -195,7 +195,7 @@ void usage(char *exename, int penum)
 void usage_long(char *exename, int penum) {
     if (penum == 0) {
         fprintf(stdout,
-            "usage: %s [-t typesize] [-I samples] [-i iterations] [-n neighbors] [-o owned] [-r remote] [-b blocksize] [-s stride] [-S seed] [-m memspace] [-u a,b,k,m,g]\n\n"
+            "usage: %s [-t typesize] [-I samples] [-i iterations] [-n neighbors] [-o owned] [-r remote] [-b blocksize] [-s stride] [-S seed] [-m memspace]\n\n"
             "[ -t typesize   ]\tspecify the size of the variable being sent (in bytes)\n"
             "[ -I samples    ]\tspecify the number of random samples to generate\n"
             "[ -i iterations ]\tspecify the number of updates each sample performs\n"
@@ -207,10 +207,10 @@ void usage_long(char *exename, int penum) {
             "[ -S seed       ]\tspecify positive integer to be used as seed for random number generation (current time used as default)\n"
             "[ -m memspace   ]\tchoose from: host, cuda, openmp, opencl\n"
             "[ -u units      ]\tchoose from: a,b,k,m,g (auto, bytes, kilobytes, etc.)\n\n"
-            "NOTE: setting parameters for the benchmark such as (neighbors, owned, remote, blocksize, and stride)\n\tonly sets parameters for the reference benchmark.\n"
-            "\tThose parameters are then randomized for the irregular samples.\n"
-            "\tUse the `--disable-irregularity` flag to only run the reference benchmark.\n\n", exename
-        );
+            "NOTE: setting parameters for the benchmark such as (neighbors, owned, remote, blocksize, and stride)\n"
+            "      only sets parameters for the reference benchmark.\n"
+            "      Those parameters are then randomized for the irregular samples.\n"
+            "      Use the `--disable-irregularity` flag to only run the reference benchmark.\n\n", exename);
     }
     exit(-1);
 }
