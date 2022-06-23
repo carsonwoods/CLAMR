@@ -1,4 +1,4 @@
-name: Irregular Benchmark
+name: OpenMPI Benchmark
 
 on: [push, pull_request]
 
