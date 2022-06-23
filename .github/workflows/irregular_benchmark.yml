@@ -33,5 +33,5 @@ jobs:
     - name: Benchmark
       working-directory: ${{github.workspace}}/build
       run: |
-        mpiexec -np 2 ./l7_update_perf -I 10 --disable-irregularity-neighbors
+        mpiexec -n $(nproc) ./l7_update_perf -I 10 --disable-irregularity-neighbors
       
