@@ -122,6 +122,9 @@ static int stride = -1;
 static int unit_div = 1;
 static char * unit_symbol = "auto";
 static int irregularity = 1;
+static int irregularity_owned = 1;
+static int irregularity_neighbors = 1;
+static int irregularity_stride = 1;
 static int seed = -1;
 static memspace_t memspace = MEMSPACE_HOST;
 
@@ -149,6 +152,9 @@ static struct option long_options[] = {
     {"memspace",   required_argument, 0, 'm'},
     {"units",      required_argument, 0, 'u'},
     {"disable-irregularity", no_argument, &irregularity, 0},
+    {"disable-irregularity-owned", no_argument, &irregularity_owned, 0},
+    {"disable-irregularity-neighbors", no_argument, &irregularity_neighbors, 0},
+    {"disable-irregularity-stride", no_argument, &irregularity_stride, 0},
     {0, 0, 0, 0}
 };
 
