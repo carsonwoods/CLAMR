@@ -125,6 +125,8 @@ static int irregularity = 1;
 static int irregularity_owned = 1;
 static int irregularity_neighbors = 1;
 static int irregularity_stride = 1;
+static int irregularity_blocksz = 1;
+static int irregularity_remote = 1;
 static int seed = -1;
 static memspace_t memspace = MEMSPACE_HOST;
 
@@ -155,6 +157,8 @@ static struct option long_options[] = {
     {"disable-irregularity-owned", no_argument, &irregularity_owned, 0},
     {"disable-irregularity-neighbors", no_argument, &irregularity_neighbors, 0},
     {"disable-irregularity-stride", no_argument, &irregularity_stride, 0},
+    {"disable-irregularity-blocksize", no_argument, &irregularity_blocksz, 0},
+    {"disable-irregularity-remote", no_argument, &irregularity_remote, 0},
     {0, 0, 0, 0}
 };
 
@@ -518,9 +522,16 @@ int benchmark(int penum) {
             } else {
 
                 // if irregularity is enabled, set random parameters
-                nowned = gauss_dist(33554432, 10000000);
-                nremote = nowned/(1 << 6);
-                blocksz = nowned/(1 << 15);
+                if (irregularity_owned)
+                    nowned = gauss_dist(33554432, 10000000);
+                if (irregularity_remote)
+                    nremote = nowned/(1 << 6);
+                if (irregularity_blocksz)
+                    blocksz = nowned/(1 << 15);
+                if (irregularity_neighbors)
+                    nneighbors = gauss_dist(numpes, 1);
+                if (irregularity_stride)
+                    stride = gauss_dist(16, 4);
 
                 // print benchmark status each iteration
                 if (penum == 0) {
