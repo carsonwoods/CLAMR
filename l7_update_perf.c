@@ -131,13 +131,8 @@ static int seed = -1;
 static memspace_t memspace = MEMSPACE_HOST;
 
 /*
- * these are options that are specified using the
- * type defined in the getopt.h file.
- *
- * TODO: I need to ask what is going on
- *       with this block of code
- * This might be helpful:
- * https://en.wikipedia.org/wiki/Getopt#Example_2_.28using_GNU_extension_getopt_long.29
+ * specifies the options that can be passed
+ * into the benchmark
 */
 static struct option long_options[] = {
     /* These options set a flag. */
