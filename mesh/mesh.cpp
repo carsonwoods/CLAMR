@@ -4,12 +4,12 @@
  *
  *  CLAMR -- LA-CC-11-094
  *
- *  Copyright 2011-2019. Triad National Security, LLC. This software was produced 
- *  under U.S. Government contract 89233218CNA000001 for Los Alamos National 
- *  Laboratory (LANL), which is operated by Triad National Security, LLC 
- *  for the U.S. Department of Energy. The U.S. Government has rights to use, 
+ *  Copyright 2011-2019. Triad National Security, LLC. This software was produced
+ *  under U.S. Government contract 89233218CNA000001 for Los Alamos National
+ *  Laboratory (LANL), which is operated by Triad National Security, LLC
+ *  for the U.S. Department of Energy. The U.S. Government has rights to use,
  *  reproduce, and distribute this software.  NEITHER THE GOVERNMENT NOR
- *  TRIAD NATIONAL SECURITY, LLC MAKES ANY WARRANTY, EXPRESS OR IMPLIED, OR 
+ *  TRIAD NATIONAL SECURITY, LLC MAKES ANY WARRANTY, EXPRESS OR IMPLIED, OR
  *  ASSUMES ANY LIABILITY FOR THE USE OF THIS SOFTWARE.  If software is modified
  *  to produce derivative works, such modified software should be clearly marked,
  *  so as not to confuse it with the version available from LANL.
@@ -21,13 +21,13 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the Triad National Security, LLC, Los Alamos 
- *       National Laboratory, LANL, the U.S. Government, nor the names of its 
- *       contributors may be used to endorse or promote products derived from 
+ *     * Neither the name of the Triad National Security, LLC, Los Alamos
+ *       National Laboratory, LANL, the U.S. Government, nor the names of its
+ *       contributors may be used to endorse or promote products derived from
  *       this software without specific prior written permission.
- *  
- *  THIS SOFTWARE IS PROVIDED BY THE TRIAD NATIONAL SECURITY, LLC AND 
- *  CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE TRIAD NATIONAL SECURITY, LLC AND
+ *  CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
  *  NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
  *  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL TRIAD NATIONAL
  *  SECURITY, LLC OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
@@ -37,23 +37,23 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
- *  
+ *
  *  CLAMR -- LA-CC-11-094
- *  This research code is being developed as part of the 
+ *  This research code is being developed as part of the
  *  2011 X Division Summer Workshop for the express purpose
  *  of a collaborative code for development of ideas in
  *  the implementation of AMR codes for Exascale platforms
- *  
+ *
  *  AMR implementation of the Wave code previously developed
  *  as a demonstration code for regular grids on Exascale platforms
- *  as part of the Supercomputing Challenge and Los Alamos 
+ *  as part of the Supercomputing Challenge and Los Alamos
  *  National Laboratory
- *  
+ *
  *  Authors: Bob Robey       XCP-2   brobey@lanl.gov
  *           Neal Davis              davis68@lanl.gov, davis68@illinois.edu
  *           David Nicholaeff        dnic@lanl.gov, mtrxknight@aol.com
  *           Dennis Trujillo         dptrujillo@lanl.gov, dptru10@gmail.com
- * 
+ *
  */
 #ifdef HAVE_MPI
 #include "mpi.h"
@@ -491,7 +491,7 @@ void Mesh::compare_neighbors_cpu_local_to_cpu_global(uint ncells_ghost, uint nce
          if (mype == 0) printf("%d: Error with nlft for cell %d -- nlft %d global %d check %d\n",mype,ic,nlft_global[ic],Test_global[nlft_global[ic]],Test_check_global[ic]);
       }
    }
-   
+
    // ==================== check left left value ====================
    for (uint ic=0; ic<ncells; ic++){
       Test_check[ic] = Test[nlft[nlft[ic]]];
@@ -507,7 +507,7 @@ void Mesh::compare_neighbors_cpu_local_to_cpu_global(uint ncells_ghost, uint nce
             mype,ic,nlft[ic],nlft[nlft[ic]],Test_check_global[ic]);
       }
    }
-   
+
    // ==================== check right value ====================
    for (uint ic=0; ic<ncells; ic++){
       Test_check[ic] = Test[nrht[ic]];
@@ -520,7 +520,7 @@ void Mesh::compare_neighbors_cpu_local_to_cpu_global(uint ncells_ghost, uint nce
          if (mype == 0) printf("%d: Error with nrht for cell %d -- %d %d\n",mype,ic,Test_global[nrht_global[ic]],Test_check_global[ic]);
       }
    }
-   
+
    // ==================== check right right value ====================
    for (uint ic=0; ic<ncells; ic++){
       Test_check[ic] = Test[nrht[nrht[ic]]];
@@ -549,7 +549,7 @@ void Mesh::compare_neighbors_cpu_local_to_cpu_global(uint ncells_ghost, uint nce
          if (mype == 0) printf("%d: Error with nbot for cell %d -- %d %d\n",mype,ic,Test_global[nbot_global[ic]],Test_check_global[ic]);
       }
    }
-   
+
    // ==================== check bottom bottom value ====================
    for (uint ic=0; ic<ncells; ic++){
       Test_check[ic] = Test[nbot[nbot[ic]]];
@@ -565,7 +565,7 @@ void Mesh::compare_neighbors_cpu_local_to_cpu_global(uint ncells_ghost, uint nce
             mype,ic,nbot[ic],nbot[nbot[ic]],Test_check_global[ic]);
       }
    }
-   
+
    // ==================== check top value ====================
    for (uint ic=0; ic<ncells; ic++){
       Test_check[ic] = Test[ntop[ic]];
@@ -617,8 +617,8 @@ void Mesh::compare_neighbors_all_to_gpu_local(Mesh *mesh_global, int *nsizes, in
    // Checking CPU parallel to CPU global
    vector<int> Test(ncells_ghost);
    for(uint ic=0; ic<ncells; ic++){
-      Test[ic] = mype*1000 +ic; 
-   }    
+      Test[ic] = mype*1000 +ic;
+   }
    if (numpe > 1) L7_Update(&Test[0], L7_INT, cell_handle);
 
    vector<int> Test_global(ncells_global);
@@ -631,20 +631,20 @@ void Mesh::compare_neighbors_all_to_gpu_local(Mesh *mesh_global, int *nsizes, in
    for (uint ic=0; ic<ncells; ic++){
       Test_check[ic] = Test[nlft[ic]];
       //if (mype == 1 && ic==0) printf("%d: nlft check for ic 0 is %d\n",mype,nlft[0]);
-   }    
+   }
 
    MPI_Allgatherv(&Test_check[0], nsizes[mype], MPI_INT, &Test_check_global[0], &nsizes[0], &ndispl[0], MPI_INT, MPI_COMM_WORLD);
 
    for (uint ic=0; ic<ncells_global; ic++){
       //if (Test_global[nlft_global[ic]] != Test_check_global[ic]) {
          //if (mype == 0) printf("%d: Error with nlft for cell %d -- nlft %d global %d check %d\n",mype,ic,nlft_global[ic],Test_global[nlft_global[ic]],Test_check_global[ic]);
-      //}  
-   }    
-     
+      //}
+   }
+
    // ==================== check left left value ====================
    for (uint ic=0; ic<ncells; ic++){
       Test_check[ic] = Test[nlft[nlft[ic]]];
-   }    
+   }
 
    MPI_Allgatherv(&Test_check[0], nsizes[mype], MPI_INT, &Test_check_global[0], &nsizes[0], &ndispl[0], MPI_INT, MPI_COMM_WORLD);
 
@@ -654,13 +654,13 @@ void Mesh::compare_neighbors_all_to_gpu_local(Mesh *mesh_global, int *nsizes, in
             mype,ic,nlft_global[ic],nlft_global[nlft_global[ic]],Test_global[nlft_global[nlft_global[ic]]]);
          printf("%d:                           check %5d -- nlftl %5d nlftl nlftl %5d check  %5d\n",
             mype,ic,nlft[ic],nlft[nlft[ic]],Test_check_global[ic]);
-      }          
-   }       
-              
+      }
+   }
+
    // ==================== check right value ====================
    for (uint ic=0; ic<ncells; ic++){
       Test_check[ic] = Test[nrht[ic]];
-   }       
+   }
 
    MPI_Allgatherv(&Test_check[0], nsizes[mype], MPI_INT, &Test_check_global[0], &nsizes[0], &ndispl[0], MPI_INT, MPI_COMM_WORLD);
    for (uint ic=0; ic<ncells_global; ic++){
@@ -965,7 +965,7 @@ void Mesh::compare_coordinates_gpu_global_to_cpu_global_double(cl_mem dev_x, cl_
          printf("Error -- mismatch in spatial coordinates for cell %d is gpu %lf %lf %lf %lf cpu %lf %lf %lf %lf\n",ic,x_check[ic],dx_check[ic],y_check[ic],dy_check[ic],x[ic],dx[ic],y[ic],dy[ic]);
          exit(0);
       }
-   }  
+   }
    for (uint ic = 0; ic < ncells; ic++){
       if (fabs(H[ic] - H_check[ic]) > CONSERVATION_EPS) {
          printf("Error -- mismatch in H for cell %d is gpu %lf cpu %lf\n",ic,H_check[ic],H[ic]);
@@ -993,7 +993,7 @@ void Mesh::compare_coordinates_gpu_global_to_cpu_global_float(cl_mem dev_x, cl_m
          printf("Error -- mismatch in spatial coordinates for cell %d is gpu %lf %lf %lf %lf cpu %lf %lf %lf %lf\n",ic,x_check[ic],dx_check[ic],y_check[ic],dy_check[ic],x[ic],dx[ic],y[ic],dy[ic]);
          exit(0);
       }
-   }  
+   }
    for (uint ic = 0; ic < ncells; ic++){
       if (fabs(H[ic] - H_check[ic]) > CONSERVATION_EPS) {
          printf("Error -- mismatch in H for cell %d is gpu %lf cpu %lf\n",ic,H_check[ic],H[ic]);
@@ -1022,7 +1022,7 @@ void Mesh::compare_coordinates_gpu_global_to_cpu_global_half(cl_mem dev_x, cl_me
          printf("Error -- mismatch in spatial coordinates for cell %d is gpu %lf %lf %lf %lf cpu %lf %lf %lf %lf\n",ic,x_check[ic],dx_check[ic],y_check[ic],dy_check[ic],x[ic],dx[ic],y[ic],dy[ic]);
          exit(0);
       }
-   }  
+   }
    for (uint ic = 0; ic < ncells; ic++){
       if (fabs(H[ic] - H_check[ic]) > CONSERVATION_EPS) {
          printf("Error -- mismatch in H for cell %d is gpu %lf cpu %lf\n",ic,H_check[ic],H[ic]);
@@ -1132,14 +1132,14 @@ void Mesh::compare_mpot_all_to_gpu_local(char_t *mpot, char_t *mpot_global, cl_m
 #ifdef HAVE_MPI
    cl_command_queue command_queue = ezcl_get_command_queue();
 
-   // Need to compare dev_mpot to mpot 
+   // Need to compare dev_mpot to mpot
    vector<char_t>mpot_save(ncells);
    ezcl_enqueue_read_buffer(command_queue, dev_mpot, CL_TRUE,  0, ncells*sizeof(cl_char_t), &mpot_save[0], NULL);
    for (uint ic = 0; ic < ncells; ic++){
       if (mpot[ic] != mpot_save[ic]) {
          printf("%d: DEBUG refine_potential 1 at cycle %d cell %d mpot & mpot_save %d %d \n",mype,ncycle,ic,mpot[ic],mpot_save[ic]);
-      }    
-   }    
+      }
+   }
 
    // Compare dev_mpot to mpot_global
    vector<char_t>mpot_save_global(ncells_global);
@@ -1147,24 +1147,24 @@ void Mesh::compare_mpot_all_to_gpu_local(char_t *mpot, char_t *mpot_global, cl_m
    for (uint ic = 0; ic < ncells_global; ic++){
       if (mpot_global[ic] != mpot_save_global[ic]) {
          if (mype == 0) printf("%d: DEBUG refine_potential 2 at cycle %d cell %d mpot_global & mpot_save_global %d %d \n",mype,ncycle,ic,mpot_global[ic],mpot_save_global[ic]);
-      }    
-   }    
+      }
+   }
 
    // Compare mpot to mpot_global
    MPI_Allgatherv(&mpot[0], nsizes[mype], MPI_CHAR_T, &mpot_save_global[0], &nsizes[0], &ndispl[0], MPI_CHAR_T, MPI_COMM_WORLD);
    for (uint ic = 0; ic < ncells_global; ic++){
       if (mpot_global[ic] != mpot_save_global[ic]) {
          if (mype == 0) printf("%d: DEBUG refine_potential 3 at cycle %d cell %d mpot_global & mpot_save_global %d %d \n",mype,ncycle,ic,mpot_global[ic],mpot_save_global[ic]);
-      }    
-   }    
+      }
+   }
 
    // Compare dev_mpot_global to mpot_global
    ezcl_enqueue_read_buffer(command_queue, dev_mpot_global, CL_TRUE,  0, ncells_global*sizeof(cl_char_t), &mpot_save_global[0], NULL);
    for (uint ic = 0; ic < ncells_global; ic++){
       if (mpot_global[ic] != mpot_save_global[ic]) {
          if (mype == 0) printf("%d: DEBUG refine_potential 4 at cycle %d cell %u mpot_global & mpot_save_global %d %d \n",mype,ncycle,ic,mpot_global[ic],mpot_save_global[ic]);
-      }    
-   }    
+      }
+   }
 #else
    // Just to get rid of compiler warnings
    if (1 == 2) printf("DEBUG -- mpot %p mpot_global %p dev_mpot %p dev_mpot_global %p ncells_global %d nsizes[0] %d ndispl[0] %d ncycle %d\n",
@@ -1221,9 +1221,9 @@ void Mesh::compare_ioffset_all_to_gpu_local(uint old_ncells, uint old_ncells_glo
 
    // This compares ioffset for each block in the calculation
    ezcl_enqueue_read_buffer(command_queue, dev_ioffset, CL_TRUE, 0, block_size*sizeof(cl_int), &ioffset[0], NULL);
-   int mtotal = 0; 
+   int mtotal = 0;
    for (uint ig=0; ig<(old_ncells+TILE_SIZE-1)/TILE_SIZE; ig++){
-      int mcount = 0; 
+      int mcount = 0;
       for (uint ic=ig*TILE_SIZE; ic<(ig+1)*TILE_SIZE; ic++){
          if (ic >= old_ncells) break;
 
@@ -1244,17 +1244,17 @@ void Mesh::compare_ioffset_all_to_gpu_local(uint old_ncells, uint old_ncells_glo
                mcount += mpot[ic] ? 2 : 1;
             }
          }
-      }    
+      }
       if (mtotal != ioffset[ig]) printf("%d: DEBUG ig %d ioffset %d mtotal %d\n",mype,ig,ioffset[ig],mtotal);
       mtotal += mcount;
-   }    
+   }
 
    // For global This compares ioffset for each block in the calculation
    ezcl_enqueue_read_buffer(command_queue, dev_ioffset_global, CL_TRUE, 0, block_size_global*sizeof(cl_int), &ioffset_global[0], NULL);
-   mtotal = 0; 
-   int count = 0; 
+   mtotal = 0;
+   int count = 0;
    for (uint ig=0; ig<(old_ncells_global+TILE_SIZE-1)/TILE_SIZE; ig++){
-      int mcount = 0; 
+      int mcount = 0;
       for (uint ic=ig*TILE_SIZE; ic<(ig+1)*TILE_SIZE; ic++){
          if (ic >= old_ncells_global) break;
 
@@ -1271,19 +1271,19 @@ void Mesh::compare_ioffset_all_to_gpu_local(uint old_ncells, uint old_ncells_glo
 
          if (mpot_global[ic] >= 0) {
             if (celltype_global[ic] == REAL_CELL) {
-               mcount += mpot_global[ic] ? 4 : 1; 
+               mcount += mpot_global[ic] ? 4 : 1;
             } else {
-               mcount += mpot_global[ic] ? 2 : 1; 
+               mcount += mpot_global[ic] ? 2 : 1;
             }
-         }    
-      }    
+         }
+      }
       if (mtotal != ioffset_global[ig]) {
          printf("DEBUG global ig %d ioffset %d mtotal %d\n",ig,ioffset_global[ig],mtotal);
          count++;
-      }    
+      }
       if (count > 10) exit(0);
       mtotal += mcount;
-   }    
+   }
 }
 #endif
 
@@ -1318,7 +1318,7 @@ Mesh::Mesh(int nx, int ny, int levmx_in, int ndim_in, double deltax_in, double d
    noffset = 0;
    mem_factor = 1.0;
    //mem_factor = 1.5;
-   
+
 #ifdef HAVE_MPI
    int mpi_init;
    MPI_Initialized(&mpi_init);
@@ -1360,12 +1360,12 @@ Mesh::Mesh(int nx, int ny, int levmx_in, int ndim_in, double deltax_in, double d
       imax   = nx + 1;
       jmax   = ny + 1;
    }
-   
+
    xmin = -deltax * 0.5 * (real_t)nxx;
    ymin = -deltay * 0.5 * (real_t)nyy;
    xmax =  deltax * 0.5 * (real_t)nxx;
    ymax =  deltay * 0.5 * (real_t)nyy;
-   
+
    size_t lvlMxSize = levmx + 1;
 
    levtable.resize(lvlMxSize);
@@ -1379,14 +1379,14 @@ Mesh::Mesh(int nx, int ny, int levmx_in, int ndim_in, double deltax_in, double d
    lev_iregsize.resize(lvlMxSize);
    lev_jregmin.resize(lvlMxSize);
    lev_jregsize.resize(lvlMxSize);
-   
+
    lev_ibegin[0] = imin + 1;
    lev_iend[0]   = imax - 1;
    lev_jbegin[0] = jmin + 1;
    lev_jend[0]   = jmax - 1;
    lev_deltax[0] = deltax;
    lev_deltay[0] = deltay;
-   
+
    for (int lev = 1; lev <= levmx; lev++) {
       lev_ibegin[lev] = lev_ibegin[lev-1]*2;
       lev_iend[lev]   = lev_iend  [lev-1]*2 + 1;
@@ -1754,10 +1754,10 @@ size_t Mesh::refine_smooth(vector<char_t> &mpot, int &icount, int &jcount)
 #endif
 
       int levcount = 1;
-       
+
       while (newcount_global > 0 && levcount < levmx){
 
-         levcount++; 
+         levcount++;
 #ifdef _OPENMP
 #pragma omp master
 {//MASTER START
@@ -1788,12 +1788,12 @@ size_t Mesh::refine_smooth(vector<char_t> &mpot, int &icount, int &jcount)
             int lev = level[ic];
             mpot[ic] = mpot_old[ic];
             if(mpot_old[ic] > 0) continue;
-   
+
             int nl = nlft[ic];
             if (nl >= 0 && nl < (int)ncells_ghost) {
                int ll = level[nl];
                if(mpot_old[nl] > 0) ll++;
-   
+
                if(ll - lev > 1) {
                   mpot[ic]=1;
                   mynewcount++;
@@ -1820,7 +1820,7 @@ size_t Mesh::refine_smooth(vector<char_t> &mpot, int &icount, int &jcount)
             if (nr >= 0 && nr < (int)ncells_ghost) {
                int lr = level[nr];
                if(mpot_old[nr] > 0) lr++;
-   
+
                if(lr - lev > 1) {
                   mpot[ic]=1;
                   mynewcount++;
@@ -1847,7 +1847,7 @@ size_t Mesh::refine_smooth(vector<char_t> &mpot, int &icount, int &jcount)
             if (nt >= 0 && nt < (int)ncells_ghost) {
                int lt = level[nt];
                if(mpot_old[nt] > 0) lt++;
-   
+
                if(lt - lev > 1) {
                   mpot[ic]=1;
                   mynewcount++;
@@ -1874,7 +1874,7 @@ size_t Mesh::refine_smooth(vector<char_t> &mpot, int &icount, int &jcount)
             if (nb >= 0 && nb < (int)ncells_ghost) {
                int lb = level[nb];
                if(mpot_old[nb] > 0) lb++;
-   
+
                if(lb - lev > 1) {
                   mpot[ic]=1;
                   mynewcount++;
@@ -1898,7 +1898,7 @@ size_t Mesh::refine_smooth(vector<char_t> &mpot, int &icount, int &jcount)
             }
          }
 #ifdef _OPENMP
-#pragma omp atomic 
+#pragma omp atomic
 #endif
          newcount += mynewcount;
 
@@ -3051,7 +3051,7 @@ void Mesh::rezone_all(int icount, int jcount, vector<char_t> mpot, int have_stat
          level[nc] = level_old[ic];
          nc++;
       } //  Complete no change needed.
-      
+
       else if (mpot[ic] < 0)
       {  //  Coarsening is needed; remove this cell and the other three and replace them with one.
          index[ic] = nc;
@@ -3063,12 +3063,12 @@ void Mesh::rezone_all(int icount, int jcount, vector<char_t> mpot, int have_stat
             nc++;
          }
       } //  Coarsening complete.
-      
+
       else if (mpot[ic] > 0)
       {  //  Refinement is needed; insert four cells where once was one.
          index[ic] = nc;
          if (celltype[ic] == REAL_CELL)
-         {  
+         {
             set_refinement_order(&order[0], ic, ifirst, ilast, jfirst, jlast,
                                  level_first, level_last, i_old, j_old, level_old);
 
@@ -3083,7 +3083,7 @@ void Mesh::rezone_all(int icount, int jcount, vector<char_t> mpot, int have_stat
                      j[nc]     = j_old[ic]*2;
                      nc++;
                      break;
-                     
+
                   case SE:
                      // lower right
                      invorder[SE] = ii;
@@ -3091,7 +3091,7 @@ void Mesh::rezone_all(int icount, int jcount, vector<char_t> mpot, int have_stat
                      j[nc]     = j_old[ic]*2;
                      nc++;
                      break;
-                     
+
                   case NW:
                      // upper left
                      invorder[NW] = ii;
@@ -3099,7 +3099,7 @@ void Mesh::rezone_all(int icount, int jcount, vector<char_t> mpot, int have_stat
                      j[nc]     = j_old[ic]*2 + 1;
                      nc++;
                      break;
-                     
+
                   case NE:
                      // upper right
                      invorder[NE] = ii;
@@ -3108,14 +3108,14 @@ void Mesh::rezone_all(int icount, int jcount, vector<char_t> mpot, int have_stat
                      nc++;
                      break; } } //  Complete cell refinement.
          }  //  Complete real cell refinement.
-         
+
          else if (celltype[ic] == LEFT_BOUNDARY) {
             // lower
             i[nc]  = i_old[ic]*2 + 1;
             j[nc]  = j_old[ic]*2;
             level[nc] = level_old[ic] + 1;
             nc++;
-            
+
             // upper
             i[nc] = i_old[ic]*2 + 1;
             j[nc] = j_old[ic]*2 + 1;
@@ -3128,7 +3128,7 @@ void Mesh::rezone_all(int icount, int jcount, vector<char_t> mpot, int have_stat
             j[nc]  = j_old[ic]*2;
             level[nc] = level_old[ic] + 1;
             nc++;
-            
+
             // upper
             i[nc] = i_old[ic]*2;
             j[nc] = j_old[ic]*2 + 1;
@@ -3141,7 +3141,7 @@ void Mesh::rezone_all(int icount, int jcount, vector<char_t> mpot, int have_stat
             j[nc]  = j_old[ic]*2 + 1;
             level[nc] = level_old[ic] + 1;
             nc++;
-            
+
             // right
             i[nc] = i_old[ic]*2 + 1;
             j[nc] = j_old[ic]*2 + 1;
@@ -3401,7 +3401,7 @@ void Mesh::rezone_all(int icount, int jcount, vector<char_t> mpot, int have_stat
       //if (ic == 296) printf("%d\n", mpot[ic]);
        //if (ic == 296) printf("%d %d %d\n", i_old[ic], j_old[ic], level_old[ic]);
        //if (ic == 296) printf("%d %d %d %d\n", nc, i[nc], j[nc], level[nc]);
-         
+
       } //  Complete no change needed.
 
       else if (mpot[ic] < 0)
@@ -3419,7 +3419,7 @@ void Mesh::rezone_all(int icount, int jcount, vector<char_t> mpot, int have_stat
       {  //  Refinement is needed; insert four cells where once was one.
          index[ic] = nc;
          if (celltype[ic] == REAL_CELL)
-         {  
+         {
             int order[4];
             set_refinement_order(&order[0], ic, ifirst, ilast, jfirst, jlast,
                                  level_first, level_last, i_old, j_old, level_old);
@@ -3435,7 +3435,7 @@ void Mesh::rezone_all(int icount, int jcount, vector<char_t> mpot, int have_stat
                      j[nc]     = j_old[ic]*2;
                      nc++;
                      break;
-                     
+
                   case SE:
                      // lower right
                      invorder[SE] = ii;
@@ -3443,7 +3443,7 @@ void Mesh::rezone_all(int icount, int jcount, vector<char_t> mpot, int have_stat
                      j[nc]     = j_old[ic]*2;
                      nc++;
                      break;
-                     
+
                   case NW:
                      // upper left
                      invorder[NW] = ii;
@@ -3451,7 +3451,7 @@ void Mesh::rezone_all(int icount, int jcount, vector<char_t> mpot, int have_stat
                      j[nc]     = j_old[ic]*2 + 1;
                      nc++;
                      break;
-                     
+
                   case NE:
                      // upper right
                      invorder[NE] = ii;
@@ -3462,14 +3462,14 @@ void Mesh::rezone_all(int icount, int jcount, vector<char_t> mpot, int have_stat
                   }
                } //  Complete cell refinement.
          }  //  Complete real cell refinement.
-         
+
          else if (celltype[ic] == LEFT_BOUNDARY) {
             // lower
             i[nc]  = i_old[ic]*2 + 1;
             j[nc]  = j_old[ic]*2;
             level[nc] = level_old[ic] + 1;
             nc++;
-            
+
             // upper
             i[nc] = i_old[ic]*2 + 1;
             j[nc] = j_old[ic]*2 + 1;
@@ -3482,7 +3482,7 @@ void Mesh::rezone_all(int icount, int jcount, vector<char_t> mpot, int have_stat
             j[nc]  = j_old[ic]*2;
             level[nc] = level_old[ic] + 1;
             nc++;
-            
+
             // upper
             i[nc] = i_old[ic]*2;
             j[nc] = j_old[ic]*2 + 1;
@@ -3495,7 +3495,7 @@ void Mesh::rezone_all(int icount, int jcount, vector<char_t> mpot, int have_stat
             j[nc]  = j_old[ic]*2 + 1;
             level[nc] = level_old[ic] + 1;
             nc++;
-            
+
             // right
             i[nc] = i_old[ic]*2 + 1;
             j[nc] = j_old[ic]*2 + 1;
@@ -3970,10 +3970,10 @@ void Mesh::rezone_all(int icount, int jcount, vector<char_t> mpot, int have_stat
       ndispl[0]=0;
       for (int ip=1; ip<numpe; ip++){
          ndispl[ip] = ndispl[ip-1] + nsizes[ip-1];
-      }  
+      }
       noffset=ndispl[mype];
       ncells_global = ndispl[numpe-1]+nsizes[numpe-1];
-   }  
+   }
 #endif
 
    cpu_timers[MESH_TIMER_REZONE_ALL] += cpu_timer_stop(tstart_cpu);
@@ -4221,7 +4221,7 @@ void Mesh::gpu_rezone_all(int icount, int jcount, cl_mem &dev_mpot, MallocPlus &
       ezcl_set_kernel_arg(kernel_rezone_neighbors, 10, sizeof(cl_mem),  (void *)&dev_nbot_new);
       ezcl_set_kernel_arg(kernel_rezone_neighbors, 11, sizeof(cl_mem),  (void *)&dev_ntop_new);
       ezcl_enqueue_ndrange_kernel(command_queue, kernel_rezone_neighbors,   1, NULL, &global_work_size, &local_work_size, NULL);
-   
+
       ezcl_device_memory_swap(&dev_nlft, &dev_nlft_new);
       ezcl_device_memory_swap(&dev_nrht, &dev_nrht_new);
       ezcl_device_memory_swap(&dev_nbot, &dev_nbot_new);
@@ -4365,12 +4365,12 @@ void Mesh::calc_neighbors(int ncells)
                bool need_hash = (nlft[ic] == -1 || nrht[ic] == -1 || nbot[ic] == -1 || ntop[ic] == -1) ? true : false;
 
                if (! need_hash){
-                   if ( ((int)level[nlft[ic]] > lev && ntop[nlft[ic]] == -1) || 
+                   if ( ((int)level[nlft[ic]] > lev && ntop[nlft[ic]] == -1) ||
                         ((int)level[nrht[ic]] > lev && ntop[nrht[ic]] == -1) ||
-                        ((int)level[nbot[ic]] > lev && nrht[nbot[ic]] == -1) || 
+                        ((int)level[nbot[ic]] > lev && nrht[nbot[ic]] == -1) ||
                         ((int)level[ntop[ic]] > lev && nrht[ntop[ic]] == -1) ) need_hash = true;
                }
-            
+
                if (need_hash) {
                   int levmult = IPOW2(levmx-lev);
                   int ii = i[ic]*levmult;
@@ -4461,7 +4461,7 @@ void Mesh::calc_neighbors(int ncells)
                         nlftval = read_hash(jjtopfiner*imaxsize+iilftfiner, hash);
                      }
                   }
-            
+
                   if (iicur < 1*IPOW2(levmx)) {
                      if (ntopval < 0) {
                         int iirhtfiner = (iicur+iirht)/2;
@@ -4474,7 +4474,7 @@ void Mesh::calc_neighbors(int ncells)
                      }
                   }
                }
-            
+
                // coarser neighbor
                if (lev != 0){
                   if (nlftval < 0) {
@@ -4774,10 +4774,10 @@ void Mesh::calc_neighbors_local(void)
 
          int iicur = ii*levmult-iminsize;
          int iilft = max( (ii-1)*levmult, 0         )-iminsize;
-         int iirht = min( (ii+1)*levmult, imaxcalc-1)-iminsize;   
+         int iirht = min( (ii+1)*levmult, imaxcalc-1)-iminsize;
          int jjcur = jj*levmult-jminsize;
          int jjbot = max( (jj-1)*levmult, 0         )-jminsize;
-         int jjtop = min( (jj+1)*levmult, jmaxcalc-1)-jminsize;   
+         int jjtop = min( (jj+1)*levmult, jmaxcalc-1)-jminsize;
 
          int nlftval = -1;
          int nrhtval = -1;
@@ -4817,7 +4817,7 @@ void Mesh::calc_neighbors_local(void)
             if (nbottry >= 0 && nbottry < (int)ncells && (int)level[nbottry] == lev) nbotval = nbottry;
          }
          if (ntopval < 0) ntopval = read_hash(jjtop*(imaxsize-iminsize)+iicur, hash);
-              
+
          // Now we need to take care of special case where bottom and left boundary need adjustment since
          // expected cell doesn't exist on these boundaries if it is finer than current cell
          if (lev != levmx) {
@@ -4853,24 +4853,24 @@ void Mesh::calc_neighbors_local(void)
                int jjlft = (jj/2)*2*levmult-jminsize;
                int nlfttry = read_hash(jjlft*(imaxsize-iminsize)+iilft, hash);
                if (nlfttry >= 0 && nlfttry < (int)ncells && (int)level[nlfttry] == lev-1) nlftval = nlfttry;
-            }       
+            }
             if (nrhtval < 0) {
                int jjrht = (jj/2)*2*levmult-jminsize;
                int nrhttry = read_hash(jjrht*(imaxsize-iminsize)+iirht, hash);
                if (nrhttry >= 0 && nrhttry < (int)ncells && (int)level[nrhttry] == lev-1) nrhtval = nrhttry;
-            }       
+            }
             if (nbotval < 0) {
                jjbot -= jjcur-jjbot;
                int iibot = (ii/2)*2*levmult-iminsize;
                int nbottry = read_hash(jjbot*(imaxsize-iminsize)+iibot, hash);
                if (nbottry >= 0 && nbottry < (int)ncells && (int)level[nbottry] == lev-1) nbotval = nbottry;
-            }       
+            }
             if (ntopval < 0) {
                int iitop = (ii/2)*2*levmult-iminsize;
                int ntoptry = read_hash(jjtop*(imaxsize-iminsize)+iitop, hash);
                if (ntoptry >= 0 && ntoptry < (int)ncells && (int)level[ntoptry] == lev-1) ntopval = ntoptry;
-            }       
-         }       
+            }
+         }
 
          nlft[ic] = nlftval;
          nrht[ic] = nrhtval;
@@ -4934,7 +4934,7 @@ void Mesh::calc_neighbors_local(void)
             fprintf(fp,"%4d:",ii);
          }
          fprintf(fp,"\n");
-      
+
          fprintf(fp,"\n                                    nrht numbering\n");
          for (int jj = jmaxglobal-1; jj>=0; jj--){
             fprintf(fp,"%2d: %4d:",mype,jj);
@@ -5136,7 +5136,7 @@ void Mesh::calc_neighbors_local(void)
                if (ntop[ic] == -1 || (level[ntop[ic]-noffset] > level[ic] && nrht[ntop[ic]-noffset] == -1) ) {
                   iborder_cell |= 0x0008;
                }
-   
+
                border_cell[ic] = iborder_cell;
             }
 
@@ -5224,9 +5224,9 @@ void Mesh::calc_neighbors_local(void)
 
          for (int ic = 0; ic <nbsize_local; ic++){
             int cell_num = border_cell_num[ic]-noffset;
-            border_cell_i[ic] = i[cell_num]; 
-            border_cell_j[ic] = j[cell_num]; 
-            border_cell_level[ic] = level[cell_num]; 
+            border_cell_i[ic] = i[cell_num];
+            border_cell_j[ic] = j[cell_num];
+            border_cell_level[ic] = level[cell_num];
          }
 #ifdef _OPENMP
          }
@@ -5267,6 +5267,9 @@ void Mesh::calc_neighbors_local(void)
 #pragma omp master
          {
 #endif
+         if (mype == 0) {
+            printf("PARAM: num_comm_partners (nneighbors) - %d\n", num_comm_partners);
+         }
          send_database = (int**)malloc(num_comm_partners*sizeof(int *));
          for (int ip = 0; ip < num_comm_partners; ip++){
             send_database[ip] = (int *)malloc(nbsize_local*sizeof(int));
@@ -5291,9 +5294,9 @@ void Mesh::calc_neighbors_local(void)
             for (int ib = 0; ib <nbsize_local; ib++){
                int lev = border_cell_level[ib];
                int levmult = IPOW2(levmx-lev);
-               if (border_cell_i[ib]*levmult >= iminsize_global[comm_partner[ip]] && 
-                   border_cell_i[ib]*levmult <= imaxsize_global[comm_partner[ip]] && 
-                   border_cell_j[ib]*levmult >= jminsize_global[comm_partner[ip]] && 
+               if (border_cell_i[ib]*levmult >= iminsize_global[comm_partner[ip]] &&
+                   border_cell_i[ib]*levmult <= imaxsize_global[comm_partner[ip]] &&
+                   border_cell_j[ib]*levmult >= jminsize_global[comm_partner[ip]] &&
                    border_cell_j[ib]*levmult <= jmaxsize_global[comm_partner[ip]] ) {
                   //   border_cell_i[ib],border_cell_j[ib],border_cell_level[ib]);
                   send_database[ip][icount] = ib;
@@ -5307,7 +5310,7 @@ void Mesh::calc_neighbors_local(void)
 #pragma omp barrier
 #endif
 
-         // Initialize L7_Push_Setup with num_comm_partners, comm_partner, send_database and 
+         // Initialize L7_Push_Setup with num_comm_partners, comm_partner, send_database and
          // send_buffer_count. L7_Push_Setup will copy data and determine recv_buffer_counts.
          // It will return receive_count_total for use in allocations
 
@@ -5347,7 +5350,7 @@ void Mesh::calc_neighbors_local(void)
 #endif
          }
 
-         // Can now free the send database. Other arrays are vectors and will automatically 
+         // Can now free the send database. Other arrays are vectors and will automatically
          // deallocate
 
 #ifdef _OPENMP
@@ -5398,7 +5401,7 @@ void Mesh::calc_neighbors_local(void)
 #pragma omp barrier
 #endif
 
-         nbsize_local = receive_count_total; 
+         nbsize_local = receive_count_total;
 
          if (DEBUG) {
 #ifdef _OPENMP
@@ -5508,7 +5511,7 @@ void Mesh::calc_neighbors_local(void)
                   nlftval = read_hash(jjcur*(imaxsize-iminsize)+iilftfiner, hash);
                   // Also check for finer cell left and top side
                   if (nlftval < 0) {
-                     int jjtopfiner = (jjcur+jjtop)/2; 
+                     int jjtopfiner = (jjcur+jjtop)/2;
                      nlftval = read_hash(jjtopfiner*(imaxsize-iminsize)+iilftfiner, hash);
                   }
                }
@@ -5520,7 +5523,7 @@ void Mesh::calc_neighbors_local(void)
                      nlftval = nlfttry;
                   }
                }
-    
+
                if (lev != 0 && nlftval < 0 && iilft-(iicur-iilft) >= 0){      // coarser neighbor
                   iilft -= iicur-iilft;
                   int jjlft = (jj/2)*2*levmult-jminsize;
@@ -5566,7 +5569,7 @@ void Mesh::calc_neighbors_local(void)
                   nbotval = read_hash(jjbotfiner*(imaxsize-iminsize)+iicur, hash);
                   // Also check for finer cell below and right side
                   if (nbotval < 0) {
-                     int iirhtfiner = (iicur+iirht)/2; 
+                     int iirhtfiner = (iicur+iirht)/2;
                      nbotval = read_hash(jjbotfiner*(imaxsize-iminsize)+iirhtfiner, hash);
                   }
                }
@@ -5578,7 +5581,7 @@ void Mesh::calc_neighbors_local(void)
                      nbotval = nbottry;
                   }
                }
-    
+
                if (lev != 0 && nbotval < 0 && jjbot-(jjcur-jjbot) >= 0){      // coarser neighbor
                   jjbot -= jjcur-jjbot;
                   int iibot = (ii/2)*2*levmult-iminsize;
@@ -5721,7 +5724,7 @@ void Mesh::calc_neighbors_local(void)
             int jjtop = min( (jj+1)*levmult, jmaxcalc-1)-jminsize;
 
             //fprintf(fp,"            DEBUG layer2 ic %d num %d i %d j %d lev %d\n",ic,border_cell_num_local[ic],ii,jj,lev);
-   
+
             int iborder = 0;
 
             // Test for cell to left
@@ -6173,7 +6176,7 @@ void Mesh::calc_neighbors_local(void)
                }
                if (nrhtval != -1) nrht[ic] = nrhtval;
             }
- 
+
             if (nbotval == -1) {
                // Taking care of boundary cells
                // Force each boundary cell to point to itself on its boundary direction
@@ -6212,7 +6215,7 @@ void Mesh::calc_neighbors_local(void)
                }
                if (nbotval != -1) nbot[ic] = nbotval;
             }
-    
+
             if (ntopval == -1) {
                // Taking care of boundary cells
                // Force each boundary cell to point to itself on its boundary direction
@@ -6222,14 +6225,14 @@ void Mesh::calc_neighbors_local(void)
 
                // same size neighbor
                if (ntopval == -1 && jjtop < jmaxsize-jminsize) ntopval = read_hash(jjtop*(imaxsize-iminsize)+iicur, hash);
-   
+
                if (iicur < 1*IPOW2(levmx)) {
                   if (ntopval == -1) {
                      int iirhtfiner = (iicur+iirht)/2;
                      if (jjtop < jmaxsize-jminsize && iirhtfiner < imaxsize-iminsize) ntopval = read_hash(jjtop*(imaxsize-iminsize)+iirhtfiner, hash);
                   }
                }
-   
+
                // coarser neighbor
                if (lev != 0){
                   if (ntopval == -1) {
@@ -6239,7 +6242,7 @@ void Mesh::calc_neighbors_local(void)
                }
                if (ntopval != -1) ntop[ic] = ntopval;
             }
- 
+
             //fprintf(fp,"%d: neighbors[%d] = %d %d %d %d\n",mype,ic,nlft[ic],nrht[ic],nbot[ic],ntop[ic]);
          }
 
@@ -6356,7 +6359,7 @@ void Mesh::calc_neighbors_local(void)
             } // end master region
 #endif
          }
-         
+
          if (TIMING_LEVEL >= 2) {
 #ifdef _OPENMP
 #pragma omp master
@@ -6386,6 +6389,30 @@ void Mesh::calc_neighbors_local(void)
                }
             }
             L7_Setup(0, noffset, ncells, &indices_needed[0], nghost, &cell_handle);
+            if (mype == 0) {
+               int length = sizeof(indices_needed)/sizeof(indices_needed[0]);
+               // display array
+               printf("PARAM: indices_needed () - ");
+               for(int ind_index=0; ind_index<length; ind_index++) {
+                  printf("%d ", indices_needed[ind_index]);
+                  if (ind_index == length-1) {
+                     printf("\n");
+                  }
+               }
+
+               length = sizeof(nsizes)/sizeof(nsizes[0]);
+               // display array
+               printf("PARAM: nsizes () - ");
+               for(int size_index=0; size_index<length; size_index++) {
+                  printf("%d ", nsizes[size_index]);
+                  if (size_index == length-1) {
+                     printf("\n");
+                  }
+               }
+
+               printf("PARAM: ncells (nowned) - %d\n", ncells);
+               printf("PARAM: nghost (nremote) - %d\n", nghost);
+            }
 
             if (TIMING_LEVEL >= 2) cpu_timers[MESH_TIMER_SETUP_COMM] += cpu_timer_stop(tstart_lev2);
 
@@ -6445,7 +6472,7 @@ void Mesh::calc_neighbors_local(void)
                fprintf(fp,"%4d:",ii);
             }
             fprintf(fp,"\n");
-      
+
             fprintf(fp,"\n                                    nrht numbering\n");
             for (int jj = jmaxglobal-1; jj>=0; jj--){
                fprintf(fp,"%2d: %4d:",mype,jj);
@@ -6514,7 +6541,7 @@ void Mesh::calc_neighbors_local(void)
                fprintf(fp,"%4d:",ii);
             }
             fprintf(fp,"\n");
-      
+
 #ifdef _OPENMP
             } // end master region
 #endif
@@ -6858,7 +6885,7 @@ void Mesh::gpu_calc_neighbors_local(void)
    cl_mem dev_sizes = ezcl_malloc(NULL, const_cast<char *>("dev_sizes"), &one, sizeof(cl_int4),  CL_MEM_READ_WRITE, 0);
 
 #ifdef BOUNDS_CHECK
-   if (ezcl_get_device_mem_nelements(dev_i) < (int)ncells || 
+   if (ezcl_get_device_mem_nelements(dev_i) < (int)ncells ||
        ezcl_get_device_mem_nelements(dev_j) < (int)ncells ||
        ezcl_get_device_mem_nelements(dev_level) < (int)ncells ){
       printf("%d: Warning ncells %ld size dev_i %d dev_j %d dev_level %d\n",mype,ncells,ezcl_get_device_mem_nelements(dev_i),ezcl_get_device_mem_nelements(dev_j),ezcl_get_device_mem_nelements(dev_level));
@@ -7249,7 +7276,7 @@ void Mesh::gpu_calc_neighbors_local(void)
          fprintf(fp,"%4d:",ii);
       }
       fprintf(fp,"\n");
-   
+
       fprintf(fp,"\n                                    nrht numbering\n");
       for (int jj = jmaxglobal-1; jj>=0; jj--){
          fprintf(fp,"%2d: %4d:",mype,jj);
@@ -7339,7 +7366,7 @@ void Mesh::gpu_calc_neighbors_local(void)
          MPI_Allgather(&jminsize, 1, MPI_INT, &jminsize_global[0], 1, MPI_INT, MPI_COMM_WORLD);
          MPI_Allgather(&jmaxsize, 1, MPI_INT, &jmaxsize_global[0], 1, MPI_INT, MPI_COMM_WORLD);
 
-         int num_comm_partners = 0; 
+         int num_comm_partners = 0;
          for (int ip = 0; ip < numpe; ip++){
             if (ip == mype) continue;
             if (iminsize_global[ip] > imaxtile) continue;
@@ -7349,7 +7376,7 @@ void Mesh::gpu_calc_neighbors_local(void)
             comm_partner[num_comm_partners] = ip;
             num_comm_partners++;
             //if (DEBUG) fprintf(fp,"%d: overlap with processor %d bounding box is %d %d %d %d\n",mype,ip,iminsize_global[ip],imaxsize_global[ip],jminsize_global[ip],jmaxsize_global[ip]);
-         }    
+         }
 
 #ifdef BOUNDS_CHECK
       {
@@ -7396,7 +7423,7 @@ void Mesh::gpu_calc_neighbors_local(void)
       ezcl_set_kernel_arg(kernel_calc_border_cells, 5,  sizeof(cl_mem), (void *)&dev_ntop);
       ezcl_set_kernel_arg(kernel_calc_border_cells, 6,  sizeof(cl_mem), (void *)&dev_level);
       ezcl_set_kernel_arg(kernel_calc_border_cells, 7,  sizeof(cl_mem), (void *)&dev_border_cell);
-      ezcl_enqueue_ndrange_kernel(command_queue, kernel_calc_border_cells, 1, NULL, &global_work_size, &local_work_size, NULL); 
+      ezcl_enqueue_ndrange_kernel(command_queue, kernel_calc_border_cells, 1, NULL, &global_work_size, &local_work_size, NULL);
 
       cl_mem dev_border_cell_new = ezcl_malloc(NULL, const_cast<char *>("dev_border_cell2"), &ncells, sizeof(cl_int),  CL_MEM_READ_WRITE, 0);
 
@@ -7416,7 +7443,7 @@ void Mesh::gpu_calc_neighbors_local(void)
       ezcl_set_kernel_arg(kernel_calc_border_cells2,  9,  sizeof(cl_mem), (void *)&dev_ioffset);
       ezcl_set_kernel_arg(kernel_calc_border_cells2, 10,  sizeof(cl_mem), (void *)&dev_nbsize);
       ezcl_set_kernel_arg(kernel_calc_border_cells2, 11,  local_work_size*sizeof(cl_int), NULL);
-      ezcl_enqueue_ndrange_kernel(command_queue, kernel_calc_border_cells2, 1, NULL, &global_work_size, &local_work_size, NULL); 
+      ezcl_enqueue_ndrange_kernel(command_queue, kernel_calc_border_cells2, 1, NULL, &global_work_size, &local_work_size, NULL);
 
       ezcl_device_memory_swap(&dev_border_cell, &dev_border_cell_new);
       ezcl_device_memory_delete(dev_border_cell_new);
@@ -7427,7 +7454,7 @@ void Mesh::gpu_calc_neighbors_local(void)
       ezcl_set_kernel_arg(kernel_finish_scan, 1,  sizeof(cl_mem), (void *)&dev_ioffset);
       ezcl_set_kernel_arg(kernel_finish_scan, 2,  sizeof(cl_mem), (void *)&dev_nbsize);
       ezcl_set_kernel_arg(kernel_finish_scan, 3,  local_work_size*sizeof(cl_int), NULL);
-      ezcl_enqueue_ndrange_kernel(command_queue, kernel_finish_scan, 1, NULL, &local_work_size, &local_work_size, NULL); 
+      ezcl_enqueue_ndrange_kernel(command_queue, kernel_finish_scan, 1, NULL, &local_work_size, &local_work_size, NULL);
 
       int nbsize_local;
       ezcl_enqueue_read_buffer(command_queue, dev_nbsize, CL_TRUE,  0, 1*sizeof(cl_int), &nbsize_local, NULL);
@@ -7439,7 +7466,7 @@ void Mesh::gpu_calc_neighbors_local(void)
       vector<int> border_cell_i(nbsize_local);
       vector<int> border_cell_j(nbsize_local);
       vector<int> border_cell_level(nbsize_local);
-    
+
       // allocate new border memory
       size_t nbsize_long = nbsize_local;
       cl_mem dev_border_cell_i     = ezcl_malloc(NULL, const_cast<char *>("dev_border_cell_i"),     &nbsize_long, sizeof(cl_int), CL_MEM_READ_WRITE, 0);
@@ -7459,7 +7486,7 @@ void Mesh::gpu_calc_neighbors_local(void)
       ezcl_set_kernel_arg(kernel_get_border_data,  9,  sizeof(cl_mem), (void *)&dev_border_cell_level);
       ezcl_set_kernel_arg(kernel_get_border_data, 10,  sizeof(cl_mem), (void *)&dev_border_cell_num);
       ezcl_set_kernel_arg(kernel_get_border_data, 11,  local_work_size*sizeof(cl_uint), NULL);
-      ezcl_enqueue_ndrange_kernel(command_queue, kernel_get_border_data, 1, NULL, &global_work_size, &local_work_size, NULL); 
+      ezcl_enqueue_ndrange_kernel(command_queue, kernel_get_border_data, 1, NULL, &global_work_size, &local_work_size, NULL);
 
       ezcl_device_memory_delete(dev_ioffset);
       ezcl_device_memory_delete(dev_border_cell);
@@ -7490,9 +7517,9 @@ void Mesh::gpu_calc_neighbors_local(void)
          for (int ib = 0; ib <nbsize_local; ib++){
             int lev = border_cell_level[ib];
             int levmult = IPOW2(levmx-lev);
-            if (border_cell_i[ib]*levmult >= iminsize_global[comm_partner[ip]] && 
-                border_cell_i[ib]*levmult <= imaxsize_global[comm_partner[ip]] && 
-                border_cell_j[ib]*levmult >= jminsize_global[comm_partner[ip]] && 
+            if (border_cell_i[ib]*levmult >= iminsize_global[comm_partner[ip]] &&
+                border_cell_i[ib]*levmult <= imaxsize_global[comm_partner[ip]] &&
+                border_cell_j[ib]*levmult >= jminsize_global[comm_partner[ip]] &&
                 border_cell_j[ib]*levmult <= jmaxsize_global[comm_partner[ip]] ) {
                send_database[ip][icount] = ib;
                icount++;
@@ -7501,7 +7528,7 @@ void Mesh::gpu_calc_neighbors_local(void)
          send_buffer_count[ip]=icount;
       }
 
-      // Initialize L7_Push_Setup with num_comm_partners, comm_partner, send_database and 
+      // Initialize L7_Push_Setup with num_comm_partners, comm_partner, send_database and
       // send_buffer_count. L7_Push_Setup will copy data and determine recv_buffer_counts.
       // It will return receive_count_total for use in allocations
 
@@ -7522,7 +7549,7 @@ void Mesh::gpu_calc_neighbors_local(void)
          }
       }
 
-      // Can now free the send database. Other arrays are vectors and will automatically 
+      // Can now free the send database. Other arrays are vectors and will automatically
       // deallocate
 
       for (int ip = 0; ip < num_comm_partners; ip++){
@@ -7645,7 +7672,7 @@ void Mesh::gpu_calc_neighbors_local(void)
       ezcl_set_kernel_arg(kernel_calc_layer1, 12,  sizeof(cl_mem),   (void *)&dev_border_cell_needed);
       ezcl_set_kernel_arg(kernel_calc_layer1, 13,  sizeof(cl_mem),   (void *)&dev_hash_header);
       ezcl_set_kernel_arg(kernel_calc_layer1, 14,  sizeof(cl_mem),   (void *)&dev_hash);
-      ezcl_enqueue_ndrange_kernel(command_queue, kernel_calc_layer1, 1, NULL, &nb_global_work_size, &nb_local_work_size, NULL); 
+      ezcl_enqueue_ndrange_kernel(command_queue, kernel_calc_layer1, 1, NULL, &nb_global_work_size, &nb_local_work_size, NULL);
 
       if (DEBUG){
          vector<int> border_cell_needed_local(nbsize_local);
@@ -7672,7 +7699,7 @@ void Mesh::gpu_calc_neighbors_local(void)
       ezcl_set_kernel_arg(kernel_calc_layer1_sethash,  9,  sizeof(cl_mem),   (void *)&dev_border_cell_needed);
       ezcl_set_kernel_arg(kernel_calc_layer1_sethash, 10,  sizeof(cl_mem),   (void *)&dev_hash_header);
       ezcl_set_kernel_arg(kernel_calc_layer1_sethash, 11,  sizeof(cl_mem),   (void *)&dev_hash);
-      ezcl_enqueue_ndrange_kernel(command_queue, kernel_calc_layer1_sethash, 1, NULL, &nb_global_work_size, &nb_local_work_size, &calc_layer1_sethash_event); 
+      ezcl_enqueue_ndrange_kernel(command_queue, kernel_calc_layer1_sethash, 1, NULL, &nb_global_work_size, &nb_local_work_size, &calc_layer1_sethash_event);
 
       ezcl_wait_for_events(1, &calc_layer1_sethash_event);
       ezcl_event_release(calc_layer1_sethash_event);
@@ -7745,7 +7772,7 @@ void Mesh::gpu_calc_neighbors_local(void)
       ezcl_set_kernel_arg(kernel_calc_layer2, 16,  sizeof(cl_mem),   (void *)&dev_ioffset);
       ezcl_set_kernel_arg(kernel_calc_layer2, 17,  sizeof(cl_mem),   (void *)&dev_nbpacked);
       ezcl_set_kernel_arg(kernel_calc_layer2, 18,  nb_local_work_size*sizeof(cl_mem), NULL);
-      ezcl_enqueue_ndrange_kernel(command_queue, kernel_calc_layer2, 1, NULL, &nb_global_work_size, &nb_local_work_size, NULL); 
+      ezcl_enqueue_ndrange_kernel(command_queue, kernel_calc_layer2, 1, NULL, &nb_global_work_size, &nb_local_work_size, NULL);
 
       if (DEBUG){
          vector<int> border_cell_needed_local(nbsize_local);
@@ -7766,7 +7793,7 @@ void Mesh::gpu_calc_neighbors_local(void)
       ezcl_set_kernel_arg(kernel_finish_scan, 1,  sizeof(cl_mem), (void *)&dev_ioffset);
       ezcl_set_kernel_arg(kernel_finish_scan, 2,  sizeof(cl_mem), (void *)&dev_nbpacked);
       ezcl_set_kernel_arg(kernel_finish_scan, 3,  nb_local_work_size*sizeof(cl_int), NULL);
-      ezcl_enqueue_ndrange_kernel(command_queue, kernel_finish_scan, 1, NULL, &nb_local_work_size, &nb_local_work_size, NULL); 
+      ezcl_enqueue_ndrange_kernel(command_queue, kernel_finish_scan, 1, NULL, &nb_local_work_size, &nb_local_work_size, NULL);
 
       int nbpacked;
       ezcl_enqueue_read_buffer(command_queue, dev_nbpacked, CL_TRUE,  0, 1*sizeof(cl_int), &nbpacked, NULL);
@@ -7829,7 +7856,7 @@ void Mesh::gpu_calc_neighbors_local(void)
       ezcl_set_kernel_arg(kernel_calc_layer2_sethash, 16,  sizeof(cl_mem),   (void *)&dev_border_cell_needed_out);
       ezcl_set_kernel_arg(kernel_calc_layer2_sethash, 17,  sizeof(cl_mem),   (void *)&dev_hash_header);
       ezcl_set_kernel_arg(kernel_calc_layer2_sethash, 18,  sizeof(cl_mem),   (void *)&dev_hash);
-      ezcl_enqueue_ndrange_kernel(command_queue, kernel_calc_layer2_sethash, 1, NULL, &nbp_global_work_size, &nbp_local_work_size, &calc_layer2_sethash_event); 
+      ezcl_enqueue_ndrange_kernel(command_queue, kernel_calc_layer2_sethash, 1, NULL, &nbp_global_work_size, &nbp_local_work_size, &calc_layer2_sethash_event);
 
       ezcl_wait_for_events(1, &calc_layer2_sethash_event);
       ezcl_event_release(calc_layer2_sethash_event);
@@ -7846,7 +7873,7 @@ void Mesh::gpu_calc_neighbors_local(void)
 
       vector<int> indices_needed(nbpacked);
 
-      // read gpu border cell data 
+      // read gpu border cell data
       ezcl_enqueue_read_buffer(command_queue, dev_indices_needed,    CL_TRUE,  0, nbpacked*sizeof(cl_int), &indices_needed[0],    NULL);
 
       ezcl_device_memory_delete(dev_border_cell_i_new);
@@ -7971,23 +7998,23 @@ void Mesh::gpu_calc_neighbors_local(void)
       nb_global_work_size = ((nbpacked + nb_local_work_size - 1) /nb_local_work_size) * nb_local_work_size;
 
 #ifdef BOUNDS_CHECK
-      if (ezcl_get_device_mem_nelements(dev_i) < (int)ncells_ghost || 
-          ezcl_get_device_mem_nelements(dev_j) < (int)ncells_ghost || 
-          ezcl_get_device_mem_nelements(dev_level) < (int)ncells_ghost || 
-          ezcl_get_device_mem_nelements(dev_celltype) < (int)ncells_ghost || 
-          ezcl_get_device_mem_nelements(dev_nlft) < (int)ncells_ghost || 
-          ezcl_get_device_mem_nelements(dev_nrht) < (int)ncells_ghost || 
-          ezcl_get_device_mem_nelements(dev_nbot) < (int)ncells_ghost || 
+      if (ezcl_get_device_mem_nelements(dev_i) < (int)ncells_ghost ||
+          ezcl_get_device_mem_nelements(dev_j) < (int)ncells_ghost ||
+          ezcl_get_device_mem_nelements(dev_level) < (int)ncells_ghost ||
+          ezcl_get_device_mem_nelements(dev_celltype) < (int)ncells_ghost ||
+          ezcl_get_device_mem_nelements(dev_nlft) < (int)ncells_ghost ||
+          ezcl_get_device_mem_nelements(dev_nrht) < (int)ncells_ghost ||
+          ezcl_get_device_mem_nelements(dev_nbot) < (int)ncells_ghost ||
           ezcl_get_device_mem_nelements(dev_ntop) < (int)ncells_ghost ){
              printf("DEBUG size issue at %d\n",__LINE__);
       }
-      if (ezcl_get_device_mem_nelements(dev_border_cell_i) < nbpacked || 
-          ezcl_get_device_mem_nelements(dev_border_cell_j) < nbpacked || 
+      if (ezcl_get_device_mem_nelements(dev_border_cell_i) < nbpacked ||
+          ezcl_get_device_mem_nelements(dev_border_cell_j) < nbpacked ||
           ezcl_get_device_mem_nelements(dev_border_cell_level) < nbpacked ){
              printf("DEBUG size issue at %d\n",__LINE__);
       }
 #endif
- 
+
       cl_event fill_mesh_ghost_event;
 
       ezcl_set_kernel_arg(kernel_fill_mesh_ghost,  0,  sizeof(cl_int), (void *)&nbpacked);
@@ -8007,7 +8034,7 @@ void Mesh::gpu_calc_neighbors_local(void)
       ezcl_set_kernel_arg(kernel_fill_mesh_ghost, 14,  sizeof(cl_mem), (void *)&dev_nrht);
       ezcl_set_kernel_arg(kernel_fill_mesh_ghost, 15,  sizeof(cl_mem), (void *)&dev_nbot);
       ezcl_set_kernel_arg(kernel_fill_mesh_ghost, 16,  sizeof(cl_mem), (void *)&dev_ntop);
-      ezcl_enqueue_ndrange_kernel(command_queue, kernel_fill_mesh_ghost, 1, NULL, &nb_global_work_size, &nb_local_work_size, &fill_mesh_ghost_event); 
+      ezcl_enqueue_ndrange_kernel(command_queue, kernel_fill_mesh_ghost, 1, NULL, &nb_global_work_size, &nb_local_work_size, &fill_mesh_ghost_event);
 
       ezcl_wait_for_events(1, &fill_mesh_ghost_event);
       ezcl_event_release(fill_mesh_ghost_event);
@@ -8046,7 +8073,7 @@ void Mesh::gpu_calc_neighbors_local(void)
       ezcl_set_kernel_arg(kernel_fill_neighbor_ghost, 12,  sizeof(cl_mem),   (void *)&dev_nrht);
       ezcl_set_kernel_arg(kernel_fill_neighbor_ghost, 13,  sizeof(cl_mem),   (void *)&dev_nbot);
       ezcl_set_kernel_arg(kernel_fill_neighbor_ghost, 14,  sizeof(cl_mem),   (void *)&dev_ntop);
-      ezcl_enqueue_ndrange_kernel(command_queue, kernel_fill_neighbor_ghost, 1, NULL, &ghost_global_work_size, &ghost_local_work_size, &fill_neighbor_ghost_event); 
+      ezcl_enqueue_ndrange_kernel(command_queue, kernel_fill_neighbor_ghost, 1, NULL, &ghost_global_work_size, &ghost_local_work_size, &fill_neighbor_ghost_event);
 
       ezcl_wait_for_events(1, &fill_neighbor_ghost_event);
       ezcl_event_release(fill_neighbor_ghost_event);
@@ -8062,7 +8089,7 @@ void Mesh::gpu_calc_neighbors_local(void)
       }
 
 #ifdef BOUNDS_CHECK
-      if (ezcl_get_device_mem_nelements(dev_nlft) < (int)ncells_ghost || 
+      if (ezcl_get_device_mem_nelements(dev_nlft) < (int)ncells_ghost ||
           ezcl_get_device_mem_nelements(dev_nrht) < (int)ncells_ghost ||
           ezcl_get_device_mem_nelements(dev_nbot) < (int)ncells_ghost ||
           ezcl_get_device_mem_nelements(dev_ntop) < (int)ncells_ghost ){
@@ -8081,7 +8108,7 @@ void Mesh::gpu_calc_neighbors_local(void)
       }
 
 #ifdef BOUNDS_CHECK
-      if (ezcl_get_device_mem_nelements(dev_nlft) < (int)ncells_ghost || 
+      if (ezcl_get_device_mem_nelements(dev_nlft) < (int)ncells_ghost ||
           ezcl_get_device_mem_nelements(dev_nrht) < (int)ncells_ghost ||
           ezcl_get_device_mem_nelements(dev_nbot) < (int)ncells_ghost ||
           ezcl_get_device_mem_nelements(dev_ntop) < (int)ncells_ghost ){
@@ -8102,7 +8129,7 @@ void Mesh::gpu_calc_neighbors_local(void)
       ezcl_set_kernel_arg(kernel_adjust_neighbors_local,  5,  sizeof(cl_mem), (void *)&dev_nrht);
       ezcl_set_kernel_arg(kernel_adjust_neighbors_local,  6,  sizeof(cl_mem), (void *)&dev_nbot);
       ezcl_set_kernel_arg(kernel_adjust_neighbors_local,  7,  sizeof(cl_mem), (void *)&dev_ntop);
-      ezcl_enqueue_ndrange_kernel(command_queue, kernel_adjust_neighbors_local, 1, NULL, &ghost_global_work_size, &ghost_local_work_size, &adjust_neighbors_local_event); 
+      ezcl_enqueue_ndrange_kernel(command_queue, kernel_adjust_neighbors_local, 1, NULL, &ghost_global_work_size, &ghost_local_work_size, &adjust_neighbors_local_event);
 
       ezcl_device_memory_delete(dev_indices_needed);
 
@@ -8247,7 +8274,7 @@ void Mesh::gpu_calc_neighbors_local(void)
             fprintf(fp,"%4d:",ii);
          }
          fprintf(fp,"\n");
-      
+
          fprintf(fp,"\n                                    nrht numbering\n");
          for (int jj = jmaxglobal-1; jj>=0; jj--){
             fprintf(fp,"%2d: %4d:",mype,jj);
@@ -8602,7 +8629,6 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
             for(int ic = MAX((noffset - noffset_old), 0); (ic < ncells_old) && (in < (int)ncells); ic++, in++) {
                state_temp_float[in] = mem_ptr_float[ic];
             }
-
             if(upper_block_size > 0) {
                int ic = ncells_old + lower_block_size;
                for(int k = max(noffset-upper_block_start,0); ((k+ic) < (ncells_old+indices_needed_count)) && (in < (int)ncells); k++, in++) {
@@ -8630,7 +8656,6 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
             for(int ic = MAX((noffset - noffset_old), 0); (ic < ncells_old) && (in < (int)ncells); ic++, in++) {
                state_temp_half[in] = mem_ptr_half[ic];
             }
-
             if(upper_block_size > 0) {
                int ic = ncells_old + lower_block_size;
                for(int k = max(noffset-upper_block_start,0); ((k+ic) < (ncells_old+indices_needed_count)) && (in < (int)ncells); k++, in++) {
@@ -8863,7 +8888,7 @@ int Mesh::gpu_do_load_balance_local(size_t numcells, float *weight, MallocPlus &
 
       int load_balance_handle = 0;
       L7_Setup(0, noffset_old, ncells_old, &indices_needed[0], indices_needed_count, &load_balance_handle);
-       
+
       size_t local_work_size = 128;
       size_t global_work_size = ((ncells + local_work_size - 1) / local_work_size) * local_work_size;
 
@@ -8913,7 +8938,7 @@ int Mesh::gpu_do_load_balance_local(size_t numcells, float *weight, MallocPlus &
             }
             // Set upper block on GPU
             if(upper_block_size > 0) {
-               ezcl_enqueue_write_buffer(command_queue, dev_state_var_upper, CL_FALSE, 0, upper_block_size*sizeof(cl_double), &state_var_tmp[ncells_old+lower_block_size], NULL); 
+               ezcl_enqueue_write_buffer(command_queue, dev_state_var_upper, CL_FALSE, 0, upper_block_size*sizeof(cl_double), &state_var_tmp[ncells_old+lower_block_size], NULL);
             }
 
             // Allocate space on GPU for temp arrays (used in double buffering)
@@ -8964,7 +8989,7 @@ int Mesh::gpu_do_load_balance_local(size_t numcells, float *weight, MallocPlus &
             }
             // Set upper block on GPU
             if(upper_block_size > 0) {
-               ezcl_enqueue_write_buffer(command_queue, dev_state_var_upper, CL_FALSE, 0, upper_block_size*sizeof(cl_float), &state_var_tmp[ncells_old+lower_block_size], NULL); 
+               ezcl_enqueue_write_buffer(command_queue, dev_state_var_upper, CL_FALSE, 0, upper_block_size*sizeof(cl_float), &state_var_tmp[ncells_old+lower_block_size], NULL);
             }
 
             // Allocate space on GPU for temp arrays (used in double buffering)
@@ -9169,7 +9194,7 @@ int Mesh::gpu_count_BCs(void)
 
        /*
        __kernel void count_BCs(
-                        const int    isize,      // 0   
+                        const int    isize,      // 0
                __global const int   *i,         // 1
                __global const int   *j,         // 2
                __global const uchar_t *level,     // 3
@@ -9203,7 +9228,7 @@ int Mesh::gpu_count_BCs(void)
       }
 
       ezcl_enqueue_read_buffer(command_queue, dev_ioffset, CL_TRUE, 0, 1*sizeof(cl_int), &bcount, NULL);
- 
+
       //printf("DEBUG -- bcount is %d\n",bcount);
       //state->gpu_time_read += ezcl_timer_calc(&start_read_event, &start_read_event);
 
@@ -9366,15 +9391,15 @@ void Mesh::print_object_info(void)
    elsize = ezcl_get_device_mem_elsize(dev_ntop);
    printf("dev_ntop         ptr : %p nelements %d elsize %d\n",dev_ntop,num_elements,elsize);
 #endif
-   printf("vector celltype  ptr : %p nelements %ld elsize %ld\n",&celltype[0],mesh_memory.get_memory_size(celltype),sizeof(celltype[0])); 
-   printf("vector level     ptr : %p nelements %ld elsize %ld\n",&level[0],   mesh_memory.get_memory_size(level),   sizeof(level[0])); 
-   printf("vector i         ptr : %p nelements %ld elsize %ld\n",&i[0],       mesh_memory.get_memory_size(i),       sizeof(i[0])); 
-   printf("vector j         ptr : %p nelements %ld elsize %ld\n",&j[0],       mesh_memory.get_memory_size(j),       sizeof(j[0])); 
+   printf("vector celltype  ptr : %p nelements %ld elsize %ld\n",&celltype[0],mesh_memory.get_memory_size(celltype),sizeof(celltype[0]));
+   printf("vector level     ptr : %p nelements %ld elsize %ld\n",&level[0],   mesh_memory.get_memory_size(level),   sizeof(level[0]));
+   printf("vector i         ptr : %p nelements %ld elsize %ld\n",&i[0],       mesh_memory.get_memory_size(i),       sizeof(i[0]));
+   printf("vector j         ptr : %p nelements %ld elsize %ld\n",&j[0],       mesh_memory.get_memory_size(j),       sizeof(j[0]));
 
-   printf("vector nlft      ptr : %p nelements %ld elsize %ld\n",&nlft[0],    mesh_memory.get_memory_size(nlft),    sizeof(nlft[0])); 
-   printf("vector nrht      ptr : %p nelements %ld elsize %ld\n",&nrht[0],    mesh_memory.get_memory_size(nrht),    sizeof(nrht[0])); 
-   printf("vector nbot      ptr : %p nelements %ld elsize %ld\n",&nbot[0],    mesh_memory.get_memory_size(nbot),    sizeof(nbot[0])); 
-   printf("vector ntop      ptr : %p nelements %ld elsize %ld\n",&ntop[0],    mesh_memory.get_memory_size(ntop),    sizeof(ntop[0])); 
+   printf("vector nlft      ptr : %p nelements %ld elsize %ld\n",&nlft[0],    mesh_memory.get_memory_size(nlft),    sizeof(nlft[0]));
+   printf("vector nrht      ptr : %p nelements %ld elsize %ld\n",&nrht[0],    mesh_memory.get_memory_size(nrht),    sizeof(nrht[0]));
+   printf("vector nbot      ptr : %p nelements %ld elsize %ld\n",&nbot[0],    mesh_memory.get_memory_size(nbot),    sizeof(nbot[0]));
+   printf("vector ntop      ptr : %p nelements %ld elsize %ld\n",&ntop[0],    mesh_memory.get_memory_size(ntop),    sizeof(ntop[0]));
 }
 
 
@@ -9522,7 +9547,7 @@ void Mesh::set_refinement_order(int order[4], int ic, int ifirst, int ilast, int
                   in_direction = 'E';
                }
 
-   
+
                // Left Out
                if( (djr_out == 0 && (dir_out == crf*HALF || dir_out == crf || dir_out == crf*TWO)) || (djr_out == -crf*HALF && dir_out == crf*HALF) || (djr_out == crf && dir_out == crf*TWO) ) {
                   out_direction = 'L';
@@ -9598,7 +9623,7 @@ void Mesh::set_refinement_order(int order[4], int ic, int ifirst, int ilast, int
                else if(in_direction == 'B' && out_direction == 'E') {
                   order[0] = SW; order[1] = NW; order[2] = SE; order[3] = NE;
                }
-               
+
                else if(in_direction == 'R' && (out_direction == 'T' || out_direction == 'L' || out_direction == 'W' )) {
                   order[0] = NE; order[1] = SE; order[2] = SW; order[3] = NW;
                }
@@ -9634,7 +9659,7 @@ void Mesh::set_refinement_order(int order[4], int ic, int ifirst, int ilast, int
                else if(in_direction == 'M' && out_direction == 'E') {
                   order[0] = SW; order[1] = SE; order[2] = NW; order[3] = NE;
                }
- 
+
                else if(in_direction == 'W' && (out_direction == 'L' || out_direction == 'M' || out_direction == 'B') ) {
                   order[0] = NW; order[1] = NE; order[2] = SE; order[3] = SW;
                }
@@ -9665,7 +9690,7 @@ void Mesh::set_refinement_order(int order[4], int ic, int ifirst, int ilast, int
                   order[0] = NE; order[1] = SE; order[2] = NW; order[3] = SW;
                }
 
-               else { // Default to a knot 
+               else { // Default to a knot
                   order[0] = NW; order[1] = SE; order[2] = SW; order[3] = NE;
                   if (do_stencil_warning) {
                      printf("Nonlocal case for the stencil.\n");
@@ -9681,17 +9706,17 @@ void Mesh::set_refinement_order(int order[4], int ic, int ifirst, int ilast, int
                // the starting and ending point of the global Hilbert curve.
                // The stencil applied here assumes the start at (0,0) and the end
                // at (0,y_max). XXX WRONG
-#endif                 
+#endif
 
             }  //  End local stencil version
             else //  Use Z-ordering for the curve.
             {  order[0] = SW; order[1] = SE; order[2] = NW; order[3] = NE; }
-            
+
 }
 
 void Mesh::calc_face_list(void)
 {
-/*    
+/*
    xface_i.clear();
    xface_j.clear();
    xface_level.clear();
@@ -10111,27 +10136,27 @@ void Mesh::interpolate(int scheme, int index, int cell_lower, int cell_upper, do
    malloc_plus_memory_entry *memory_item;
    int cell_course, cell_fine, cell_bottom, cell_top, cell_left, cell_right;
    real_t state_bot, state_top, state_lft, state_rht, state_avg;
-   real_t state_botbot, state_bottop, state_topbot, state_toptop; 
+   real_t state_botbot, state_bottop, state_topbot, state_toptop;
    real_t state_lftlft, state_lftrht, state_rhtlft, state_rhtrht;
-   real_t state_sideavg = ZERO; 
+   real_t state_sideavg = ZERO;
    //bool fake_flux = false;
    bool five_point = true;
 
    switch(scheme){
 
-      case 0: // fine cell, x-direction, right cell more refined 
+      case 0: // fine cell, x-direction, right cell more refined
       // loop through state arrays to update phantom cell state values
       cell_course = cell_lower; // course neighbor to the face
       cell_fine =  cell_upper; // fine neighbor to the face
       cell_bottom = nrht[cell_course]; // bottom of the two fine neighbors of the course
       cell_top = ntop[cell_bottom]; // top of the two fince neighbots of the course
- 
+
       for (memory_item = state_memory_old.memory_entry_by_name_begin();
          memory_item != state_memory_old.memory_entry_by_name_end();
          memory_item = state_memory_old.memory_entry_by_name_next() ) {
- 
+
          if ((memory_item->mem_flags & REZONE_DATA) == 0) continue;
- 
+
          if (memory_item->mem_elsize == 8) {
             double *mem_ptr_double = (double *)memory_item->mem_ptr;
             mem_ptr_double[index] = mem_ptr_double[cell_course]; // left
@@ -10168,25 +10193,25 @@ void Mesh::interpolate(int scheme, int index, int cell_lower, int cell_upper, do
             }
 #endif
          }
-      } 
+      }
 
       //printf("DEBUG MESH: ID %d) LOWER:  %d, UPPER: %d, POS: lft\n",index,cell_lower,cell_upper);
       //printf("DEBUG MESH: ID %d) LOWER:  %d, UPPER: %d, POS: lftlft\n",index+1,cell_lower,cell_upper);
       break;
- 
+
       case 1: // fine cell, x-direction, left cell more refined
       // loop through state arrays to update phantom cell state values
       cell_course = cell_upper; // course neighbor to the face
       cell_fine =  cell_lower; // fine neighbor to the face
       cell_bottom = nlft[cell_course]; // bottom of the two fine neighbors of the course
       cell_top = ntop[cell_bottom]; // top of the two fince neighbots of the course
- 
+
       for (memory_item = state_memory_old.memory_entry_by_name_begin();
          memory_item != state_memory_old.memory_entry_by_name_end();
          memory_item = state_memory_old.memory_entry_by_name_next() ) {
- 
+
          if ((memory_item->mem_flags & REZONE_DATA) == 0) continue;
- 
+
          if (memory_item->mem_elsize == 8) {
             double *mem_ptr_double = (double *)memory_item->mem_ptr;
             mem_ptr_double[index+2] = mem_ptr_double[cell_course]; // right
@@ -10228,20 +10253,20 @@ void Mesh::interpolate(int scheme, int index, int cell_lower, int cell_upper, do
       //printf("DEBUG MESH: ID %d) LOWER:  %d, UPPER: %d, POS: rht\n",index+2,cell_lower,cell_upper);
       //printf("DEBUG MESH: ID %d) LOWER:  %d, UPPER: %d, POS: rhtrht\n",index+3,cell_lower,cell_upper);
       break;
- 
+
       case 2: // fine cell, y-direction, top cell more refined
       // loop through state arrays to update phantom cell state values
       cell_course = cell_lower; // course neighbor to the face
       cell_fine = cell_upper; // fine neighbor to the face
       cell_left = ntop[cell_course]; // bottom of the two fine neighbors of the course
       cell_right = nrht[cell_fine]; // top of the two fince neighbots of the course
- 
+
       for (memory_item = state_memory_old.memory_entry_by_name_begin();
          memory_item != state_memory_old.memory_entry_by_name_end();
          memory_item = state_memory_old.memory_entry_by_name_next() ) {
- 
+
          if ((memory_item->mem_flags & REZONE_DATA) == 0) continue;
- 
+
          if (memory_item->mem_elsize == 8) {
             double *mem_ptr_double = (double *)memory_item->mem_ptr;
             mem_ptr_double[index] = mem_ptr_double[cell_course]; // bottom
@@ -10283,7 +10308,7 @@ void Mesh::interpolate(int scheme, int index, int cell_lower, int cell_upper, do
       //printf("DEBUG MESH: ID %d) LOWER:  %d, UPPER: %d, POS: bot\n",index,cell_lower,cell_upper);
       //printf("DEBUG MESH: ID %d) LOWER:  %d, UPPER: %d, POS: botbot\n",index+1,cell_lower,cell_upper);
       break;
- 
+
       case 3: // fine cell, y-direction, bottom cell more refined
       // loop through state arrays to update phantom cell state values
       cell_course = cell_upper; // course neighbor to the face
@@ -10338,7 +10363,7 @@ void Mesh::interpolate(int scheme, int index, int cell_lower, int cell_upper, do
       //printf("DEBUG MESH: ID %d) LOWER:  %d, UPPER: %d, POS: top\n",index+2,cell_lower,cell_upper);
       //printf("DEBUG MESH: ID %d) LOWER:  %d, UPPER: %d, POS: toptop\n",index+3,cell_lower,cell_upper);
       break;
- 
+
       case 4: // course cell, x-direction, right cell more refined
       // loop through state arrays to update phantom cell state values
       cell_course = cell_lower; // course neighbor to the face
@@ -10450,24 +10475,24 @@ void Mesh::interpolate(int scheme, int index, int cell_lower, int cell_upper, do
       //printf("DEBUG MESH: ID %d) LOWER:  %d, UPPER: %d, POS: rht\n",index+2,cell_lower,cell_upper);
       //printf("DEBUG MESH: ID %d) LOWER:  %d, UPPER: %d, POS: rhtrht\n",index+3,cell_lower,cell_upper);
       break;
- 
+
       case 5: // course cell, x-direction, left cell more refine
       // loop through state arrays to update phantom cell state values
       cell_course = cell_upper; // course neighbor to the face
       cell_fine =  cell_lower; // fine neighbor to the face
       cell_bottom = nlft[cell_course]; // bottom of the two fine neighbors of the course
       cell_top = ntop[cell_bottom]; // top of the two fince neighbots of the course
- 
+
       for (memory_item = state_memory_old.memory_entry_by_name_begin();
          memory_item != state_memory_old.memory_entry_by_name_end();
          memory_item = state_memory_old.memory_entry_by_name_next() ) {
- 
+
          if ((memory_item->mem_flags & REZONE_DATA) == 0) continue;
- 
+
          if (memory_item->mem_elsize == 8) {
             state_sideavg = ZERO;
             double *mem_ptr_double = (double *)memory_item->mem_ptr;
- 
+
             state_bot = mem_ptr_double[cell_bottom];
             state_top = mem_ptr_double[cell_top];
             state_avg = HALF * (state_bot + state_top);
@@ -10497,7 +10522,7 @@ void Mesh::interpolate(int scheme, int index, int cell_lower, int cell_upper, do
          } else if (memory_item->mem_elsize == 4) {
             state_sideavg = ZERO;
             float *mem_ptr_float = (float *)memory_item->mem_ptr;
- 
+
             state_bot = mem_ptr_float[cell_bottom];
             state_top = mem_ptr_float[cell_top];
             state_avg = HALF * (state_bot + state_top);
@@ -10528,7 +10553,7 @@ void Mesh::interpolate(int scheme, int index, int cell_lower, int cell_upper, do
          } else if (memory_item->mem_elsize == 2) {
             state_sideavg = ZERO;
             short *mem_ptr_short = (short *)memory_item->mem_ptr;
- 
+
             state_bot = mem_ptr_short[cell_bottom];
             state_top = mem_ptr_short[cell_top];
             state_avg = HALF * (state_bot + state_top);
@@ -10556,30 +10581,30 @@ void Mesh::interpolate(int scheme, int index, int cell_lower, int cell_upper, do
                // we are bot of 2 rights, so the right neighbor of the coarse will give us bottom right right neighbor
             }
 #endif
-         } 
+         }
       }
 
       //printf("DEBUG MESH: ID %d) LOWER:  %d, UPPER: %d, POS: lft\n",index,cell_lower,cell_upper);
       //printf("DEBUG MESH: ID %d) LOWER:  %d, UPPER: %d, POS: lftlft\n",index+1,cell_lower,cell_upper);
       break;
- 
-      case 6: // course cell, y-direction, top cell more refined 
+
+      case 6: // course cell, y-direction, top cell more refined
       // loop through state arrays to update phantom cell state values
       cell_course = cell_lower; // course neighbor to the face
       cell_fine =  cell_upper; // fine neighbor to the face
       cell_left = ntop[cell_course]; // bottom of the two fine neighbors of the course
       cell_right = nrht[cell_fine]; // top of the two fince neighbots of the course
- 
+
       for (memory_item = state_memory_old.memory_entry_by_name_begin();
          memory_item != state_memory_old.memory_entry_by_name_end();
          memory_item = state_memory_old.memory_entry_by_name_next() ) {
- 
+
          if ((memory_item->mem_flags & REZONE_DATA) == 0) continue;
- 
+
          if (memory_item->mem_elsize == 8) {
             state_sideavg = ZERO;
             double *mem_ptr_double = (double *)memory_item->mem_ptr;
- 
+
             state_lft = mem_ptr_double[cell_left];
             state_rht = mem_ptr_double[cell_right];
             state_avg = HALF * (state_lft + state_rht);
@@ -10609,7 +10634,7 @@ void Mesh::interpolate(int scheme, int index, int cell_lower, int cell_upper, do
          } else if (memory_item->mem_elsize == 4) {
             state_sideavg = ZERO;
              float *mem_ptr_float = (float *)memory_item->mem_ptr;
- 
+
             state_lft = mem_ptr_float[cell_left];
             state_rht = mem_ptr_float[cell_right];
             state_avg = HALF * (state_lft + state_rht);
@@ -10640,7 +10665,7 @@ void Mesh::interpolate(int scheme, int index, int cell_lower, int cell_upper, do
          } else if (memory_item->mem_elsize == 2) {
             state_sideavg = ZERO;
              short *mem_ptr_short = (short *)memory_item->mem_ptr;
- 
+
             state_lft = mem_ptr_short[cell_left];
             state_rht = mem_ptr_short[cell_right];
             state_avg = HALF * (state_lft + state_rht);
@@ -10674,24 +10699,24 @@ void Mesh::interpolate(int scheme, int index, int cell_lower, int cell_upper, do
       //printf("DEBUG MESH: ID %d) LOWER:  %d, UPPER: %d, POS: top\n",index+2,cell_lower,cell_upper);
       //printf("DEBUG MESH: ID %d) LOWER:  %d, UPPER: %d, POS: toptop\n",index+3,cell_lower,cell_upper);
       break;
- 
+
       case 7: // course cell, y-direction, bottom cell more refined
       // loop through state arrays to update phantom cell state values
       cell_course = cell_upper; // course neighbor to the face
       cell_fine =  cell_lower; // fine neighbor to the face
       cell_left = nbot[cell_course]; // bottom of the two fine neighbors of the course
       cell_right = nrht[cell_fine]; // top of the two fince neighbots of the course
- 
+
       for (memory_item = state_memory_old.memory_entry_by_name_begin();
          memory_item != state_memory_old.memory_entry_by_name_end();
          memory_item = state_memory_old.memory_entry_by_name_next() ) {
- 
+
          if ( (memory_item->mem_flags & REZONE_DATA) == 0) continue;
- 
+
          if (memory_item->mem_elsize == 8) {
             state_sideavg = ZERO;
             double *mem_ptr_double = (double *)memory_item->mem_ptr;
- 
+
             state_lft = mem_ptr_double[cell_left];
             state_rht = mem_ptr_double[cell_right];
             state_avg = HALF * (state_lft + state_rht);
@@ -10721,7 +10746,7 @@ void Mesh::interpolate(int scheme, int index, int cell_lower, int cell_upper, do
          } else if (memory_item->mem_elsize == 4) {
             state_sideavg = ZERO;
             float *mem_ptr_float = (float *)memory_item->mem_ptr;
- 
+
             state_lft = mem_ptr_float[cell_left];
             state_rht = mem_ptr_float[cell_right];
             state_avg = HALF * (state_lft + state_rht);
@@ -10752,7 +10777,7 @@ void Mesh::interpolate(int scheme, int index, int cell_lower, int cell_upper, do
          } else if (memory_item->mem_elsize == 2) {
             state_sideavg = ZERO;
             short *mem_ptr_short = (short *)memory_item->mem_ptr;
- 
+
             state_lft = mem_ptr_short[cell_left];
             state_rht = mem_ptr_short[cell_right];
             state_avg = HALF * (state_lft + state_rht);
@@ -10932,10 +10957,10 @@ void Mesh::calc_face_list_wbidirmap_phantom(MallocPlus &state_memory, double del
         memory_item = state_memory_old.memory_entry_by_name_next() ) {
 
         if ( (memory_item->mem_flags & REZONE_DATA) == 0) continue;
-        
+
         state_memory.memory_realloc(pcellCnt, memory_item->mem_ptr);
 
-    }  
+    }
 
    /*
    map_xface2cell_lower.clear();
@@ -11184,7 +11209,7 @@ void Mesh::calc_face_list_wbidirmap_phantom(MallocPlus &state_memory, double del
         // for future indexing, the new phantom cell appear in the array as follows
         // lp llp rp rrp (for even iface), [l,r]p [ll,rr]p (for odd iface)
         // important to note we only add 2 phantom cells on odd iface values
-        // because 2 that would be added by its even "partner" iface value will be the same 
+        // because 2 that would be added by its even "partner" iface value will be the same
         if (level_left != level_right) {
             if (level_left < level_right) {
                 cncell = lncell;
@@ -11233,7 +11258,7 @@ void Mesh::calc_face_list_wbidirmap_phantom(MallocPlus &state_memory, double del
         // for future indexing, the new phantom cell appear in the array as follows
         // bp bbp tp ttp (for even iface), [b,t]p [bb,tt]p (for odd iface)
         // important to note we only add 2 phantom cells on odd iface values
-        // because 2 that would be added by its even "partner" iface value will be the same 
+        // because 2 that would be added by its even "partner" iface value will be the same
         if (level_bot != level_top) {
             if (level_bot < level_top) {
                 cncell = bncell;
@@ -11303,7 +11328,7 @@ void Mesh::calc_face_list_wbidirmap_phantom(MallocPlus &state_memory, double del
         // for future indexing, the new phantom cell appear in the array as follows
         // lp llp rp rrp (for even iface), [l,r]p [ll,rr]p (for odd iface)
         // important to note we only add 2 phantom cells on odd iface values
-        // because 2 that would be added by its even "partner" iface value will be the same 
+        // because 2 that would be added by its even "partner" iface value will be the same
         if (level_left != level_right) {
             if (level_left < level_right) {
                 cncell = lncell;
@@ -11325,7 +11350,7 @@ void Mesh::calc_face_list_wbidirmap_phantom(MallocPlus &state_memory, double del
                 if (level_left < level_right) { // right is more refined
                     // new face's adjacent cells
                     map_xface2cell_upper[pfaceIdx] = pcellIdx+2;
-                    map_xface2cell_lower[pfaceIdx] = lncell;        
+                    map_xface2cell_lower[pfaceIdx] = lncell;
                     map_xface2cell_upper[pfaceIdx+1] = pcellIdx;
                     map_xface2cell_lower[pfaceIdx+1] = pcellIdx+1;
                     map_xface2cell_upper[pfaceIdx+2] = pcellIdx+3;
@@ -11377,7 +11402,7 @@ void Mesh::calc_face_list_wbidirmap_phantom(MallocPlus &state_memory, double del
                 }
                 else { // left is more refined
                     // new face's adjacent cells
-                    map_xface2cell_lower[pfaceIdx] = pcellIdx;        
+                    map_xface2cell_lower[pfaceIdx] = pcellIdx;
                     map_xface2cell_upper[pfaceIdx] = rncell;
                     map_xface2cell_lower[pfaceIdx+1] = pcellIdx+1;
                     map_xface2cell_upper[pfaceIdx+1] = pcellIdx;
@@ -11486,9 +11511,9 @@ void Mesh::calc_face_list_wbidirmap_phantom(MallocPlus &state_memory, double del
 
 
                 }
-                else { // left is more refined 
+                else { // left is more refined
                     // old face's new phantom adjacent cell
-                    map_xface2cell_upper[iface] = pcellIdx; 
+                    map_xface2cell_upper[iface] = pcellIdx;
                     map_xface2cell_upper[pfaceIdx] = pcellIdx+1;
                     map_xface2cell_lower[pfaceIdx] = pcellIdx;
 
@@ -11527,7 +11552,7 @@ void Mesh::calc_face_list_wbidirmap_phantom(MallocPlus &state_memory, double del
             pfaceIdx += 3 - (idxVar % 2) * 2;
         }
 
-    } 
+    }
 
    nxfixup = ifixupIdx;
 
@@ -11550,7 +11575,7 @@ void Mesh::calc_face_list_wbidirmap_phantom(MallocPlus &state_memory, double del
    cpu_timer_start(&tstart_cpu_part);
 
     // now for the y faces
-    
+
     // pcellIdx will actually stay where it was previously incremented to because there
     // is only 1 array of cells (not dependent on x/y)
     pfaceIdx = nyface;
@@ -11571,7 +11596,7 @@ void Mesh::calc_face_list_wbidirmap_phantom(MallocPlus &state_memory, double del
         // for future indexing, the new phantom cell appear in the array as follows
         // bp bbp tp ttp (for even iface), [b,t]p [bb,tt]p (for odd iface)
         // important to note we only add 2 phantom cells on odd iface values
-        // because 2 that would be added by its even "partner" iface value will be the same 
+        // because 2 that would be added by its even "partner" iface value will be the same
         if (level_bot != level_top) {
             if (level_bot < level_top) {
                 cncell = bncell;
@@ -11593,7 +11618,7 @@ void Mesh::calc_face_list_wbidirmap_phantom(MallocPlus &state_memory, double del
                 if (level_bot < level_top) { // top is more refined
                     // new face's adjacent cells
                     map_yface2cell_upper[pfaceIdx] = pcellIdx + 2;
-                    map_yface2cell_lower[pfaceIdx] = bncell;        
+                    map_yface2cell_lower[pfaceIdx] = bncell;
                     map_yface2cell_upper[pfaceIdx+1] = pcellIdx;
                     map_yface2cell_lower[pfaceIdx+1] = pcellIdx+1;
                     map_yface2cell_upper[pfaceIdx+2] = pcellIdx+3;
@@ -11629,7 +11654,7 @@ void Mesh::calc_face_list_wbidirmap_phantom(MallocPlus &state_memory, double del
 
                     yrecvIdx[ifixupIdx] = pfaceIdx;
                     int nb = map_yface2cell_lower[pfaceIdx];
-                    //printf("%d) %d %d\n", ifixupIdx, iface, pfaceIdx); 
+                    //printf("%d) %d %d\n", ifixupIdx, iface, pfaceIdx);
                     yrecvCIdx[ifixupIdx] = nb;
                     yplusCell2Idx[nb] = ifixupIdx;
                     if (iface < map_ycell2face_bot1[rncell]) {
@@ -11645,7 +11670,7 @@ void Mesh::calc_face_list_wbidirmap_phantom(MallocPlus &state_memory, double del
                 }
                 else { // bottom is more refined
                     // new face's adjacent cells
-                    map_yface2cell_lower[pfaceIdx] = pcellIdx;        
+                    map_yface2cell_lower[pfaceIdx] = pcellIdx;
                     map_yface2cell_upper[pfaceIdx] = tncell;
                     map_yface2cell_lower[pfaceIdx+1] = pcellIdx+1;
                     map_yface2cell_upper[pfaceIdx+1] = pcellIdx;
@@ -11682,7 +11707,7 @@ void Mesh::calc_face_list_wbidirmap_phantom(MallocPlus &state_memory, double del
 
                     yrecvIdx[ifixupIdx] = pfaceIdx;
                     int nt = map_yface2cell_upper[pfaceIdx];
-                    //printf("%d) %d %d\n", ifixupIdx, iface, pfaceIdx); 
+                    //printf("%d) %d %d\n", ifixupIdx, iface, pfaceIdx);
                     yrecvCIdx[ifixupIdx] = nt;
                     yminusCell2Idx[nt] = ifixupIdx;
                     if (iface < map_ycell2face_top1[rncell]){
@@ -11753,9 +11778,9 @@ void Mesh::calc_face_list_wbidirmap_phantom(MallocPlus &state_memory, double del
                     interpolate(2, pcellIdx, bncell, tncell, deltaT,  state_memory_old);
 
                 }
-                else { // bottom is more refined 
+                else { // bottom is more refined
                     // old face's new phantom adjacent cell
-                    map_yface2cell_upper[iface] = pcellIdx; 
+                    map_yface2cell_upper[iface] = pcellIdx;
                     map_yface2cell_upper[pfaceIdx] = pcellIdx+1;
                     map_yface2cell_lower[pfaceIdx] = pcellIdx;
 
@@ -11802,7 +11827,7 @@ void Mesh::calc_face_list_wbidirmap_phantom(MallocPlus &state_memory, double del
     //if (ncells > 280)
      //   printf("%d %d\n", nlft[286], nrht[286]);
     // resize arrays/vectors with the addition of the new faces and cells
-    
+
    cpu_timers[MESH_TIMER_BIDIRPART11] += cpu_timer_stop(tstart_cpu_part);
    cpu_timer_start(&tstart_cpu_part);
 
@@ -11819,8 +11844,8 @@ void Mesh::calc_face_list_wbidirmap_phantom(MallocPlus &state_memory, double del
 
     ncells_phan = pcellCnt;
 
-    // resize cell based  arrays (i, j, nlft, nrht, nbot, ntop) 
-    // do this based on pcellIdx, as it was continuous w/ x and y faces 
+    // resize cell based  arrays (i, j, nlft, nrht, nbot, ntop)
+    // do this based on pcellIdx, as it was continuous w/ x and y faces
 
     /*i        = (int *)mesh_memory.memory_realloc(ncells_phan, i);
     j        = (int *)mesh_memory.memory_realloc(ncells_phan, j);
@@ -11831,7 +11856,7 @@ void Mesh::calc_face_list_wbidirmap_phantom(MallocPlus &state_memory, double del
     ntop     = (int *)mesh_memory.memory_realloc(ncells_phan, ntop);
     memory_reset_ptrs();*/
     //printf("\n%d\n", mesh_memory.get_memory_size(level));
-    
+
    cpu_timers[MESH_TIMER_BIDIRPART12] += cpu_timer_stop(tstart_cpu_part);
 
 #ifdef PATTERN_CHECK
@@ -11892,7 +11917,7 @@ void Mesh::calc_face_list_wbidirmap_phantom(MallocPlus &state_memory, double del
 		           case 156 :
                       sprintf(xcase_descrip[icase],"   %s     %d     %d   %d     %d\0",binlevstring,lll,ll,lr,lrr);
                       break;
-                   default: 
+                   default:
                       //printf("   %s     %d     %d   %d     %d\n",binlevstring,lll,ll,lr,lrr);
                       //printf("Face %d does not fit a case\n",iface);
                       break;
@@ -11930,7 +11955,7 @@ void Mesh::calc_face_list_wbidirmap_phantom(MallocPlus &state_memory, double del
           case 152 :
           case 156 :
              break;
-          default : 
+          default :
              printf("Face %d does not fit a case\n",iface);
              break;
       }
@@ -12078,7 +12103,7 @@ void Mesh::calc_face_list_wbidirmap(void)
         int nb = nbot[nz];
         int nt = ntop[nz];
 #ifdef HAVE_MPI
-        if (nl >= ncells) 
+        if (nl >= ncells)
             xfaceCnt ++;
         if (nb >= ncells)
             yfaceCnt ++;
@@ -12520,7 +12545,7 @@ void Mesh::calc_face_list_wbidirmap(void)
 		   case 156 :
                       sprintf(xcase_descrip[icase],"   %s     %d     %d   %d     %d\0",binlevstring,lll,ll,lr,lrr);
                       break;
-                   default: 
+                   default:
                       //printf("   %s     %d     %d   %d     %d\n",binlevstring,lll,ll,lr,lrr);
                       //printf("Face %d does not fit a case\n",iface);
                       break;
@@ -12558,7 +12583,7 @@ void Mesh::calc_face_list_wbidirmap(void)
 	  case 152 :
 	  case 156 :
              break;
-          default : 
+          default :
              printf("Face %d does not fit a case\n",iface);
              break;
       }
@@ -12569,7 +12594,7 @@ void Mesh::calc_face_list_wbidirmap(void)
 }
 
 #ifdef NOVEC
-void Mesh::calc_face_list_wbidirmap_novec(void) 
+void Mesh::calc_face_list_wbidirmap_novec(void)
 {
    struct timespec tstart_cpu;
    cpu_timer_start(&tstart_cpu);
@@ -12920,7 +12945,7 @@ void Mesh::calc_face_list_wbidirmap_novec(void)
 		   case 156 :
                       sprintf(xcase_descrip[icase],"   %s     %d     %d   %d     %d\0",binlevstring,lll,ll,lr,lrr);
                       break;
-                   default: 
+                   default:
                       //printf("   %s     %d     %d   %d     %d\n",binlevstring,lll,ll,lr,lrr);
                       //printf("Face %d does not fit a case\n",iface);
                       break;
@@ -12958,7 +12983,7 @@ void Mesh::calc_face_list_wbidirmap_novec(void)
 	  case 152 :
 	  case 156 :
              break;
-          default : 
+          default :
              printf("Face %d does not fit a case\n",iface);
              break;
       }
@@ -13159,7 +13184,7 @@ void Mesh::gpu_wbidirmap_realloc(cl_mem *dev_mem_ptr, int old_size, size_t mem_r
         //printf("delete old %p\n", *dev_tmp);
         ezcl_device_memory_delete(*dev_tmp);
         //gpu_state_memory.memory_replace(dev_state_var, dev_state_var_new);
-        
+
         //gpu_state_memory.memory_realloc(pcellCnt, dev_state_var);
         //dev_state_var_new = (cl_mem)memory_item->mem_ptr;
         //memory_item->mem_ptr = ezcl_device_memory_realloc(dev_state_var_old, pcellCnt);
@@ -13171,7 +13196,7 @@ void Mesh::gpu_wbidirmap_realloc(cl_mem *dev_mem_ptr, int old_size, size_t mem_r
     //  for (int i = 0; i < pcellCnt; i++) {printf("%f\t", H_loc[i]); }
      // printf("\n");
 
-    //}  
+    //}
 }
 
 int Mesh::gpu_serial_int_reduce(int *arr, int count, int length)
@@ -13189,7 +13214,7 @@ void Mesh::gpu_calc_face_list_wbidirmap(void)
 {
     struct timespec tstart_cpu;
     cpu_timer_start(&tstart_cpu);
-    
+
     cl_command_queue command_queue = ezcl_get_command_queue();
 
     assert(dev_nlft);
@@ -13243,7 +13268,7 @@ void Mesh::gpu_calc_face_list_wbidirmap(void)
             //nyfaceCnt++;
         }
         if ((this_level[this_nrht[ccc]] > this_level[ccc]) && (this_ntop[this_nrht[ccc]] != this_nrht[ccc]) && (this_nbot[this_nrht[ccc]] != this_nrht[ccc])) {
-            xfaceSt++; 
+            xfaceSt++;
             //nxfaceCnt++;
         }
         if ((this_level[this_ntop[ccc]] > this_level[ccc]) && (this_nrht[this_ntop[ccc]] != this_ntop[ccc]) && (this_nlft[this_ntop[ccc]] != this_ntop[ccc])) {
@@ -13281,7 +13306,7 @@ __kernel void face_idx_wbidirmap_cl(
     ezcl_set_kernel_arg(kernel_face_idx_wbidirmap, 7, sizeof(cl_int), (void *)&ncells);
     ezcl_set_kernel_arg(kernel_face_idx_wbidirmap, 8, sizeof(cl_mem), (void *)&dev_nface);
     size_t single_work = 1;
-    
+
     ezcl_enqueue_ndrange_kernel(command_queue, kernel_face_idx_wbidirmap, 1, NULL, &single_work, &single_work, &face_idx_event);
 
     ezcl_wait_for_events(1, &face_idx_event);
@@ -13453,7 +13478,6 @@ void Mesh::gpu_calc_face_list_wbidirmap_phantom(MallocPlus &gpu_state_memory, do
 {
 
     /*if (!gpu_do_rezone && !firstFlag) {
-        printf("hello\n");
           gpu_calc_face_list_phantom_fill(gpu_state_memory, deltaT);
           return;
     }*/
@@ -13465,7 +13489,7 @@ void Mesh::gpu_calc_face_list_wbidirmap_phantom(MallocPlus &gpu_state_memory, do
 
     //struct timespec tstart_cpu_part;
     //cpu_timer_start(&tstart_cpu_part);
-    
+
     cl_command_queue command_queue = ezcl_get_command_queue();
 
     assert(dev_nlft);
@@ -13525,7 +13549,7 @@ void Mesh::gpu_calc_face_list_wbidirmap_phantom(MallocPlus &gpu_state_memory, do
             //nyfaceCnt++;
         }
         if ((this_level[this_nrht[ccc]] > this_level[ccc]) && (this_ntop[this_nrht[ccc]] != this_nrht[ccc]) && (this_nbot[this_nrht[ccc]] != this_nrht[ccc])) {
-            xfaceSt++; 
+            xfaceSt++;
             //nxfaceCnt++;
         }
         if ((this_level[this_ntop[ccc]] > this_level[ccc]) && (this_nrht[this_ntop[ccc]] != this_ntop[ccc]) && (this_nlft[this_ntop[ccc]] != this_ntop[ccc])) {
@@ -13566,7 +13590,7 @@ __kernel void face_idx_wbidirmap_cl(
     ezcl_set_kernel_arg(kernel_face_idx_wbidirmap, 7, sizeof(cl_int), (void *)&ncells);
     ezcl_set_kernel_arg(kernel_face_idx_wbidirmap, 8, sizeof(cl_mem), (void *)&dev_nface);
     size_t single_work = 1;
-    
+
     ezcl_enqueue_ndrange_kernel(command_queue, kernel_face_idx_wbidirmap, 1, NULL, &single_work, &single_work, &face_idx_event);
 
     ezcl_wait_for_events(1, &face_idx_event);
@@ -13717,7 +13741,7 @@ __kernel void calc_face_list_wbidirmap_pt2_cl(
     ezcl_enqueue_read_buffer(command_queue, dev_nface,     CL_TRUE, 0, sizeof(cl_int), &nxface, NULL);
     ezcl_enqueue_read_buffer(command_queue, dev_nface,     CL_TRUE, 1*sizeof(cl_int), sizeof(cl_int), &nyface, NULL);
     //printf("%d %d\n", nxface, nyface);
-    
+
     /*
 __kernel void wbidirmap_precount_cl(
             __global          int   *pxcellCnt,                 // 0
@@ -13775,13 +13799,13 @@ __kernel void wbidirmap_precount_cl(
     ezcl_enqueue_read_buffer(command_queue, dev_pyfaceCnt,     CL_TRUE, 0, nyface*sizeof(cl_int), &yCnt[0], NULL);
     ezcl_enqueue_read_buffer(command_queue, dev_ifixupXCnt,     CL_TRUE, 0, nxface*sizeof(cl_int), &fixupX[0], NULL);
     ezcl_enqueue_read_buffer(command_queue, dev_ifixupYCnt,     CL_TRUE, 0, nyface*sizeof(cl_int), &fixupY[0], NULL);
-    
+
     //gpu_timers[STATE_TIMER_READ] += (long)(cpu_timer_stop(tstart_cpu_part)*1.0e9);
     //cpu_timer_start(&tstart_cpu_part);
 
-    //printf("\n\n"); 
+    //printf("\n\n");
     //for (int dumb = 0; dumb < nxface; dumb++) { printf("%d %d\t", cyCnt[dumb], yCnt[dumb]); }
-    //printf("\n"); 
+    //printf("\n");
     //run reduce on the CPU version of device memory
     int xcellCnt = gpu_serial_int_reduce(&cxCnt[0], ncells, nxface);
     int ycellCnt = gpu_serial_int_reduce(&cyCnt[0], xcellCnt, nyface) - xcellCnt + ncells;
@@ -13791,11 +13815,11 @@ __kernel void wbidirmap_precount_cl(
         nxfixup = gpu_serial_int_reduce(&fixupX[0], 0, nxface);
         nyfixup = gpu_serial_int_reduce(&fixupY[0], 0, nyface);
     //for (int dumb = 0; dumb < nyface; dumb++) { printf("%d) %d\n", dumb, cyCnt[dumb]); }
-    //printf("\n\n"); 
+    //printf("\n\n");
     //printf("%d\n", xcellCnt - ncells);
 
     //printf("%d %d %d %d %d\n", pcellCnt, pxfaceCnt, pyfaceCnt, nxface, nyface);
-/*    
+/*
     gpu_wbidirmap_realloc(&dev_map_xface2cell_lower, nxface, pxfaceCnt);
     gpu_wbidirmap_realloc(&dev_map_xface2cell_upper, nxface, pxfaceCnt);
     gpu_wbidirmap_realloc(&dev_map_yface2cell_lower, nyface, pyfaceCnt);
@@ -14027,7 +14051,7 @@ __kernel void calc_wbidirmap_phantom_neighbors_cl(
     ezcl_device_memory_delete(dev_ifixupXStart);
     ezcl_device_memory_delete(dev_ifixupYStart);
 
-   
+
     gpu_timers[MESH_TIMER_BIDIR] += (long)(cpu_timer_stop(tstart_cpu)*1.0e9);
 }
 
@@ -14039,7 +14063,7 @@ void Mesh::gpu_calc_face_list_phantom_fill(MallocPlus &gpu_state_memory, double 
 
     struct timespec tstart_cpu_part;
     cpu_timer_start(&tstart_cpu_part);
-    
+
     cl_command_queue command_queue = ezcl_get_command_queue();
     cl_event calc_wbidirmap_phantom_values_event;
 
@@ -14080,7 +14104,7 @@ void Mesh::gpu_calc_face_list_phantom_fill(MallocPlus &gpu_state_memory, double 
         cl_mem dev_state_mem_ptr = (cl_mem)memory_item->mem_ptr;
 
         if (memory_item->mem_elsize != 8) continue;
-        
+
 
 /*
 __kernel void calc_wbidirmap_phantom_values_cl(
@@ -14099,7 +14123,7 @@ __kernel void calc_wbidirmap_phantom_values_cl(
             __global   const  double   *state,                     // 12
             __global          double   *state_new) {               // 13
  */
-    
+
         cl_mem dev_state_mem_ptr_new = (cl_mem)gpu_state_memory.memory_malloc(pcellCnt, sizeof(cl_double), const_cast<char *>("dev_state_mem_ptr_new"), DEVICE_REGULAR_MEMORY);
 
         ezcl_set_kernel_arg(kernel_calc_wbidirmap_phantom_values, 0, sizeof(cl_mem), (void *)&dev_level);
@@ -14148,7 +14172,7 @@ void Mesh::generate_regular_cell_meshes(MallocPlus &state_memory)
    for (memory_item = state_memory_old.memory_entry_by_name_begin();
        memory_item != state_memory_old.memory_entry_by_name_end();
        memory_item = state_memory_old.memory_entry_by_name_next() ) {
-          
+
        //printf("DEBUG -- it.mem_name %s elsize %lu\n",memory_item->mem_name,memory_item->mem_elsize);
 
        if ( (memory_item->mem_flags & REZONE_DATA) == 0) continue;
@@ -14194,7 +14218,7 @@ void Mesh::generate_regular_cell_meshes(MallocPlus &state_memory)
     ezcl_enqueue_read_buffer(command_queue, dev_j, CL_TRUE, 0, pcellCnt*sizeof(cl_int), &j[0], NULL);
     ezcl_enqueue_read_buffer(command_queue, dev_level, CL_TRUE, 0, pcellCnt*sizeof(cl_int), &level[0], NULL);
 #endif
-   
+
    meshes = (mesh_type*)malloc((levmx+1)*sizeof(mesh_type));
    int ***avgCnt = (int ***)malloc((levmx+1) * sizeof(int **));
 
@@ -14230,7 +14254,7 @@ void Mesh::generate_regular_cell_meshes(MallocPlus &state_memory)
         printf("%d\t", row[jj]);
       }
       printf("\n");*/
-        
+
       int trimleft=0;
       for(int ii=2; ii<lev_iregsize[ll]-2; ii++){
          if (col[ii] == 1) break;
@@ -14260,7 +14284,7 @@ void Mesh::generate_regular_cell_meshes(MallocPlus &state_memory)
 
       if (lev_iregsize[ll] <= 0) lev_iregsize[ll] = 1;
       if (lev_jregsize[ll] <= 0) lev_jregsize[ll] = 1;
-        
+
       //printf("DEBUG -- lev_iregmin %d lev_iregsize %d lev_jregmin %d lev_jregsize %d\n",
       //        lev_iregmin[ll],lev_iregsize[ll],lev_jregmin[ll],lev_jregsize[ll]);
 
@@ -14293,7 +14317,7 @@ void Mesh::generate_regular_cell_meshes(MallocPlus &state_memory)
    for (int ic = 0; ic < (int)ncells; ic++) {
        ll = level[ic];
        pjIdx = j[ic] - lev_jregmin[ll];
-       piIdx = i[ic] - lev_iregmin[ll];  
+       piIdx = i[ic] - lev_iregmin[ll];
        if (nlft[ic] == ic || nrht[ic] == ic || nbot[ic] == ic || ntop[ic] == ic) continue;
        meshes[ll].mask[pjIdx][piIdx] = 1;
    }
@@ -14324,14 +14348,14 @@ void Mesh::generate_regular_cell_meshes(MallocPlus &state_memory)
         cl_mem dev_state_mem_ptr = (cl_mem)memory_item->mem_ptr;
 
         ezcl_enqueue_read_buffer(command_queue, dev_state_mem_ptr,     CL_TRUE, 0, pcellCnt*sizeof(cl_real_t), &mem_ptr_double[0], NULL);
-        
+
 #else
    MallocPlus state_memory_old = state_memory;
    malloc_plus_memory_entry *memory_item;
    for (memory_item = state_memory_old.memory_entry_by_name_begin();
        memory_item != state_memory_old.memory_entry_by_name_end();
        memory_item = state_memory_old.memory_entry_by_name_next() ) {
-       
+
        //printf("DEBUG -- it.mem_name %s elsize %lu\n",memory_item->mem_name,memory_item->mem_elsize);
 
        if ( (memory_item->mem_flags & REZONE_DATA) == 0) continue;
@@ -14342,7 +14366,7 @@ void Mesh::generate_regular_cell_meshes(MallocPlus &state_memory)
        for (uint ic=0; ic < ncells; ic++){
           ll = level[ic];
           pjIdx = j[ic] - lev_jregmin[ll];
-          piIdx = i[ic] - lev_iregmin[ll];  
+          piIdx = i[ic] - lev_iregmin[ll];
           meshes[ll].pstate[ivar][pjIdx][piIdx] += mem_ptr_double[ic];
           avgCnt[ll][pjIdx][piIdx]++;
        }
@@ -14351,7 +14375,7 @@ void Mesh::generate_regular_cell_meshes(MallocPlus &state_memory)
        for (uint ic = ncells; ic < ncells_phan; ic++) {
            ll = level[ic];
            pjIdx = j[ic] - lev_jregmin[ll];
-           piIdx = i[ic] - lev_iregmin[ll];  
+           piIdx = i[ic] - lev_iregmin[ll];
            if (meshes[ll].mask[pjIdx][piIdx] == 1) continue;
            meshes[ll].pstate[ivar][pjIdx][piIdx] += mem_ptr_double[ic];
            avgCnt[ll][pjIdx][piIdx]++;
@@ -14359,9 +14383,9 @@ void Mesh::generate_regular_cell_meshes(MallocPlus &state_memory)
 
        //interpolation of phantom cell values in regular grid (if it doesn't conflict with an original cell)
        for (uint ic = ncells; ic < ncells_phan; ic++) {
-           ll = level[ic]; 
+           ll = level[ic];
            pjIdx = j[ic] - lev_jregmin[ll];
-           piIdx = i[ic] - lev_iregmin[ll];  
+           piIdx = i[ic] - lev_iregmin[ll];
            if ((meshes[ll].mask[pjIdx][piIdx] == 1) || (avgCnt[ll][pjIdx][piIdx] == 0)) continue;
            meshes[ll].pstate[ivar][pjIdx][piIdx] /= avgCnt[ll][pjIdx][piIdx];
            avgCnt[ll][pjIdx][piIdx] = 0;
@@ -14386,7 +14410,7 @@ void Mesh::generate_regular_cell_meshes(MallocPlus &state_memory)
        genmatrixfree((void **)avgCnt[lev]);
    }
    free(avgCnt);
-           
+
    /*for (int ll=0; ll<=levmx; ll++){
        printf("DEBUG regular mesh level %d\n",ll);
        for(int jj=0; jj<lev_jregsize[ll]; jj++){
@@ -14412,7 +14436,7 @@ void Mesh::generate_regular_cell_meshes(MallocPlus &state_memory)
    }
 
    printf("DEBUG -- nvar %d jmax %d jmin %d imax %d imin %d\n",nvar,jmax,jmin,imax,imin);
-   */ 
+   */
 }
 
 void Mesh::destroy_regular_cell_meshes(MallocPlus &state_memory)
@@ -14448,7 +14472,7 @@ void Mesh::destroy_regular_cell_meshes(MallocPlus &state_memory)
    for (memory_item = state_memory_old.memory_entry_by_name_begin();
        memory_item != state_memory_old.memory_entry_by_name_end();
        memory_item = state_memory_old.memory_entry_by_name_next() ) {
-       
+
        //printf("DEBUG -- it.mem_name %s elsize %lu\n",memory_item->mem_name,memory_item->mem_elsize);
 
        if ( (memory_item->mem_flags & REZONE_DATA) == 0) continue;
@@ -14794,7 +14818,7 @@ void Mesh::parallel_output(const char *string, double local_value, int output_le
    vector<double> global_values(numpe);
    global_values[0] = local_value;
 #ifdef HAVE_MPI
-   if (numpe > 1) { 
+   if (numpe > 1) {
       MPI_Gather(&local_value, 1, MPI_DOUBLE, &global_values[0], 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
    }
 #endif
@@ -14830,7 +14854,7 @@ void Mesh::parallel_output(const char *string, long long local_value, int output
    vector<long long> global_values(numpe);
    global_values[0] = local_value;
 #ifdef HAVE_MPI
-   if (numpe > 1) { 
+   if (numpe > 1) {
       MPI_Gather(&local_value, 1, MPI_LONG_LONG, &global_values[0], 1, MPI_LONG_LONG, 0, MPI_COMM_WORLD);
    }
 #endif
@@ -14866,7 +14890,7 @@ void Mesh::parallel_output(const char *string, int local_value, int output_level
    vector<int> global_values(numpe);
    global_values[0] = local_value;
 #ifdef HAVE_MPI
-   if (numpe > 1) { 
+   if (numpe > 1) {
       MPI_Gather(&local_value, 1, MPI_INT, &global_values[0], 1, MPI_INT, 0, MPI_COMM_WORLD);
    }
 #endif
@@ -15045,7 +15069,7 @@ void Mesh::restore_checkpoint(Crux *crux)
    // resize(storage);
    allocate (storage);
    memory_reset_ptrs();
-   
+
    //int flags = RESTART_DATA;
    // Now add memory entries to database for restoring checkpoint
    //mesh_memory.memory_add(int_dist_vals, (size_t)num_int_dist_vals, 4, "mesh_int_dist_vals", flags);
@@ -15190,7 +15214,7 @@ void Mesh::restore_checkpoint(Crux *crux)
 
 
 // This code due to Matt Calef
-void scan ( scanInt *input , scanInt *output , scanInt length) 
+void scan ( scanInt *input , scanInt *output , scanInt length)
 {
 #ifdef _OPENMP
    // This already assumes it is in a parallel region
@@ -15219,11 +15243,11 @@ void scan ( scanInt *input , scanInt *output , scanInt length)
           output[i] = output[i-1] + input[i-1];
         }
    }
-    
-   // Wait until all threads get here. 
+
+   // Wait until all threads get here.
 
 #pragma omp barrier
-    
+
    // At this point each thread has done an independent scan of its
    // region.  All scans, except the first, are off by an
    // offset. Here we have a single thread compute that offset with a
@@ -15235,17 +15259,17 @@ void scan ( scanInt *input , scanInt *output , scanInt length)
       scanInt s0 = length * ( i - 1 ) / numThreads;
       scanInt s1 = length * ( i     ) / numThreads;
 
-      if ( s0 < s1 ) 
+      if ( s0 < s1 )
          output[s1] = output[s0] + input[s1-1];
 
       if ( s0 < s1 - 1 )
          output[s1] += output[s1-1];
    }
 
-   // Barrier is implicit from omp single Wait until all threads get here. 
+   // Barrier is implicit from omp single Wait until all threads get here.
 
    // Apply the offset to the range for this thread.
-    
+
 #pragma omp simd
    for ( scanInt i = start + 1 ; i < end ; i++ ) {
       output[i] += output[start];
@@ -15283,14 +15307,14 @@ void Mesh::set_bounds(int n){
         {
         int nthreads = omp_get_num_threads();//Private for each thread
         int threadID = omp_get_thread_num(); //Private for each thread
-#pragma omp master 
+#pragma omp master
      	{
-        	if(lowerBound_Global == NULL) lowerBound_Global = (int *)malloc(nthreads*sizeof(int)); 
-        	if(upperBound_Global == NULL) upperBound_Global = (int *)malloc(nthreads*sizeof(int)); 
+        	if(lowerBound_Global == NULL) lowerBound_Global = (int *)malloc(nthreads*sizeof(int));
+        	if(upperBound_Global == NULL) upperBound_Global = (int *)malloc(nthreads*sizeof(int));
         }
 //#pragma omp flush (lowerBound_Global, upperBound_Global)
 #pragma omp barrier
- 	
+
         int work = n/nthreads;
         if(threadID<(n%nthreads))work++;
         int lowerBound = ((n / nthreads)*threadID) + min(n%nthreads, threadID);
@@ -15299,9 +15323,9 @@ void Mesh::set_bounds(int n){
         lowerBound_Global[threadID] = lowerBound;
         upperBound_Global[threadID] = upperBound;
         }
-#else 
-     	if(lowerBound_Global == NULL) lowerBound_Global = (int *)malloc(1*sizeof(int)); 
-       	if(upperBound_Global == NULL) upperBound_Global = (int *)malloc(1*sizeof(int)); 
+#else
+     	if(lowerBound_Global == NULL) lowerBound_Global = (int *)malloc(1*sizeof(int));
+       	if(upperBound_Global == NULL) upperBound_Global = (int *)malloc(1*sizeof(int));
         int lowerBound = 0;
         int upperBound = ncells;
         lowerBound_Global[0] = lowerBound;

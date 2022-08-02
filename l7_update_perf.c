@@ -717,6 +717,17 @@ int benchmark(int penum) {
         } else
         #endif
         {
+            if (penum == 0) {
+
+               int length = sizeof(needed_indices)/sizeof(needed_indices[0]);
+               // display array
+               printf("needed_indices () - ");
+               for(int ind_index=0; ind_index<length-1; ind_index++) {
+                  printf("%d ", needed_indices[ind_index+1]-needed_indices[ind_index]);
+               }
+               printf("\nncells (nowned) - %d\n", nowned);
+               printf("nghost (nremote) - %d\n", nremote);
+            }
             L7_Setup(0, my_start_index, nowned, needed_indices, nremote, &l7_id);
         }
 
