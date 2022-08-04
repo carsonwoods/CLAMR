@@ -80,7 +80,7 @@
 #include "genmalloc/genmalloc.h"
 #include "hash/hash.h"
 
-#define DEBUG 0
+#define DEBUG 1
 //#define BOUNDS_CHECK 1
 
 #ifndef DEBUG
