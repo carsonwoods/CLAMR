@@ -5060,6 +5060,10 @@ void Mesh::calc_neighbors_local(void)
             num_comm_partners++;
             //if (DEBUG) fprintf(fp,"%d: overlap with processor %d bounding box is %d %d %d %d\n",mype,ip,iminsize_global[ip],imaxsize_global[ip],jminsize_global[ip],jmaxsize_global[ip]);
          }
+
+         if (mype == 0) {
+             printf("PARAM: num_comm_partners (nneighbors) - %d\n", num_comm_partners);
+         }
 #ifdef _OPENMP
          }
 #pragma omp barrier
@@ -5323,6 +5327,9 @@ void Mesh::calc_neighbors_local(void)
          {
 #endif
          i_push_handle = 0;
+         if (mype == 0) {
+            printf("PARAM: num_comm_partners (nneighbors) - %d\n", num_comm_partners);
+         }
          L7_Push_Setup(num_comm_partners, &comm_partner[0], &send_buffer_count[0],
                        send_database, &receive_count_total, &i_push_handle);
 #ifdef _OPENMP
@@ -7377,6 +7384,9 @@ void Mesh::gpu_calc_neighbors_local(void)
             num_comm_partners++;
             //if (DEBUG) fprintf(fp,"%d: overlap with processor %d bounding box is %d %d %d %d\n",mype,ip,iminsize_global[ip],imaxsize_global[ip],jminsize_global[ip],jmaxsize_global[ip]);
          }
+         if (mype == 0) {
+            printf("PARAM: num_comm_partners (nneighbors) - %d\n", num_comm_partners);
+         }
 
 #ifdef BOUNDS_CHECK
       {
@@ -7534,6 +7544,9 @@ void Mesh::gpu_calc_neighbors_local(void)
 
       int receive_count_total;
       int i_push_handle = 0;
+      if (mype == 0) {
+         printf("PARAM: num_comm_partners (nneighbors) - %d\n", num_comm_partners);
+      }
       L7_Push_Setup(num_comm_partners, &comm_partner[0], &send_buffer_count[0],
                     send_database, &receive_count_total, &i_push_handle);
 
