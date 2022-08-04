@@ -4,12 +4,12 @@
  *
  *  CLAMR -- LA-CC-11-094
  *
- *  Copyright 2011-2019. Triad National Security, LLC. This software was produced 
- *  under U.S. Government contract 89233218CNA000001 for Los Alamos National 
- *  Laboratory (LANL), which is operated by Triad National Security, LLC 
- *  for the U.S. Department of Energy. The U.S. Government has rights to use, 
+ *  Copyright 2011-2019. Triad National Security, LLC. This software was produced
+ *  under U.S. Government contract 89233218CNA000001 for Los Alamos National
+ *  Laboratory (LANL), which is operated by Triad National Security, LLC
+ *  for the U.S. Department of Energy. The U.S. Government has rights to use,
  *  reproduce, and distribute this software.  NEITHER THE GOVERNMENT NOR
- *  TRIAD NATIONAL SECURITY, LLC MAKES ANY WARRANTY, EXPRESS OR IMPLIED, OR 
+ *  TRIAD NATIONAL SECURITY, LLC MAKES ANY WARRANTY, EXPRESS OR IMPLIED, OR
  *  ASSUMES ANY LIABILITY FOR THE USE OF THIS SOFTWARE.  If software is modified
  *  to produce derivative works, such modified software should be clearly marked,
  *  so as not to confuse it with the version available from LANL.
@@ -21,13 +21,13 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the Triad National Security, LLC, Los Alamos 
- *       National Laboratory, LANL, the U.S. Government, nor the names of its 
- *       contributors may be used to endorse or promote products derived from 
+ *     * Neither the name of the Triad National Security, LLC, Los Alamos
+ *       National Laboratory, LANL, the U.S. Government, nor the names of its
+ *       contributors may be used to endorse or promote products derived from
  *       this software without specific prior written permission.
- *  
- *  THIS SOFTWARE IS PROVIDED BY THE TRIAD NATIONAL SECURITY, LLC AND 
- *  CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE TRIAD NATIONAL SECURITY, LLC AND
+ *  CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
  *  NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
  *  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL TRIAD NATIONAL
  *  SECURITY, LLC OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
@@ -37,23 +37,23 @@
  *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
- *  
+ *
  *  CLAMR -- LA-CC-11-094
- *  This research code is being developed as part of the 
+ *  This research code is being developed as part of the
  *  2011 X Division Summer Workshop for the express purpose
  *  of a collaborative code for development of ideas in
  *  the implementation of AMR codes for Exascale platforms
- *  
+ *
  *  AMR implementation of the Wave code previously developed
  *  as a demonstration code for regular grids on Exascale platforms
- *  as part of the Supercomputing Challenge and Los Alamos 
+ *  as part of the Supercomputing Challenge and Los Alamos
  *  National Laboratory
- *  
+ *
  *  Authors: Bob Robey       XCP-2   brobey@lanl.gov
  *           Neal Davis              davis68@lanl.gov, davis68@illinois.edu
  *           David Nicholaeff        dnic@lanl.gov, mtrxknight@aol.com
  *           Dennis Trujillo         dptrujillo@lanl.gov, dptru10@gmail.com
- * 
+ *
  */
 
 #include <algorithm>
@@ -83,7 +83,7 @@ using namespace PP;
 #endif
 
 #ifndef DEBUG
-#define DEBUG 0
+#define DEBUG 1
 #endif
 #undef DEBUG_RESTORE_VALS
 //#define DEBUG_RESTORE_VALS 1
@@ -151,7 +151,7 @@ int         outputInterval, //  Periodicity of output; init in input.cpp::parseI
             num_of_rollback_states,// Maximum number of rollback states to maintain; init in input.cpp::parseInput()
             output_cuts,    //  Flag for outputting file of slice along y-axis; init in input.cpp::parseInput().
             backup_file_num,//  Backup file number to restart simulation from; init in input.cpp::parseInput()
-            numpe,          //  
+            numpe,          //
             ndim    = 2,    //  Dimensionality of problem (2 or 3).
             ndigits,
             nbits;
@@ -376,7 +376,7 @@ int main(int argc, char **argv) {
          for (size_t ii = 0; ii<ncells; ii++){
             mesh->proc[ii] = mesh->mype;
          }
-   
+
          MPI_Gatherv(&mesh->proc[0],  nsizes[mype], MPI_INT, &proc_global[0],  &nsizes[0], &ndispl[0], MPI_INT, 0, MPI_COMM_WORLD);
       }
    }
@@ -436,7 +436,7 @@ int main(int argc, char **argv) {
    //  Set flag to show mesh results rather than domain decomposition.
    view_mode = 1;
 
-   if (ncycle == next_cp_cycle) store_crux_data(crux, ncycle); 
+   if (ncycle == next_cp_cycle) store_crux_data(crux, ncycle);
 
 #ifdef _OPENMP
 #pragma omp parallel
@@ -456,7 +456,7 @@ int main(int argc, char **argv) {
       do_calc();
    }
 #endif
-   
+
    return 0;
 }
 
@@ -476,7 +476,7 @@ extern "C" void do_calc(void)
 
    vector<char_t>     mpot;
    vector<char_t>     mpot_global;
-   
+
    size_t new_ncells = 0;
 
    //  Main loop.
@@ -693,7 +693,7 @@ extern "C" void do_calc(void)
       int have_celltype = mesh->celltype != NULL ? 1 : 0;
       mesh->calc_celltype(mesh->ncells, ncycle);
       if (! have_celltype) mesh->mesh_memory.memory_delete(mesh->celltype);
-      store_crux_data(crux, ncycle); 
+      store_crux_data(crux, ncycle);
    }
 */
 
@@ -737,7 +737,7 @@ extern "C" void do_calc(void)
          for (size_t ii = 0; ii<ncells; ii++){
             mesh->proc[ii] = mesh->mype;
          }
-   
+
          MPI_Gatherv(&mesh->proc[0],  nsizes[mype], MPI_INT, &proc_global[0],  &nsizes[0], &ndispl[0], MPI_INT, 0, MPI_COMM_WORLD);
       }
    }
@@ -782,7 +782,7 @@ extern "C" void do_calc(void)
    //  Output final results and timing information.
    if (ncycle >= niter) {
       //free_display();
-      
+
       if(graphic_outputInterval < niter){
          cpu_timer_start(&tstart_cpu);
 
@@ -812,7 +812,7 @@ extern "C" void do_calc(void)
 
       //  Get overall program timing.
       double elapsed_time = cpu_timer_stop(tstart);
-      
+
       long long mem_used = memstats_memused();
       if (mem_used > 0) {
          mesh->parallel_output("Memory used      ",mem_used, 0, "kB");
@@ -849,7 +849,7 @@ extern "C" void do_calc(void)
       L7_Terminate();
       exit(0);
    }  //  Complete final output.
-   
+
 } // end do_calc
 
 const int CRUX_CLAMR_VERSION = 101;
@@ -863,7 +863,7 @@ void store_crux_data(Crux *crux, int ncycle)
    size_t nsize = num_int_vals*sizeof(int) +
                   num_double_vals*sizeof(double);
    nsize += state->get_checkpoint_size();
-   
+
    next_cp_cycle += checkpoint_outputInterval;
 
    int int_vals[num_int_vals];
