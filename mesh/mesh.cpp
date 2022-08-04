@@ -6417,7 +6417,7 @@ void Mesh::calc_neighbors_local(void)
                   }
                }
 
-               printf("PARAM: ncells (nowned) - %d\n", ncells);
+               printf("PARAM: ncells (nowned) - %ld\n", ncells);
                printf("PARAM: nghost (nremote) - %d\n", nghost);
             }
 
