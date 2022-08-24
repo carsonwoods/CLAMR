@@ -1181,8 +1181,9 @@ void Mesh::compare_ioffset_gpu_global_to_cpu_global(uint old_ncells, char_t *mpo
 
    //size_t block_size = (ncells + TILE_SIZE - 1) / TILE_SIZE; //  For on-device global reduction kernel.
    size_t block_size     = global_work_size/local_work_size;
+   if (mype == 0) printf("PARAM: block_size (blocksize) - %d\n", block_size);
 
-   vector<int> ioffset_check(block_size);
+   vector<int> ioffset_check(blocksize);
    ezcl_enqueue_read_buffer(command_queue, dev_ioffset, CL_TRUE, 0, block_size*sizeof(cl_int), &ioffset_check[0], NULL);
 
    int mcount, mtotal;
@@ -2126,6 +2127,7 @@ int Mesh::gpu_refine_smooth(cl_mem &dev_mpot, int &icount, int &jcount)
    size_t local_work_size = 128;
    size_t global_work_size = ((ncells+local_work_size - 1) /local_work_size) * local_work_size;
    size_t block_size = global_work_size/local_work_size;
+   if (mype == 0) printf("PARAM: block_size (blocksize) - %d\n", block_size);
 
    int icount_global = icount;
    int jcount_global = jcount;
@@ -2184,6 +2186,7 @@ int Mesh::gpu_refine_smooth(cl_mem &dev_mpot, int &icount, int &jcount)
             ezcl_enqueue_ndrange_kernel(command_queue, kernel_refine_smooth, 1, NULL, &global_work_size, &local_work_size, NULL);
 
             gpu_rezone_count(block_size, local_work_size, dev_redscratch, dev_result);
+            if (mype == 0) printf("PARAM: block_size (blocksize) - %d\n", block_size);
 
             int result;
             ezcl_enqueue_read_buffer(command_queue, dev_result, CL_TRUE, 0, sizeof(cl_int), &result, NULL);
@@ -6416,7 +6419,6 @@ void Mesh::calc_neighbors_local(void)
                      printf("\n");
                   }
                }
-
                printf("PARAM: ncells (nowned) - %ld\n", ncells);
                printf("PARAM: nghost (nremote) - %d\n", nghost);
             }
@@ -6885,6 +6887,7 @@ void Mesh::gpu_calc_neighbors_local(void)
    size_t local_work_size =  64;
    size_t global_work_size = ((ncells + local_work_size - 1) /local_work_size) * local_work_size;
    size_t block_size     = global_work_size/local_work_size;
+   if (mype == 0) printf("PARAM: block_size (blocksize) - %d\n", block_size);
 
    //printf("DEBUG file %s line %d lws = %d gws %d bs %d ncells %d\n",__FILE__,__LINE__,
    //   local_work_size, global_work_size, block_size, ncells);
@@ -6925,6 +6928,7 @@ void Mesh::gpu_calc_neighbors_local(void)
    ezcl_enqueue_ndrange_kernel(command_queue, kernel_hash_size,   1, NULL, &global_work_size, &local_work_size, NULL);
 
    if (block_size > 1) {
+      if (mype == 0) printf("PARAM: block_size (blocksize) - %d\n", block_size);
          /*
          __kernel void finish_reduction_minmax4_cl(
            const    int    isize,            // 0
@@ -8557,7 +8561,9 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
 
       int lower_block_size = max(lower_block_end-lower_block_start+1,0);
       if(lower_block_end < 0) lower_block_size = 0; // Handles segfault at start of array
+      if (mype == 0) printf("PARAM: lower_block_size (blocksize) - %d\n", lower_block_size);
       int upper_block_size = max(upper_block_end-upper_block_start+1,0);
+      if (mype == 0) printf("PARAM: upper_block_size (blocksize) - %d\n", upper_block_size);
       int indices_needed_count = lower_block_size + upper_block_size;
 
       int in = 0;
@@ -8601,6 +8607,7 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
             L7_Update(mem_ptr_double, L7_DOUBLE, load_balance_handle);
             in = 0;
             if(lower_block_size > 0) {
+            if (mype == 0) printf("PARAM: lower_block_size (blocksize) - %d\n", lower_block_size);
 #ifdef _OPENMP_SIMD
 #pragma omp simd
 #endif
@@ -8614,6 +8621,7 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
             }
 
             if(upper_block_size > 0) {
+              if (mype == 0) printf("PARAM: upper_block_size (blocksize) - %d\n", upper_block_size);
                int ic = ncells_old + lower_block_size;
                for(int k = max(noffset-upper_block_start,0); ((k+ic) < (ncells_old+indices_needed_count)) && (in < (int)ncells); k++, in++) {
                   state_temp_double[in] = mem_ptr_double[ic+k];
@@ -8631,6 +8639,7 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
             L7_Update(mem_ptr_float, L7_FLOAT, load_balance_handle);
             in = 0;
             if(lower_block_size > 0) {
+            if (mype == 0) printf("PARAM: lower_block_size (blocksize) - %d\n", lower_block_size);
 #ifdef _OPENMP_SIMD
 #pragma omp simd
 #endif
@@ -8643,6 +8652,7 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
                state_temp_float[in] = mem_ptr_float[ic];
             }
             if(upper_block_size > 0) {
+              if (mype == 0) printf("PARAM: upper_block_size (blocksize) - %d\n", upper_block_size);
                int ic = ncells_old + lower_block_size;
                for(int k = max(noffset-upper_block_start,0); ((k+ic) < (ncells_old+indices_needed_count)) && (in < (int)ncells); k++, in++) {
                   state_temp_float[in] = mem_ptr_float[ic+k];
@@ -8661,6 +8671,7 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
             L7_Update(mem_ptr_half, L7_FLOAT, load_balance_handle);
             in = 0;
             if(lower_block_size > 0) {
+              if (mype == 0) printf("PARAM: lower_block_size (blocksize) - %d\n", lower_block_size);
                for(; in < MIN(lower_block_size, (int)ncells); in++) {
                   state_temp_half[in] = mem_ptr_half[ncells_old + in];
                }
@@ -8669,7 +8680,9 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
             for(int ic = MAX((noffset - noffset_old), 0); (ic < ncells_old) && (in < (int)ncells); ic++, in++) {
                state_temp_half[in] = mem_ptr_half[ic];
             }
+
             if(upper_block_size > 0) {
+               if (mype == 0) printf("PARAM: upper_block_size (blocksize) - %d\n", upper_block_size);
                int ic = ncells_old + lower_block_size;
                for(int k = max(noffset-upper_block_start,0); ((k+ic) < (ncells_old+indices_needed_count)) && (in < (int)ncells); k++, in++) {
                   state_temp_half[in] = mem_ptr_half[ic+k];
@@ -8700,6 +8713,7 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
             L7_Update(mem_ptr_long, L7_LONG_LONG_INT, load_balance_handle);
             in = 0;
             if(lower_block_size > 0) {
+               if (mype == 0) printf("PARAM: lower_block_size (blocksize) - %d\n", lower_block_size);
 #ifdef _OPENMP_SIMD
 #pragma omp simd
 #endif
@@ -8711,8 +8725,8 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
             for(int ic = MAX((noffset - noffset_old), 0); (ic < ncells_old) && (in < (int)ncells); ic++, in++) {
                mesh_temp_long[in] = mem_ptr_long[ic];
             }
-
             if(upper_block_size > 0) {
+               if (mype == 0) printf("PARAM: upper_block_size (blocksize) - %d\n", upper_block_size);
                int ic = ncells_old + lower_block_size;
                for(int k = max(noffset-upper_block_start,0); ((k+ic) < (ncells_old+indices_needed_count)) && (in < (int)ncells); k++, in++) {
                   mesh_temp_long[in] = mem_ptr_long[ic+k];
@@ -8730,6 +8744,7 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
             L7_Update(mem_ptr_int, L7_INT, load_balance_handle);
             in = 0;
             if(lower_block_size > 0) {
+               if (mype == 0) printf("PARAM: lower_block_size (blocksize) - %d\n", lower_block_size);
 #ifdef _OPENMP_SIMD
 #pragma omp simd
 #endif
@@ -8741,8 +8756,8 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
             for(int ic = MAX((noffset - noffset_old), 0); (ic < ncells_old) && (in < (int)ncells); ic++, in++) {
                mesh_temp_int[in] = mem_ptr_int[ic];
             }
-
             if(upper_block_size > 0) {
+               if (mype == 0) printf("PARAM: upper_block_size (blocksize) - %d\n", upper_block_size);
                int ic = ncells_old + lower_block_size;
                for(int k = max(noffset-upper_block_start,0); ((k+ic) < (ncells_old+indices_needed_count)) && (in < (int)ncells); k++, in++) {
                   mesh_temp_int[in] = mem_ptr_int[ic+k];
@@ -8760,6 +8775,7 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
             L7_Update(mem_ptr_short, L7_SHORT, load_balance_handle);
             in = 0;
             if(lower_block_size > 0) {
+               if (mype == 0) printf("PARAM: lower_block_size (blocksize) - %d\n", lower_block_size);
 #ifdef _OPENMP_SIMD
 #pragma omp simd
 #endif
@@ -8771,8 +8787,8 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
             for(int ic = MAX((noffset - noffset_old), 0); (ic < ncells_old) && (in < (int)ncells); ic++, in++) {
                mesh_temp_short[in] = mem_ptr_short[ic];
             }
-
             if(upper_block_size > 0) {
+               if (mype == 0) printf("PARAM: upper_block_size (blocksize) - %d\n", upper_block_size);
                int ic = ncells_old + lower_block_size;
                for(int k = max(noffset-upper_block_start,0); ((k+ic) < (ncells_old+indices_needed_count)) && (in < (int)ncells); k++, in++) {
                   mesh_temp_short[in] = mem_ptr_short[ic+k];
@@ -8790,6 +8806,7 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
             L7_Update(mem_ptr_char, L7_CHAR, load_balance_handle);
             in = 0;
             if(lower_block_size > 0) {
+               if (mype == 0) printf("PARAM: lower_block_size (blocksize) - %d\n", lower_block_size);
                for(; in < MIN(lower_block_size, (int)ncells); in++) {
                   mesh_temp_char[in] = mem_ptr_char[ncells_old + in];
                }
@@ -8800,6 +8817,7 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
             }
 
             if(upper_block_size > 0) {
+               if (mype == 0) printf("PARAM: upper_block_size (blocksize) - %d\n", upper_block_size);
                int ic = ncells_old + lower_block_size;
                for(int k = max(noffset-upper_block_start,0); ((k+ic) < (ncells_old+indices_needed_count)) && (in < (int)ncells); k++, in++) {
                   mesh_temp_char[in] = mem_ptr_char[ic+k];
@@ -8876,7 +8894,9 @@ int Mesh::gpu_do_load_balance_local(size_t numcells, float *weight, MallocPlus &
 
       size_t lower_block_size = max(lower_block_end-lower_block_start+1,0);
       if(lower_block_end < 0) lower_block_size = 0; // Handles segfault at start of array
+      if (mype == 0) printf("PARAM: lower_block_size (blocksize) - %d\n", lower_block_size);
       size_t upper_block_size = max(upper_block_end-upper_block_start+1,0);
+      if (mype == 0) printf("PARAM: upper_block_size (blocksize) - %d\n", upper_block_size);
       int indices_needed_count = lower_block_size + upper_block_size;
 
       size_t middle_block_size = ncells - lower_block_size - upper_block_size;
@@ -8947,10 +8967,12 @@ int Mesh::gpu_do_load_balance_local(size_t numcells, float *weight, MallocPlus &
 
             // Set lower block on GPU
             if(lower_block_size > 0) {
+               if (mype == 0) printf("PARAM: lower_block_size (blocksize) - %d\n", lower_block_size);
                ezcl_enqueue_write_buffer(command_queue, dev_state_var_lower, CL_FALSE, 0, lower_block_size*sizeof(cl_double), &state_var_tmp[ncells_old], NULL);
             }
             // Set upper block on GPU
             if(upper_block_size > 0) {
+               if (mype == 0) printf("PARAM: upper_block_size (blocksize) - %d\n", upper_block_size);
                ezcl_enqueue_write_buffer(command_queue, dev_state_var_upper, CL_FALSE, 0, upper_block_size*sizeof(cl_double), &state_var_tmp[ncells_old+lower_block_size], NULL);
             }
 
@@ -8998,10 +9020,12 @@ int Mesh::gpu_do_load_balance_local(size_t numcells, float *weight, MallocPlus &
 
             // Set lower block on GPU
             if(lower_block_size > 0) {
+               if (mype == 0) printf("PARAM: lower_block_size (blocksize) - %d\n", lower_block_size);
                ezcl_enqueue_write_buffer(command_queue, dev_state_var_lower, CL_FALSE, 0, lower_block_size*sizeof(cl_float), &state_var_tmp[ncells_old], NULL);
             }
             // Set upper block on GPU
             if(upper_block_size > 0) {
+               if (mype == 0) printf("PARAM: upper_block_size (blocksize) - %d\n", upper_block_size);
                ezcl_enqueue_write_buffer(command_queue, dev_state_var_upper, CL_FALSE, 0, upper_block_size*sizeof(cl_float), &state_var_tmp[ncells_old+lower_block_size], NULL);
             }
 
@@ -9066,6 +9090,7 @@ int Mesh::gpu_do_load_balance_local(size_t numcells, float *weight, MallocPlus &
       cl_mem dev_i_lower, dev_j_lower, dev_level_lower, dev_celltype_lower;
 
       if(lower_block_size > 0) {
+         if (mype == 0) printf("PARAM: lower_block_size (blocksize) - %d\n", lower_block_size);
          dev_i_lower        = ezcl_malloc(NULL, const_cast<char *>("dev_i_lower"),        &lower_block_size, sizeof(cl_int), CL_MEM_READ_WRITE, 0);
          dev_j_lower        = ezcl_malloc(NULL, const_cast<char *>("dev_j_lower"),        &lower_block_size, sizeof(cl_int), CL_MEM_READ_WRITE, 0);
          dev_level_lower    = ezcl_malloc(NULL, const_cast<char *>("dev_level_lower"),    &lower_block_size, sizeof(cl_uchar_t), CL_MEM_READ_WRITE, 0);
@@ -9080,6 +9105,7 @@ int Mesh::gpu_do_load_balance_local(size_t numcells, float *weight, MallocPlus &
       // Allocate and set upper block on GPU
       cl_mem dev_i_upper, dev_j_upper, dev_level_upper, dev_celltype_upper;
       if(upper_block_size > 0) {
+         if (mype == 0) printf("PARAM: upper_block_size (blocksize) - %d\n", upper_block_size);
          dev_i_upper        = ezcl_malloc(NULL, const_cast<char *>("dev_i_upper"),        &upper_block_size, sizeof(cl_int), CL_MEM_READ_WRITE, 0);
          dev_j_upper        = ezcl_malloc(NULL, const_cast<char *>("dev_j_upper"),        &upper_block_size, sizeof(cl_int), CL_MEM_READ_WRITE, 0);
          dev_level_upper    = ezcl_malloc(NULL, const_cast<char *>("dev_level_upper"),    &upper_block_size, sizeof(cl_uchar_t), CL_MEM_READ_WRITE, 0);
@@ -9104,6 +9130,7 @@ int Mesh::gpu_do_load_balance_local(size_t numcells, float *weight, MallocPlus &
 
       // Set kernel arguments and call lower block kernel
       if(lower_block_size > 0) {
+         if (mype == 0) printf("PARAM: lower_block_size (blocksize) - %d\n", lower_block_size);
 
          size_t global_work_size = ((lower_block_size + local_work_size - 1) / local_work_size) * local_work_size;
 
@@ -9147,6 +9174,7 @@ int Mesh::gpu_do_load_balance_local(size_t numcells, float *weight, MallocPlus &
 
       // Set kernel arguments and call upper block kernel
       if(upper_block_size > 0) {
+          if (mype == 0) printf("PARAM: upper_block_size (blocksize) - %d\n", upper_block_size);
 
          size_t global_work_size = ((upper_block_size + local_work_size - 1) / local_work_size) * local_work_size;
 
@@ -9198,6 +9226,7 @@ int Mesh::gpu_count_BCs(void)
 
    //size_t block_size = (ncells + TILE_SIZE - 1) / TILE_SIZE; //  For on-device global reduction kernel.
    size_t block_size     = global_work_size/local_work_size;
+   if (mype == 0) printf("PARAM: block_size (blocksize) - %d\n", block_size);
 
    int bcount = 0;
 
@@ -9233,6 +9262,8 @@ int Mesh::gpu_count_BCs(void)
       ezcl_enqueue_ndrange_kernel(command_queue, kernel_count_BCs, 1, NULL, &global_work_size, &local_work_size, &count_BCs_stage1_event);
 
       if (block_size > 1) {
+         if (mype == 0) printf("PARAM: block_size (blocksize) - %d\n", block_size);
+
          ezcl_set_kernel_arg(kernel_reduce_sum_int_stage2of2, 0, sizeof(cl_int), (void *)&block_size);
          ezcl_set_kernel_arg(kernel_reduce_sum_int_stage2of2, 1, sizeof(cl_mem), (void *)&dev_ioffset);
          ezcl_set_kernel_arg(kernel_reduce_sum_int_stage2of2, 2, shared_spd_sum_int, 0);
@@ -9249,6 +9280,7 @@ int Mesh::gpu_count_BCs(void)
 
       gpu_timers[MESH_TIMER_COUNT_BCS] += ezcl_timer_calc(&count_BCs_stage1_event, &count_BCs_stage1_event);
       if (block_size > 1) {
+         if (mype == 0) printf("PARAM: block_size (blocksize) - %d\n", block_size);
          gpu_timers[MESH_TIMER_COUNT_BCS] += ezcl_timer_calc(&count_BCs_stage2_event, &count_BCs_stage2_event);
       }
 
