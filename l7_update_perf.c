@@ -50,6 +50,7 @@
 #include <time.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 // facilitates CLI-arg parsing
 #include <getopt.h>
@@ -127,6 +128,11 @@ static int irregularity_neighbors = 1;
 static int irregularity_stride = 1;
 static int irregularity_blocksz = 1;
 static int irregularity_remote = 1;
+static bool owned_default = false;
+static bool neighbors_default = false;
+static bool stride_default = false;
+static bool blocksz_default = false;
+static bool remote_default = false;
 static int seed = -1;
 static memspace_t memspace = MEMSPACE_HOST;
 
@@ -204,17 +210,18 @@ void usage_long(char *exename, int penum) {
             "[ -t typesize   ]\tspecify the size of the variable being sent (in bytes)\n"
             "[ -I samples    ]\tspecify the number of random samples to generate\n"
             "[ -i iterations ]\tspecify the number of updates each sample performs\n"
-            "[ -n neighbors  ]\tspecify the number of neighbors each process communicates with \n"
-            "[ -o owned      ]\tspecify byte count for data owned per node\n"
-            "[ -r remote     ]\tspecify how much data each process recieves\n"
-            "[ -b blocksize  ]\tspecify size of transmitted blocks\n"
-            "[ -s stride     ]\tspecify size of stride\n"
+            "[ -n neighbors  ]\tspecify the average number of neighbors each process communicates with \n"
+            "[ -o owned      ]\tspecify average byte count for data owned per node\n"
+            "[ -r remote     ]\tspecify how average amount of data each process recieves\n"
+            "[ -b blocksize  ]\tspecify average size of transmitted blocks\n"
+            "[ -s stride     ]\tspecify avereage size of stride\n"
             "[ -S seed       ]\tspecify positive integer to be used as seed for random number generation (current time used as default)\n"
             "[ -m memspace   ]\tchoose from: host, cuda, openmp, opencl\n"
             "[ -u units      ]\tchoose from: a,b,k,m,g (auto, bytes, kilobytes, etc.)\n\n"
             "NOTE: setting parameters for the benchmark such as (neighbors, owned, remote, blocksize, and stride)\n"
-            "      only sets parameters for the reference benchmark.\n"
-            "      Those parameters are then randomized for the irregular samples.\n"
+            "      sets parameters to those values for the reference benchmark.\n"
+            "      Those parameters are then randomized for the irregular samples\n"
+            "      where the user-set parameters become averages for the random generation"
             "      Use the `--disable-irregularity` flag to only run the reference benchmark.\n\n", exename);
     }
     exit(-1);
@@ -343,16 +350,26 @@ void parse_arguments(int argc, char **argv, int penum)
         }
     }
     /* Now compute any unset values from the defaults */
-    if (nneighbors < 0)
+    if (nneighbors < 0) {
         nneighbors = sqrt(numpes);
-    if (nowned < 0)
+        neighbors_default = true;
+    }
+    if (nowned < 0) {
         nowned = (1<<28) / typesize;
-    if (nremote < 0)
+        owned_default = true;
+    }
+    if (nremote < 0) {
         nremote = nowned/(1 << 6);
-    if (blocksz < 0)
+        remote_default = true;
+    }
+    if (blocksz < 0) {
         blocksz = nowned/(1 << 15);
-    if (stride < 0)
+        blocksz_default = true;
+    }
+    if (stride < 0) {
         stride = 16;
+        stride_default = true;
+    }
 
     return;
 }
@@ -506,6 +523,15 @@ int benchmark(int penum) {
         nsamples = 1;
     }
 
+    // stores original parameter values if set by the user
+    // this is because the original values change with irregularity enabled
+    // and the new starting points for each iteration need to be set
+    int nowned_orig = nowned;
+    int nneighbors_orig = nneighbors;
+    int nremote_orig = nremote;
+    int blocksz_orig = blocksz;
+    int stride_orig = stride;
+
     for(int sample_iter = 0; sample_iter < nsamples+1; sample_iter++) {
         // if irregularity is enabled, perform a reference benchmark first
         if (irregularity) {
@@ -515,18 +541,52 @@ int benchmark(int penum) {
                     printf("Non-Irregular Reference Benchmark\n");
                 }
             } else {
-
+                /*
                 // if irregularity is enabled, set random parameters
-                if (irregularity_owned)
-                    nowned = gauss_dist(33554432, 10000000);
-                if (irregularity_remote)
-                    nremote = nowned/(1 << 6);
-                if (irregularity_blocksz)
-                    blocksz = nowned/(1 << 15);
-                if (irregularity_neighbors)
-                    nneighbors = gauss_dist(numpes, 1);
-                if (irregularity_stride)
-                    stride = gauss_dist(16, 4);
+                // the following code determines if the default values should
+                // be used as random generation starting points
+                // if a value is set by the user, it makes sense to use that
+                // parameter as a starting point for all iterations values
+                // if a value is unset, the benchmark's default values are used
+                // as the starting point (mean, stdev) for the gaussian dist
+                */
+                if (irregularity_owned) {
+                    if (owned_default) {
+                        nowned = gauss_dist(33554432, 10000000);
+                    } else {
+                        nowned = gauss_dist(nowned_orig, 72);
+                    }
+                }
+                if (irregularity_remote) {
+                    if (remote_default) {
+                        nremote = nowned/(1 << 6);
+                    } else {
+                        nremote = gauss_dist(nremote_orig, 28);
+                    }
+                }
+                if (irregularity_blocksz) {
+                    if (blocksz_default) {
+                        blocksz = nowned/(1 << 15);
+                    } else {
+                        blocksz = gauss_dist(blocksz_orig, 3);
+                    }
+
+                }
+                if (irregularity_neighbors) {
+                    if (neighbors_default) {
+                        nneighbors = gauss_dist(numpes, 1);
+                    } else {
+                        nneighbors = gauss_dist(nneighbors_orig, 1);
+                    }
+                }
+                if (irregularity_stride) {
+                    if (stride_default) {
+                        stride = gauss_dist(16, 4);
+                    } else {
+                        stride = gauss_dist(stride_orig, 4);
+                    }
+                }
+
 
                 // print benchmark status each iteration
                 if (penum == 0) {
