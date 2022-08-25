@@ -221,7 +221,7 @@ void usage_long(char *exename, int penum) {
             "NOTE: setting parameters for the benchmark such as (neighbors, owned, remote, blocksize, and stride)\n"
             "      sets parameters to those values for the reference benchmark.\n"
             "      Those parameters are then randomized for the irregular samples\n"
-            "      where the user-set parameters become averages for the random generation"
+            "      where the user-set parameters become averages for the random generation.\n"
             "      Use the `--disable-irregularity` flag to only run the reference benchmark.\n\n", exename);
     }
     exit(-1);
