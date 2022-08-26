@@ -212,7 +212,7 @@ void usage_long(char *exename, int penum) {
             "[ -i iterations ]\tspecify the number of updates each sample performs\n"
             "[ -n neighbors  ]\tspecify the average number of neighbors each process communicates with \n"
             "[ -o owned      ]\tspecify average byte count for data owned per node\n"
-            "[ -r remote     ]\tspecify how average amount of data each process recieves\n"
+            "[ -r remote     ]\tspecify how average amount of data each process receives\n"
             "[ -b blocksize  ]\tspecify average size of transmitted blocks\n"
             "[ -s stride     ]\tspecify avereage size of stride\n"
             "[ -S seed       ]\tspecify positive integer to be used as seed for random number generation (current time used as default)\n"
