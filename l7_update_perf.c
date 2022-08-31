@@ -81,6 +81,7 @@ extern void initialize_data_opencl(void **odata, int nowned, int nremote, int ty
 
 // If OpenMP is available and of sufficient version,
 // initialize data on OpenCL device
+printf("_OPENMP: %d", _OPENMP);
 #if defined(_OPENMP) && _OPENMP >= 201511
 extern void initialize_data_openmp(void **odata, int nowned, int nremote, int type_size, int start);
 #endif
@@ -117,8 +118,11 @@ static int nsamples = 25;
 static int niterations = 100;
 static int nneighbors = -1;
 static int nowned = -1;
+static int nowned_stdv = -1;
 static int nremote = -1;
+static int nremote_stdv = -1;
 static int blocksz = -1;
+static int blocksz_stdv = -1;
 static int stride = -1;
 static int unit_div = 1;
 static char * unit_symbol = "auto";
@@ -142,18 +146,21 @@ static memspace_t memspace = MEMSPACE_HOST;
 */
 static struct option long_options[] = {
     /* These options set a flag. */
-    {"help",       no_argument, 0, 'h'},
-    {"typesize",   required_argument, 0, 't'},
-    {"owned",      required_argument, 0, 'o'},
-    {"iterations", required_argument, 0, 'i'},
-    {"samples"   , required_argument, 0, 'I'},
-    {"neighbors",  required_argument, 0, 'n'},
-    {"remote",     required_argument, 0, 'r'},
-    {"blocksize",  required_argument, 0, 'b'},
-    {"stride",     required_argument, 0, 's'},
-    {"seed",       required_argument, 0, 'S'},
-    {"memspace",   required_argument, 0, 'm'},
-    {"units",      required_argument, 0, 'u'},
+    {"help",           no_argument, 0, 'h'},
+    {"typesize",       required_argument, 0, 't'},
+    {"owned",          required_argument, 0, 'o'},
+    {"owned_stdv",     required_argument, 0, 'O'},
+    {"iterations",     required_argument, 0, 'i'},
+    {"samples"   ,     required_argument, 0, 'I'},
+    {"neighbors",      required_argument, 0, 'n'},
+    {"remote",         required_argument, 0, 'r'},
+    {"remote_stdv",    required_argument, 0, 'O'},
+    {"blocksize",      required_argument, 0, 'b'},
+    {"blocksize_stdv", required_argument, 0, 'B'},
+    {"stride",         required_argument, 0, 's'},
+    {"seed",           required_argument, 0, 'S'},
+    {"memspace",       required_argument, 0, 'm'},
+    {"units",          required_argument, 0, 'u'},
     {"disable-irregularity", no_argument, &irregularity, 0},
     {"disable-irregularity-owned", no_argument, &irregularity_owned, 0},
     {"disable-irregularity-neighbors", no_argument, &irregularity_neighbors, 0},
@@ -207,17 +214,20 @@ void usage_long(char *exename, int penum) {
     if (penum == 0) {
         fprintf(stdout,
             "usage: %s [-t typesize] [-I samples] [-i iterations] [-n neighbors] [-o owned] [-r remote] [-b blocksize] [-s stride] [-S seed] [-m memspace]\n\n"
-            "[ -t typesize   ]\tspecify the size of the variable being sent (in bytes)\n"
-            "[ -I samples    ]\tspecify the number of random samples to generate\n"
-            "[ -i iterations ]\tspecify the number of updates each sample performs\n"
-            "[ -n neighbors  ]\tspecify the average number of neighbors each process communicates with \n"
-            "[ -o owned      ]\tspecify average byte count for data owned per node\n"
-            "[ -r remote     ]\tspecify how average amount of data each process receives\n"
-            "[ -b blocksize  ]\tspecify average size of transmitted blocks\n"
-            "[ -s stride     ]\tspecify avereage size of stride\n"
-            "[ -S seed       ]\tspecify positive integer to be used as seed for random number generation (current time used as default)\n"
-            "[ -m memspace   ]\tchoose from: host, cuda, openmp, opencl\n"
-            "[ -u units      ]\tchoose from: a,b,k,m,g (auto, bytes, kilobytes, etc.)\n\n"
+            "[ -t typesize      ]\tspecify the size of the variable being sent (in bytes)\n"
+            "[ -I samples       ]\tspecify the number of random samples to generate\n"
+            "[ -i iterations    ]\tspecify the number of updates each sample performs\n"
+            "[ -n neighbors     ]\tspecify the average number of neighbors each process communicates with \n"
+            "[ -o owned_avg     ]\tspecify average byte count for data owned per node\n"
+            "[ -O owned_stv     ]\tspecify stdev byte count for data owned per node\n"
+            "[ -r remote_avg    ]\tspecify how average amount of data each process receives\n"
+            "[ -R remote_stv    ]\tspecify how average amount of data each process receives\n"
+            "[ -b blocksize_avg ]\tspecify average size of transmitted blocks\n"
+            "[ -B blocksize_std ]\tspecify average size of transmitted blocks\n"
+            "[ -s stride        ]\tspecify avereage size of stride\n"
+            "[ -S seed          ]\tspecify positive integer to be used as seed for random number generation (current time used as default)\n"
+            "[ -m memspace      ]\tchoose from: host, cuda, openmp, opencl\n"
+            "[ -u units         ]\tchoose from: a,b,k,m,g (auto, bytes, kilobytes, etc.)\n\n"
             "NOTE: setting parameters for the benchmark such as (neighbors, owned, remote, blocksize, and stride)\n"
             "      sets parameters to those values for the reference benchmark.\n"
             "      Those parameters are then randomized for the irregular samples\n"
@@ -269,15 +279,30 @@ void parse_arguments(int argc, char **argv, int penum)
                 nowned = atoi(optarg);
                 if (nowned < 0) usage(argv[0], penum);
                 break;
+            case 'O':
+                // used to set nowned_stdv value
+                nowned_stdv = atoi(optarg);
+                if (nowned_stdv < 0) usage(argv[0], penum);
+                break;
             case 'r':
                 // used to set nremote value
                 nremote = atoi(optarg);
                 if (nremote < 0) usage(argv[0], penum);
                 break;
+            case 'R':
+                // used to set nremote_stdv value
+                nremote_stdv = atoi(optarg);
+                if (nremote_stdv < 0) usage(argv[0], penum);
+                break;
             case 'b':
                 // used to set blocksz value
                 blocksz = atoi(optarg);
                 if (blocksz < 0) usage(argv[0], penum);
+                break;
+            case 'B':
+                // used to set blocksz_stdv value
+                blocksz_stdv = atoi(optarg);
+                if (blocksz_stdv < 0) usage(argv[0], penum);
                 break;
             case 's':
                 // used to set stride size value
@@ -358,13 +383,22 @@ void parse_arguments(int argc, char **argv, int penum)
         nowned = (1<<28) / typesize;
         owned_default = true;
     }
+    if (nowned_stdv < 0) {
+        nowned_stdv = round(nowned*.05);
+    }
     if (nremote < 0) {
         nremote = nowned/(1 << 6);
         remote_default = true;
     }
+    if (nremote_stdv < 0) {
+        nremote_stdv = round(nremote*.1);
+    }
     if (blocksz < 0) {
         blocksz = nowned/(1 << 15);
         blocksz_default = true;
+    }
+    if (blocksz_stdv < 0) {
+        blocksz_stdv = blocksz;
     }
     if (stride < 0) {
         stride = 16;
@@ -551,40 +585,19 @@ int benchmark(int penum) {
                 // as the starting point (mean, stdev) for the gaussian dist
                 */
                 if (irregularity_owned) {
-                    if (owned_default) {
-                        nowned = gauss_dist(33554432, 10000000);
-                    } else {
-                        nowned = gauss_dist(nowned_orig, 72);
-                    }
+                    nowned = gauss_dist(nowned_orig, nowned_stdv);
                 }
                 if (irregularity_remote) {
-                    if (remote_default) {
-                        nremote = nowned/(1 << 6);
-                    } else {
-                        nremote = gauss_dist(nremote_orig, 28);
-                    }
+                    nremote = gauss_dist(nremote_orig, nremote_orig);
                 }
                 if (irregularity_blocksz) {
-                    if (blocksz_default) {
-                        blocksz = nowned/(1 << 15);
-                    } else {
-                        blocksz = gauss_dist(blocksz_orig, 3);
-                    }
-
+                    blocksz = gauss_dist(blocksz_orig, blocksz_stdv);
                 }
                 if (irregularity_neighbors) {
-                    if (neighbors_default) {
-                        nneighbors = gauss_dist(numpes, 1);
-                    } else {
-                        nneighbors = gauss_dist(nneighbors_orig, 1);
-                    }
+                    nneighbors = gauss_dist(nneighbors_orig, 1);
                 }
                 if (irregularity_stride) {
-                    if (stride_default) {
-                        stride = gauss_dist(16, 4);
-                    } else {
-                        stride = gauss_dist(stride_orig, 4);
-                    }
+                    stride = gauss_dist(stride_orig, 4);
                 }
 
 
