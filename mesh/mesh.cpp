@@ -1183,7 +1183,7 @@ void Mesh::compare_ioffset_gpu_global_to_cpu_global(uint old_ncells, char_t *mpo
    size_t block_size     = global_work_size/local_work_size;
    if (mype == 0) printf("PARAM: block_size (blocksize) - %d\n", block_size);
 
-   vector<int> ioffset_check(blocksize);
+   vector<int> ioffset_check(block_size);
    ezcl_enqueue_read_buffer(command_queue, dev_ioffset, CL_TRUE, 0, block_size*sizeof(cl_int), &ioffset_check[0], NULL);
 
    int mcount, mtotal;

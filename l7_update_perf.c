@@ -634,7 +634,7 @@ int benchmark(int penum) {
         // if compiled with OpenCL support
         #ifdef HAVE_OPENCL
         // attempts to initialize OpenCL on GPU
-        ierr = ezcl_devtype_init(CL_DEVICE_TYPE_GPU);
+        int ierr = ezcl_devtype_init(CL_DEVICE_TYPE_GPU);
         if (ierr == EZCL_NODEVICE) {
             ierr = ezcl_devtype_init(CL_DEVICE_TYPE_CPU);
         }
