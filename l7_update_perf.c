@@ -81,7 +81,6 @@ extern void initialize_data_opencl(void **odata, int nowned, int nremote, int ty
 
 // If OpenMP is available and of sufficient version,
 // initialize data on OpenCL device
-printf("_OPENMP: %d", _OPENMP);
 #if defined(_OPENMP) && _OPENMP >= 201511
 extern void initialize_data_openmp(void **odata, int nowned, int nremote, int type_size, int start);
 #endif
