@@ -18,7 +18,7 @@ export PROFILEDIR=/p/lustre1/bridges7/${SLURM_JOB_NAME}/tau-profile
 mkdir -p $PROFILEDIR
 
 echo "Setting up ${SLURM_JOB_NAME} with ${SLURM_JOB_NUM_NODES} nodes"
-DIR=/p/lustre1/bridges7/${SLURM_JOB_NAME}/${SLURM_JOB_NUM_NODES}
+DIR=/p/lustre1/$(whoami)/${SLURM_JOB_NAME}/${SLURM_JOB_NUM_NODES}
 mkdir -p ${DIR}
 rm -f ${DIR}/clamr_mpionly
 cp ../build-quartz-nbr/clamr_mpionly ${DIR}/clamr_mpionly
