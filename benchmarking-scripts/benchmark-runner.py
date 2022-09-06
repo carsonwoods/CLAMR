@@ -18,7 +18,7 @@ def process_params(clamr_output):
     nsizes = []
     block_sizes = []
 
-    for line in output.splitlines():
+    for line in clamr_output.splitlines():
         if "nowned" in line:
             line = line.split("-")
             if line[1].strip().isdigit():
