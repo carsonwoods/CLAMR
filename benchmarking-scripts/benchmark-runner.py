@@ -7,10 +7,9 @@ import glob
 import shutil
 import math
 
-def process_params(clamr_output, proc_num):
+def process_params(clamr_output):
     """
     clamr_output: output from clamr executable which is being processed
-    proc_num:     number of processes used for the mpiexec launch
     """
     nowned = []
     nremote = []
@@ -69,7 +68,7 @@ def process_params(clamr_output, proc_num):
     print("num_comm_partners: " + str(round(statistics.mean(comm_partners))))
 
     if len(block_sizes) == 0:
-        print("Error: Blocksize was not printed for proccess count " + str(proc_num) + "\n")
+        print("Error: Blocksize was not printed")
     else:
         print("block_sizes: " + str(round(statistics.mean(block_sizes))))
         print("block_sizes stdev: " + str(round(statistics.stdev(block_sizes))))
@@ -84,7 +83,7 @@ def process_params(clamr_output, proc_num):
         round(statistics.stdev(block_sizes))
     ]
 
-def run_benchmark_with_params(proc_num, nowned_avg, nowned_stdv,
+def run_benchmark_with_params(nowned_avg, nowned_stdv,
                               nremote_avg, nremote_stdv, comm_partners,
                               block_size_avg=3, block_size_stdv=3):
     cmd = ['srun', './clamr/build/l7_update_perf',
@@ -100,17 +99,17 @@ if __name__ == "__main__":
         print("Error: could not read CLAMR output from file.")
         exit()
 
-    params = process_params(clamr_output, proc_num, exe)
+    params = process_params(clamr_output, exe)
 
     # blocksize is not always reported
     # this ensures that, if not reported, parameters are not passed
     if len(params) > 4:
-        run_benchmark_with_params(proc_num=proc_num, nowned_avg=params[0],
+        run_benchmark_with_params(nowned_avg=params[0],
                               nowned_stdv=params[1], nremote_avg=params[2],
                               nremote_stdv=params[3], comm_partners=params[4],
                               block_size_avg=params[5], block_size_stdv=params[5])
     else:
-        run_benchmark_with_params(proc_num=proc_num, nowned_avg=params[0],
+        run_benchmark_with_params(nowned_avg=params[0],
                               nowned_stdv=params[1], nremote_avg=params[2],
                               nremote_stdv=params[3], comm_partners=params[4])
 
