@@ -533,7 +533,6 @@ void report_results_update(int penum, double *time_total_pe, int count_updated_p
                time_total_global[num_timings-1], bandwidth_mean/unit_div,
                bandwidth_global[0]/unit_div, bandwidth_med/unit_div, bandwidth_global[num_timings-1]/unit_div);
 
-
         free(bandwidth_global);
     }
 
