@@ -17,6 +17,7 @@ DIR=/p/lustre1/$(whoami)/${SLURM_JOB_NAME}/${SLURM_JOB_NUM_NODES}
 rm -rf ${DIR}
 mkdir -p ${DIR}
 cp ../build/clamr_mpionly ${DIR}/clamr_mpionly
+cp ../build/l7_update_perf ${DIR}/l7_update_perf
 cp ../benchmarking-scripts/benchmark-runner.py ${DIR}/benchmark-runner.py
 
 JOBSIZE=$(echo "scale=1;2048*sqrt(${SLURM_JOB_NUM_NODES})" | bc | cut -f 1 -d.)

@@ -86,7 +86,7 @@ def process_params(clamr_output):
 def run_benchmark_with_params(nowned_avg, nowned_stdv,
                               nremote_avg, nremote_stdv, comm_partners,
                               block_size_avg=3, block_size_stdv=3):
-    cmd = ['srun', './clamr/build/l7_update_perf',
+    cmd = ['srun', './l7_update_perf',
            '-o', str(nowned_avg), '-r', str(nremote_avg),
            '-n', str(comm_partners), '-b', str(block_size_avg), '-I', str(10)]
     output = subprocess.run(cmd, capture_output=False, encoding='UTF-8').stdout
