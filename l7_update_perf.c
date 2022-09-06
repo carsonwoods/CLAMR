@@ -523,7 +523,7 @@ void report_results_update(int penum, double *time_total_pe, int count_updated_p
         }
 
         /* Print results */
-        printf("nPEs\tMem\tType\tnOwned\t\tnRemote\tBlockSz\tStride\tnIter");
+        printf("nPEs\tMem\tType\tnOwned\tnRemote\tBlockSz\tStride\tnIter");
         printf("\tLat(avg/min/med/max)\t\t\tBW - %s (avg/min/med/max)\n", unit_symbol);
         printf("%d,\t%d,\t%d,\t%d,\t%d,\t%d,\t%d,\t%d,",
                numpes, memspace, typesize, nowned,
