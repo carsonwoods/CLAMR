@@ -99,7 +99,7 @@ if __name__ == "__main__":
         print("Error: could not read CLAMR output from file.")
         exit()
 
-    params = process_params(clamr_output, exe)
+    params = process_params(clamr_output)
 
     # blocksize is not always reported
     # this ensures that, if not reported, parameters are not passed
