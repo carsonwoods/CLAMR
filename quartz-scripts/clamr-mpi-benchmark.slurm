@@ -23,4 +23,8 @@ JOBSIZE=$(echo "scale=1;2048*sqrt(${SLURM_JOB_NUM_NODES})" | bc | cut -f 1 -d.)
 echo "Running ${SLURM_JOB_NAME} with N=${JOBSIZE} on ${SLURM_NTASKS} tasks on ${SLURM_JOB_NUM_NODES} nodes."
 cd ${DIR}
 srun ./clamr_mpionly -n ${JOBSIZE} -l 2 -t 500 -i 100 > CLAMR.out
-echo "Finished MPI Run"
+echo "Finished CLAMR_MPI Run."
+
+echo "Running benchmark runner script."
+python3 benchmark-runner.py
+echo "Finish benchmark."
