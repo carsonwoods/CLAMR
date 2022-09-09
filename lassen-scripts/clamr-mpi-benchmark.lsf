@@ -4,8 +4,13 @@
 #BSUB -J CLAMR
 #BSUB -nnodes 16
 
+CLAMR_SUBDIR=$(pwd)
+
 for i in 1 2 4 8 12 16
 do
+
+# Move back to correct directory if not already here
+cd ${CLAMR_SUBDIR}
 
 LSB_NNODES=$i
 LSB_NTASKS=$(echo "${LSB_NNODES} * 40" | bc)
