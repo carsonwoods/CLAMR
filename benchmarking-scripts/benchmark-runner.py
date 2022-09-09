@@ -6,6 +6,7 @@ import os
 import glob
 import shutil
 import math
+import platform
 
 def process_params(clamr_output):
     """
@@ -83,15 +84,33 @@ def process_params(clamr_output):
         round(statistics.stdev(block_sizes))
     ]
 
-def run_benchmark_with_params(nowned_avg, nowned_stdv,
+def run_benchmark_with_params(nodes, nowned_avg, nowned_stdv,
                               nremote_avg, nremote_stdv, comm_partners,
                               block_size_avg=3, block_size_stdv=3):
-    cmd = ['srun', './l7_update_perf',
-           '-o', str(nowned_avg), '-r', str(nremote_avg),
-           '-n', str(comm_partners), '-b', str(block_size_avg), '-I', str(10)]
+    if "quartz" in platform.node():
+        cmd = ['srun', './l7_update_perf',
+               '-o', str(nowned_avg), '-r', str(nremote_avg),
+               '-n', str(comm_partners), '-b', str(block_size_avg), '-I', str(10)]
+    elif "lassen" in platform.node():
+        cmd = ['lrun', '-N', nodes, '-T', '40', './l7_update_perf',
+               '-o', str(nowned_avg), '-r', str(nremote_avg),
+               '-n', str(comm_partners), '-b', str(block_size_avg), '-I', str(10)]
+    else:
+        print("Error: unsupported system")
+        exit()
     output = subprocess.run(cmd, capture_output=False, encoding='UTF-8').stdout
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-n',
+                        dest='nodes',
+                        default=1,
+                        action='store',
+                        nargs='?',
+                        type=int,
+                        help='Specify node count')
+    nodes = str(parser.parse_args().nodes
+
     try:
         clamr_outfile = open("CLAMR.out","r")
         clamr_output = clamr_outfile.readlines()
@@ -104,12 +123,12 @@ if __name__ == "__main__":
     # blocksize is not always reported
     # this ensures that, if not reported, parameters are not passed
     if len(params) > 4:
-        run_benchmark_with_params(nowned_avg=params[0],
+        run_benchmark_with_params(nodes=nodes, nowned_avg=params[0],
                               nowned_stdv=params[1], nremote_avg=params[2],
                               nremote_stdv=params[3], comm_partners=params[4],
                               block_size_avg=params[5], block_size_stdv=params[5])
     else:
-        run_benchmark_with_params(nowned_avg=params[0],
+        run_benchmark_with_params(nodes=nodes, nowned_avg=params[0],
                               nowned_stdv=params[1], nremote_avg=params[2],
                               nremote_stdv=params[3], comm_partners=params[4])
 
