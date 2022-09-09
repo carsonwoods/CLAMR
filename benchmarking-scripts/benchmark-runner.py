@@ -109,7 +109,7 @@ if __name__ == "__main__":
                         nargs='?',
                         type=int,
                         help='Specify node count')
-    nodes = str(parser.parse_args().nodes
+    nodes = str(parser.parse_args().nodes)
 
     try:
         clamr_outfile = open("CLAMR.out","r")
