@@ -23,17 +23,11 @@ echo "Setting up ${LSB_JOBNAME} on ${LSB_NNODES} nodes (${LSB_NTASKS} ranks)"
 rm -rf ${DIR}
 mkdir -p ${DIR}
 cp ../build-lassen/clamr_mpionly ${DIR}/clamr_mpionly
-cp ../build-lassen/l7_update_perf ${DIR}/l7_update_perf
-cp ../benchmarking-scripts/benchmark-runner.py ${DIR}/benchmark-runner.py
 
 echo "Running ${LSB_JOBNAME} with N=${JOBSIZE}"
 cd ${DIR}
 lrun -N ${LSB_NNODES} -T 40 ./clamr_mpionly -n ${JOBSIZE} -l 2 -t 500 -i 100 > CLAMR.out
 rm -f out*
 echo "Finished MPI Run"
-
-echo "Running benchmark runner script."
-python3 benchmark-runner.py -n ${LSB_NNODES} 2>&1 | tee ${DIR}/benchmark.out
-echo "Finish benchmark."
 
 done
