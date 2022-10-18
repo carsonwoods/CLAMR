@@ -6398,6 +6398,7 @@ void Mesh::calc_neighbors_local(void)
                   fprintf(fp,"%d: indices needed ic %d index %d\n",mype,ig,indices_needed[ig]);
                }
             }
+            if (mype == 0) printf("Setup Called 6401");
             L7_Setup(0, noffset, ncells, &indices_needed[0], nghost, &cell_handle);
             if (mype == 0) {
                int length = sizeof(indices_needed)/sizeof(indices_needed[0]);
@@ -8577,6 +8578,7 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
       }
 
       int load_balance_handle = 0;
+      if (mype == 0) printf("Setup Called 8581");
       L7_Setup(0, noffset_old, ncells_old, &indices_needed[0], indices_needed_count, &load_balance_handle);
 
       //printf("\n%d: DEBUG load balance report\n",mype);
@@ -8920,6 +8922,7 @@ int Mesh::gpu_do_load_balance_local(size_t numcells, float *weight, MallocPlus &
       }
 
       int load_balance_handle = 0;
+      if (mype == 0) printf("Setup Called 8925");
       L7_Setup(0, noffset_old, ncells_old, &indices_needed[0], indices_needed_count, &load_balance_handle);
 
       size_t local_work_size = 128;
