@@ -21,15 +21,18 @@ void State::calc_finite_difference_via_faces_old(double deltaT){
 
 #ifdef _OPENMP
 #pragma omp barrier
-#pragma omp master 
+#pragma omp master
       {
 #endif
          H=(state_t *)state_memory.memory_realloc(ncells_ghost, H);
          U=(state_t *)state_memory.memory_realloc(ncells_ghost, U);
          V=(state_t *)state_memory.memory_realloc(ncells_ghost, V);
 
+         if (mesh->mype == 0) printf("PARAM - update called\n");
          L7_Update(&H[0], L7_STATE_T, mesh->cell_handle);
+         if (mesh->mype == 0) printf("PARAM - update called\n");
          L7_Update(&U[0], L7_STATE_T, mesh->cell_handle);
+         if (mesh->mype == 0) printf("PARAM - update called\n");
          L7_Update(&V[0], L7_STATE_T, mesh->cell_handle);
 #ifdef _OPENMP
       }
@@ -85,7 +88,7 @@ void State::calc_finite_difference_via_faces_old(double deltaT){
 #endif
 
 #ifdef _OPENMP
-#pragma omp for 
+#pragma omp for
 #endif
    for (int iface = 0; iface < mesh->nxface; iface++){
       int cell_lower = mesh->map_xface2cell_lower[iface];
@@ -202,7 +205,7 @@ void State::calc_finite_difference_via_faces_old(double deltaT){
 #endif
 
 #ifdef _OPENMP
-#pragma omp for 
+#pragma omp for
 #endif
    for (int iface = 0; iface < mesh->nyface; iface++){
       int cell_lower = mesh->map_yface2cell_lower[iface];
@@ -732,7 +735,7 @@ void State::calc_finite_difference_via_faces_old(double deltaT){
       V = (state_t *)state_memory.memory_replace(V, V_new);
 
       //state_memory.memory_report();
-      //printf("DEBUG end finite diff\n\n"); 
+      //printf("DEBUG end finite diff\n\n");
 #ifdef _OPENMP
    }
 #pragma omp barrier

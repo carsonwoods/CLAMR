@@ -20,15 +20,18 @@ void State::calc_finite_difference_face_in_place_old(double deltaT){
 
 #ifdef _OPENMP
 #pragma omp barrier
-#pragma omp master 
+#pragma omp master
       {
 #endif
          H=(state_t *)state_memory.memory_realloc(ncells_ghost, H);
          U=(state_t *)state_memory.memory_realloc(ncells_ghost, U);
          V=(state_t *)state_memory.memory_realloc(ncells_ghost, V);
 
+         if (mesh->mype == 0) printf("PARAM - update called\n");
          L7_Update(&H[0], L7_STATE_T, mesh->cell_handle);
+         if (mesh->mype == 0) printf("PARAM - update called\n");
          L7_Update(&U[0], L7_STATE_T, mesh->cell_handle);
+         if (mesh->mype == 0) printf("PARAM - update called\n");
          L7_Update(&V[0], L7_STATE_T, mesh->cell_handle);
 #ifdef _OPENMP
       }
@@ -180,10 +183,10 @@ void State::calc_finite_difference_face_in_place_old(double deltaT){
 #pragma omp barrier
 #endif
 
-   
+
 
 #ifdef _OPENMP
-#pragma omp for 
+#pragma omp for
 #endif
    //normally use xfaceSize
    for (int iface = 0; iface < mesh->nxface; iface++){
@@ -258,7 +261,7 @@ void State::calc_finite_difference_face_in_place_old(double deltaT){
 #ifdef PATTERN_CHECK
    free(mesh->xcase);
 #endif
-   
+
    int yfaceSize = mesh->map_yface2cell_lower.size(); //new "update" nyface inc. phantoms
    static vector<state_t> Hy, Uy, Vy;
 
@@ -278,9 +281,9 @@ void State::calc_finite_difference_face_in_place_old(double deltaT){
 #endif
 
 #ifdef _OPENMP
-#pragma omp for 
+#pragma omp for
 #endif
-   
+
    //normally use yfaceSize
    for (int iface = 0; iface < mesh->nyface; iface++){
       int cell_lower = mesh->map_yface2cell_lower[iface];
@@ -358,7 +361,7 @@ void State::calc_finite_difference_face_in_place_old(double deltaT){
       if (mesh->ntop[ic] == ic)
   	    //nt = ic;
         continue;*/
-     
+
       int nl = mesh->map_xface2cell_lower[mesh->map_xcell2face_left1[ic]];
       int nr = mesh->map_xface2cell_upper[mesh->map_xcell2face_right1[ic]];
       int nb = mesh->map_yface2cell_lower[mesh->map_ycell2face_bot1[ic]];
@@ -531,7 +534,7 @@ void State::calc_finite_difference_face_in_place_old(double deltaT){
                            Vt-Vic, Vic-Vb2, Vtt-Vt);
 
       wplusy_V *= Vt - Vic;
-      
+
       real_t Hxfluxminus = HNEWXFLUXMINUS;
       real_t Uxfluxminus = UNEWXFLUXMINUS;
       real_t Vxfluxminus = UVNEWFLUXMINUS;
@@ -549,9 +552,9 @@ void State::calc_finite_difference_face_in_place_old(double deltaT){
       real_t Vyfluxplus  = VNEWYFLUXPLUS;
 
     if ((FakeFluxHxP[ic] > 0) || (FakeFluxUxP[ic] > 0) || (FakeFluxVxP[ic] > 0)) {
-        Hxfluxplus = FakeFluxHxP[ic] * HALF; 
+        Hxfluxplus = FakeFluxHxP[ic] * HALF;
         Uxfluxplus = FakeFluxUxP[ic] * HALF;
-        Vxfluxplus = FakeFluxVxP[ic] * HALF; 
+        Vxfluxplus = FakeFluxVxP[ic] * HALF;
         FakeFluxHxP[ic] = 0.0;
         FakeFluxUxP[ic] = 0.0;
         FakeFluxVxP[ic] = 0.0;
@@ -561,9 +564,9 @@ void State::calc_finite_difference_face_in_place_old(double deltaT){
         tempWUxP[ic] = 0.0;
     }
     if ((FakeFluxHxM[ic] > 0) || (FakeFluxUxM[ic] > 0) || (FakeFluxVxM[ic] > 0)) {
-        Hxfluxminus = FakeFluxHxM[ic] * HALF; 
-        Uxfluxminus = FakeFluxUxM[ic] * HALF; 
-        Vxfluxminus = FakeFluxVxM[ic] * HALF; 
+        Hxfluxminus = FakeFluxHxM[ic] * HALF;
+        Uxfluxminus = FakeFluxUxM[ic] * HALF;
+        Vxfluxminus = FakeFluxVxM[ic] * HALF;
         FakeFluxHxM[ic] = 0.0;
         FakeFluxUxM[ic] = 0.0;
         FakeFluxVxM[ic] = 0.0;
@@ -573,9 +576,9 @@ void State::calc_finite_difference_face_in_place_old(double deltaT){
         tempWUxM[ic] = 0.0;
     }
     if ((FakeFluxHyP[ic] > 0) || (FakeFluxUyP[ic] > 0) || (FakeFluxVyP[ic] > 0)) {
-        Hyfluxplus = FakeFluxHyP[ic] * HALF; 
-        Uyfluxplus = FakeFluxUyP[ic] * HALF; 
-        Vyfluxplus = FakeFluxVyP[ic] * HALF; 
+        Hyfluxplus = FakeFluxHyP[ic] * HALF;
+        Uyfluxplus = FakeFluxUyP[ic] * HALF;
+        Vyfluxplus = FakeFluxVyP[ic] * HALF;
         FakeFluxHyP[ic] = 0.0;
         FakeFluxUyP[ic] = 0.0;
         FakeFluxVyP[ic] = 0.0;
@@ -585,9 +588,9 @@ void State::calc_finite_difference_face_in_place_old(double deltaT){
         tempWVyP[ic] = 0.0;
     }
     if ((FakeFluxHyM[ic] > 0) || (FakeFluxUyM[ic] > 0) || (FakeFluxVyM[ic] > 0)) {
-        Hyfluxminus = FakeFluxHyM[ic] * HALF; 
-        Uyfluxminus = FakeFluxUyM[ic] * HALF; 
-        Vyfluxminus = FakeFluxVyM[ic] * HALF; 
+        Hyfluxminus = FakeFluxHyM[ic] * HALF;
+        Uyfluxminus = FakeFluxUyM[ic] * HALF;
+        Vyfluxminus = FakeFluxVyM[ic] * HALF;
         FakeFluxHyM[ic] = 0.0;
         FakeFluxUyM[ic] = 0.0;
         FakeFluxVyM[ic] = 0.0;
