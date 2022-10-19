@@ -821,11 +821,11 @@ void State::apply_boundary_conditions(void)
       U=(state_t *)state_memory.memory_realloc(mesh->ncells_ghost, U);
       V=(state_t *)state_memory.memory_realloc(mesh->ncells_ghost, V);
 
-      //if (mesh->mype == 0) printf("PARAM - update called\n");
+      if (mesh->mype == 0) printf("PARAM - update called\n");
       L7_Update(&H[0], L7_STATE_T, mesh->cell_handle);
-      //if (mesh->mype == 0) printf("PARAM - update called\n");
+      if (mesh->mype == 0) printf("PARAM - update called\n");
       L7_Update(&U[0], L7_STATE_T, mesh->cell_handle);
-      //if (mesh->mype == 0) printf("PARAM - update called\n");
+      if (mesh->mype == 0) printf("PARAM - update called\n");
       L7_Update(&V[0], L7_STATE_T, mesh->cell_handle);
 #ifdef _OPENMP
       }
