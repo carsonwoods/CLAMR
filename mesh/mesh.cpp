@@ -472,7 +472,7 @@ void Mesh::compare_neighbors_cpu_local_to_cpu_global(uint ncells_ghost, uint nce
       Test[ic] = mype*1000 +ic;
    }
    if (numpe > 1) {
-     if (mype == 0) printf("PARAM - update called\n");
+     if (mype == 0) printf("PARAM:  update called\n");
      L7_Update(&Test[0], L7_INT, cell_handle);
    }
 
@@ -623,7 +623,7 @@ void Mesh::compare_neighbors_all_to_gpu_local(Mesh *mesh_global, int *nsizes, in
       Test[ic] = mype*1000 +ic;
    }
    if (numpe > 1) {
-    if (mype == 0) printf("PARAM - update called\n");
+    if (mype == 0) printf("PARAM:  update called\n");
     L7_Update(&Test[0], L7_INT, cell_handle);
    }
 
@@ -1774,7 +1774,7 @@ size_t Mesh::refine_smooth(vector<char_t> &mpot, int &icount, int &jcount)
          newcount=0;
 #ifdef HAVE_MPI
          if (numpe > 1) {
-            if (mype == 0) printf("PARAM - update called\n");
+            if (mype == 0) printf("PARAM:  update called\n");
             L7_Update(&mpot_old[0], L7_CHAR_T, cell_handle);
          }
 #endif
@@ -1941,7 +1941,7 @@ size_t Mesh::refine_smooth(vector<char_t> &mpot, int &icount, int &jcount)
 
 #ifdef HAVE_MPI
    if (numpe > 1) {
-      if (mype == 0) printf("PARAM - update called\n");
+      if (mype == 0) printf("PARAM:  update called\n");
       L7_Update(&mpot[0], L7_CHAR_T, cell_handle);
   }
 #endif
@@ -2004,7 +2004,7 @@ size_t Mesh::refine_smooth(vector<char_t> &mpot, int &icount, int &jcount)
 
 #ifdef HAVE_MPI
    if (numpe > 1) {
-      if (mype == 0) printf("PARAM - update called\n");
+      if (mype == 0) printf("PARAM:  update called\n");
       L7_Update(&mpot[0], L7_CHAR_T, cell_handle);
   }
 #endif
@@ -2065,7 +2065,7 @@ size_t Mesh::refine_smooth(vector<char_t> &mpot, int &icount, int &jcount)
 
 #ifdef HAVE_MPI
    if (numpe > 1) {
-      if (mype == 0) printf("PARAM - update called\n");
+      if (mype == 0) printf("PARAM:  update called\n");
       L7_Update(&mpot[0], L7_CHAR_T, cell_handle);
   }
 #endif
@@ -6408,7 +6408,9 @@ void Mesh::calc_neighbors_local(void)
                   fprintf(fp,"%d: indices needed ic %d index %d\n",mype,ig,indices_needed[ig]);
                }
             }
-            if (mype == 0) printf("PARAM - setup called\n");
+            if (mype == 0) printf("PARAM:  setup called\n");
+            printf("PARAM: nowned (ncells) - %d\n", ncells);
+            printf("PARAM: nremote (nghost) - %d\n", nghost);
             L7_Setup(0, noffset, ncells, &indices_needed[0], nghost, &cell_handle);
             if (mype == 0) {
                int length = sizeof(indices_needed)/sizeof(indices_needed[0]);
@@ -6430,8 +6432,9 @@ void Mesh::calc_neighbors_local(void)
                      printf("\n");
                   }
                }
-               printf("PARAM: ncells (nowned) - %ld\n", ncells);
-               printf("PARAM: nghost (nremote) - %d\n", nghost);
+               //old param extraction [BOOKMARK]
+               //printf("PARAM: ncells (nowned) - %ld\n", ncells);
+               //printf("PARAM: nghost (nremote) - %d\n", nghost);
             }
 
             if (TIMING_LEVEL >= 2) cpu_timers[MESH_TIMER_SETUP_COMM] += cpu_timer_stop(tstart_lev2);
@@ -8588,7 +8591,9 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
       }
 
       int load_balance_handle = 0;
-      if (mype == 0) printf("PARAM - setup called\n");
+      if (mype == 0) printf("PARAM: setup called\n");
+      printf("PARAM: nowned (ncells) - %d\n", ncells_old);
+      printf("PARAM: nremote (nghost) - %d\n", indices_needed_count);
       L7_Setup(0, noffset_old, ncells_old, &indices_needed[0], indices_needed_count, &load_balance_handle);
 
       //printf("\n%d: DEBUG load balance report\n",mype);
@@ -8616,7 +8621,7 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
                                                                               "state_temp_double", flags);
 
             //printf("%d: DEBUG L7_Update in do_load_balance_local mem_ptr %p\n",mype,memory_item->mem_ptr);
-            if (mype == 0) printf("PARAM - update called\n");
+            if (mype == 0) printf("PARAM: update called\n");
             L7_Update(mem_ptr_double, L7_DOUBLE, load_balance_handle);
             in = 0;
             if(lower_block_size > 0) {
@@ -8649,7 +8654,7 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
                                                                            "state_temp_float", flags);
 
             //printf("%d: DEBUG L7_Update in do_load_balance_local mem_ptr %p\n",mype,mem_ptr_float);
-            if (mype == 0) printf("PARAM - update called\n");
+            if (mype == 0) printf("PARAM: update called\n");
             L7_Update(mem_ptr_float, L7_FLOAT, load_balance_handle);
             in = 0;
             if(lower_block_size > 0) {
@@ -8682,7 +8687,7 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
                                                                            "state_temp_half", flags);
 
             //printf("%d: DEBUG L7_Update in do_load_balance_local mem_ptr %p\n",mype,mem_ptr_half);
-            if (mype == 0) printf("PARAM - update called\n");
+            if (mype == 0) printf("PARAM:  update called\n");
             L7_Update(mem_ptr_half, L7_FLOAT, load_balance_handle);
             in = 0;
             if(lower_block_size > 0) {
@@ -8725,7 +8730,7 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
             long long *mesh_temp_long = (long long *)mesh_memory.memory_malloc(ncells, sizeof(long long), "mesh_temp_long", flags);
 
             //printf("%d: DEBUG L7_Update in do_load_balance_local mem_ptr %p\n",mype,mem_ptr);
-            if (mype == 0) printf("PARAM - update called\n");
+            if (mype == 0) printf("PARAM:  update called\n");
             L7_Update(mem_ptr_long, L7_LONG_LONG_INT, load_balance_handle);
             in = 0;
             if(lower_block_size > 0) {
@@ -8757,7 +8762,7 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
             int *mesh_temp_int = (int *)mesh_memory.memory_malloc(ncells, sizeof(int), "mesh_temp_int", flags);
 
             //printf("%d: DEBUG L7_Update in do_load_balance_local mem_ptr %p\n",mype,mem_ptr);
-            if (mype == 0) printf("PARAM - update called\n");
+            if (mype == 0) printf("PARAM:  update called\n");
             L7_Update(mem_ptr_int, L7_INT, load_balance_handle);
             in = 0;
             if(lower_block_size > 0) {
@@ -8789,7 +8794,7 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
             short *mesh_temp_short = (short *)mesh_memory.memory_malloc(ncells, sizeof(short), "mesh_temp_short", flags);
 
             //printf("%d: DEBUG L7_Update in do_load_balance_local mem_ptr %p\n",mype,mem_ptr);
-            if (mype == 0) printf("PARAM - update called\n");
+            if (mype == 0) printf("PARAM:  update called\n");
             L7_Update(mem_ptr_short, L7_SHORT, load_balance_handle);
             in = 0;
             if(lower_block_size > 0) {
@@ -8821,7 +8826,7 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
             char *mesh_temp_char = (char *)mesh_memory.memory_malloc(ncells, sizeof(char), "mesh_temp_char", flags);
 
             //printf("%d: DEBUG L7_Update in do_load_balance_local mem_ptr %p\n",mype,mem_ptr);
-            if (mype == 0) printf("PARAM - update called\n");
+            if (mype == 0) printf("PARAM:  update called\n");
             L7_Update(mem_ptr_char, L7_CHAR, load_balance_handle);
             in = 0;
             if(lower_block_size > 0) {
@@ -8939,7 +8944,9 @@ int Mesh::gpu_do_load_balance_local(size_t numcells, float *weight, MallocPlus &
       }
 
       int load_balance_handle = 0;
-      if (mype == 0) printf("PARAM - setup called\n");
+      if (mype == 0) printf("PARAM:  setup called\n");
+      printf("PARAM: nowned (ncells) - %d\n", ncells_old);
+      printf("PARAM: nremote (nghost) - %d\n", indices_needed_count);
       L7_Setup(0, noffset_old, ncells_old, &indices_needed[0], indices_needed_count, &load_balance_handle);
 
       size_t local_work_size = 128;
@@ -8983,7 +8990,7 @@ int Mesh::gpu_do_load_balance_local(size_t numcells, float *weight, MallocPlus &
             }
 
             // Update arrays with L7
-            if (mype == 0) printf("PARAM - update called\n");
+            if (mype == 0) printf("PARAM:  update called\n");
             L7_Update(&state_var_tmp[0], L7_DOUBLE, load_balance_handle);
 
             // Set lower block on GPU
@@ -9037,7 +9044,7 @@ int Mesh::gpu_do_load_balance_local(size_t numcells, float *weight, MallocPlus &
             }
 
             // Update arrays with L7
-            if (mype == 0) printf("PARAM - update called\n");
+            if (mype == 0) printf("PARAM:  update called\n");
             L7_Update(&state_var_tmp[0], L7_FLOAT, load_balance_handle);
 
             // Set lower block on GPU
@@ -9100,13 +9107,13 @@ int Mesh::gpu_do_load_balance_local(size_t numcells, float *weight, MallocPlus &
          }
       }
 
-      if (mype == 0) printf("PARAM - update called\n");
+      if (mype == 0) printf("PARAM:  update called\n");
       L7_Update(&i_tmp[0],        L7_INT, load_balance_handle);
-      if (mype == 0) printf("PARAM - update called\n");
+      if (mype == 0) printf("PARAM:  update called\n");
       L7_Update(&j_tmp[0],        L7_INT, load_balance_handle);
-      if (mype == 0) printf("PARAM - update called\n");
+      if (mype == 0) printf("PARAM:  update called\n");
       L7_Update(&level_tmp[0],    L7_UCHAR_T, load_balance_handle);
-      if (mype == 0) printf("PARAM - update called\n");
+      if (mype == 0) printf("PARAM:  update called\n");
       L7_Update(&celltype_tmp[0], L7_CHAR_T, load_balance_handle);
 
       L7_Free(&load_balance_handle);
