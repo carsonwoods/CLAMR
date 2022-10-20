@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=CLAMR
-#SBATCH --nodes=1
+#SBATCH --nodes=8
 #SBATCH --tasks-per-node=36
 #SBATCH --cpus-per-task=1
 
