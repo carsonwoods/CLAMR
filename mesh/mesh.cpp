@@ -6409,8 +6409,8 @@ void Mesh::calc_neighbors_local(void)
                }
             }
             if (mype == 0) printf("PARAM:  setup called\n");
-            printf("PARAM: nowned (ncells) - %d\n", ncells);
-            printf("PARAM: nremote (nghost) - %d\n", nghost);
+            if (mype == 0) printf("PARAM: nowned (ncells) - %d\n", ncells);
+            if (mype == 0) printf("PARAM: nremote (nghost) - %d\n", nghost);
             L7_Setup(0, noffset, ncells, &indices_needed[0], nghost, &cell_handle);
             if (mype == 0) {
                int length = sizeof(indices_needed)/sizeof(indices_needed[0]);
@@ -8592,8 +8592,8 @@ void Mesh::do_load_balance_local(size_t numcells, float *weight, MallocPlus &sta
 
       int load_balance_handle = 0;
       if (mype == 0) printf("PARAM: setup called\n");
-      printf("PARAM: nowned (ncells) - %d\n", ncells_old);
-      printf("PARAM: nremote (nghost) - %d\n", indices_needed_count);
+      if (mype == 0) printf("PARAM: nowned (ncells) - %d\n", ncells_old);
+      if (mype == 0) printf("PARAM: nremote (nghost) - %d\n", indices_needed_count);
       L7_Setup(0, noffset_old, ncells_old, &indices_needed[0], indices_needed_count, &load_balance_handle);
 
       //printf("\n%d: DEBUG load balance report\n",mype);
@@ -8945,8 +8945,8 @@ int Mesh::gpu_do_load_balance_local(size_t numcells, float *weight, MallocPlus &
 
       int load_balance_handle = 0;
       if (mype == 0) printf("PARAM:  setup called\n");
-      printf("PARAM: nowned (ncells) - %d\n", ncells_old);
-      printf("PARAM: nremote (nghost) - %d\n", indices_needed_count);
+      if (mype == 0) printf("PARAM: nowned (ncells) - %d\n", ncells_old);
+      if (mype == 0) printf("PARAM: nremote (nghost) - %d\n", indices_needed_count);
       L7_Setup(0, noffset_old, ncells_old, &indices_needed[0], indices_needed_count, &load_balance_handle);
 
       size_t local_work_size = 128;
